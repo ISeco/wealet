@@ -1,0 +1,10 @@
+{
+  "name": "wealet",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "type-check": "pnpm -r type-check"
+  }
+}
