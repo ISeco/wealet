@@ -8,6 +8,8 @@ import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { FundsModule } from './modules/funds/funds.module';
+import { HealthModule } from './modules/health/health.module';
+import { ReportsModule } from './modules/reports/reports.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
 import { UsersModule } from './modules/users/users.module';
@@ -30,6 +32,8 @@ import { UsersModule } from './modules/users/users.module';
     CategoriesModule,
     TransactionsModule,
     TransfersModule,
+    ReportsModule,
+    HealthModule,
   ],
   controllers: [AppController],
 })

@@ -75,7 +75,7 @@ Reports (read-only, aggregated in SQL)
   GET  /reports/by-category?from=&to=     → breakdown for chart
   GET  /reports/net-worth                 → available / reserve / committed
   GET  /reports/runway                    → months of runway (cushion ÷ burn)
-  GET  /reports/cash-flow?months=12       ← nuevo: monthly net flow (dashboard bars)
+  GET  /reports/cash-flow?months=12       → monthly net flow (dashboard bars), excludes transfers
 
 Import / Export
   POST /import/preview    (multipart) → parsed rows, errors, duplicates flagged
