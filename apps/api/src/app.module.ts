@@ -6,6 +6,7 @@ import authConfig from './config/auth.config';
 import databaseConfig from './config/database.config';
 import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
+import { CategoriesModule } from './modules/categories/categories.module';
 import { FundsModule } from './modules/funds/funds.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
@@ -26,6 +27,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     AuthModule,
     FundsModule,
+    CategoriesModule,
     TransactionsModule,
     TransfersModule,
   ],
