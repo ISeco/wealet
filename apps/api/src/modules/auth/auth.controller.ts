@@ -1,26 +1,20 @@
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   Post,
   Req,
   Res,
   UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { CookieOptions, Request, Response } from 'express';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthConfig } from '../../config/auth.config';
 import { AuthService } from './auth.service';
-import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { AuthResponseDto, UserResponseDto } from './dto/auth-response.dto';
-import { toUserResponseDto } from './mappers/user.mapper';
+import { AuthResponseDto } from './dto/auth-response.dto';
 
 const REFRESH_COOKIE_NAME = 'refresh_token';
 
@@ -29,7 +23,6 @@ const REFRESH_COOKIE_NAME = 'refresh_token';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly usersService: UsersService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -86,18 +79,6 @@ export class AuthController {
       await this.authService.logout(rawToken);
     }
     res.clearCookie(REFRESH_COOKIE_NAME, this.cookieOptions());
-  }
-
-  @ApiOperation({ summary: 'Get the currently authenticated user' })
-  @ApiBearerAuth()
-  @Get('me')
-  @UseGuards(JwtAuthGuard)
-  async me(@CurrentUser() userId: string): Promise<UserResponseDto> {
-    const user = await this.usersService.findById(userId);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-    return toUserResponseDto(user);
   }
 
   private setRefreshCookie(res: Response, token: string): void {
