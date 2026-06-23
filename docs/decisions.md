@@ -83,6 +83,8 @@ Fund balance is derived via SQL aggregation (never a stored column).
 
 **Trade-off:** more complex than Category + Transaction. The atomic transfer, derived balance, and segmented net worth are the technically interesting parts — don't simplify them away.
 
+**Note — API additions from design review (2026-06):** the design prototype surfaced a few endpoints the original API lacked. Importantly, they introduce **no new pattern**: `/funds/:id/history` and `/reports/cash-flow` are SQL-aggregated reads consistent with the derived-balance rule above, and `/funds/preset` is the implementation of the Jars-factory seed mentioned in this ADR. The canonical endpoint list lives in `modules.md` (single source of truth) — not duplicated here.
+
 ---
 
 ## §7 — Engineering Best Practices

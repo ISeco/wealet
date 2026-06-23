@@ -1,0 +1,101 @@
+<!-- Wealet — pantalla: settings
+     Referencia de diseño extraída de Wealet.dc.html (solo esta pantalla).
+     Trabaja SOLO esta pantalla en Claude Code; no abras el .dc.html completo.
+     Sintaxis del prototipo: {{ x }} = interpolación, <sc-if>/<sc-for> = condicional/loop.
+     Los tokens de color/tipografía viven en el <style> de abajo. -->
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Geist',system-ui,-apple-system,sans-serif;background:#F6F8FB;color:#12294A;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(100,116,139,.28);border-radius:8px;border:3px solid transparent;background-clip:padding-box}
+  :root{
+    --bg:#F6F8FB;--card:#FFFFFF;--card-2:#F1F5FA;--tint:#F3F8FE;--border:#E6EBF2;--border-strong:#D6DEEA;
+    --text:#12294A;--muted:#64748B;--navy:#12294A;
+    --pos:#037940;--pos-bg:#E7F4EC;--neg:#DC2626;--neg-bg:#FBEAEA;--warn:#D97706;--warn-bg:#FBF1E1;--info:#2563EB;--info-bg:#E9F0FE;
+    --disp:#16A89A;--disp-bg:#E3F5F2;--res:#2563EB;--res-bg:#E9F0FE;--comp:#D97706;--comp-bg:#FBF1E1;
+    --grad:linear-gradient(120deg,#1FA9E0 0%,#16A89A 52%,#6BBF3F 100%);
+    --shadow:0 1px 2px rgba(18,41,74,.05),0 1px 3px rgba(18,41,74,.04);
+    --shadow-lg:0 8px 30px rgba(18,41,74,.10),0 2px 8px rgba(18,41,74,.06);
+    --field:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    --bg:#0F2240;--card:#1A2F52;--card-2:#16294A;--tint:#16314F;--border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.15);
+    --text:#E6ECF5;--muted:#93A4C0;--navy:#0F2240;
+    --pos:#34D17E;--pos-bg:rgba(52,209,126,.13);--neg:#F87171;--neg-bg:rgba(248,113,113,.13);--warn:#FBBF24;--warn-bg:rgba(251,191,36,.13);--info:#60A5FA;--info-bg:rgba(96,165,250,.13);
+    --disp:#2DD4BF;--disp-bg:rgba(45,212,191,.13);--res:#60A5FA;--res-bg:rgba(96,165,250,.13);--comp:#FBBF24;--comp-bg:rgba(251,191,36,.13);
+    --shadow:0 1px 2px rgba(0,0,0,.24),0 1px 3px rgba(0,0,0,.18);
+    --shadow-lg:0 12px 36px rgba(0,0,0,.34),0 3px 10px rgba(0,0,0,.24);
+    --field:#16294A;
+  }
+  @keyframes wl-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  @keyframes wl-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes wl-pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  @keyframes wl-fade{from{opacity:0}to{opacity:1}}
+</style>
+<div data-theme="light" style="background:var(--bg);color:var(--text);font-family:'Geist',system-ui,sans-serif;padding:16px">
+<sc-if value="{{ show.settings }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:760px">
+            <!-- profile -->
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:22px 24px;margin-bottom:16px">
+              <div style="font-size:14.5px;font-weight:600;margin-bottom:18px">Perfil</div>
+              <div style="display:flex;align-items:center;gap:16px">
+                <div style="width:60px;height:60px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:22px">IV</div>
+                <div style="flex:1">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Nombre</div><div style="height:42px;border:1px solid var(--border);border-radius:9px;background:var(--field);display:flex;align-items:center;padding:0 12px;font-size:14px">Ignacio Vergara</div></div>
+                    <div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Email</div><div style="height:42px;border:1px solid var(--border);border-radius:9px;background:var(--field);display:flex;align-items:center;padding:0 12px;font-size:14px;color:var(--muted)">ignacio@wealet.cl</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- preferences -->
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:22px 24px;margin-bottom:16px">
+              <div style="font-size:14.5px;font-weight:600;margin-bottom:4px">Preferencias</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)">
+                <div><div style="font-size:14px;font-weight:500">Framework por defecto</div><div style="font-size:12.5px;color:var(--muted)">El que se muestra en Salud financiera</div></div>
+                <div style="display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;border:1px solid var(--border);border-radius:9px;font-size:13.5px;font-weight:500;cursor:pointer">Regla 50 / 30 / 20<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0">
+                <div><div style="font-size:14px;font-weight:500">Moneda</div><div style="font-size:12.5px;color:var(--muted)">Peso chileno · sin decimales</div></div>
+                <div style="display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;border:1px solid var(--border);border-radius:9px;font-size:13.5px;font-weight:500">CLP · $1.234.567</div>
+              </div>
+            </div>
+            <!-- runway funds -->
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:22px 24px;margin-bottom:16px">
+              <div style="font-size:14.5px;font-weight:600">Fondos que cuentan para el runway</div>
+              <div style="font-size:12.5px;color:var(--muted);margin-top:4px;margin-bottom:14px">Tu colchón = suma de estos fondos ÷ gasto mensual promedio.</div>
+              <sc-for list="{{ runwayFunds }}" as="f" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--border)">
+                  <div style="flex:1"><div style="font-size:14px;font-weight:500">{{ f.n }}</div><div style="font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums">{{ f.b }}</div></div>
+                  <div style="width:38px;height:22px;border-radius:20px;position:relative;background:{{ f.trackBg }};transition:background .2s;cursor:pointer"><span style="position:absolute;top:2px;left:{{ f.knobX }};width:18px;height:18px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)"></span></div>
+                </div>
+              </sc-for>
+            </div>
+            <!-- appearance -->
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:22px 24px;margin-bottom:16px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div><div style="font-size:14.5px;font-weight:600">Apariencia</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">El navy de marca es la superficie en modo oscuro.</div></div>
+                <div style="display:inline-flex;padding:3px;background:var(--card-2);border:1px solid var(--border);border-radius:9px;gap:3px">
+                  <sc-for list="{{ themeOpts }}" as="t" hint-placeholder-count="2">
+                    <div onClick="{{ t.go }}" style="padding:7px 16px;border-radius:6px;font-size:13px;cursor:pointer;background:{{ t.bg }};color:{{ t.color }};box-shadow:{{ t.sh }};font-weight:{{ t.fw }}">{{ t.label }}</div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            <!-- data + account -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:22px 24px">
+                <div style="font-size:14.5px;font-weight:600;margin-bottom:14px">Datos</div>
+                <button onClick="{{ go.import }}" style="width:100%;display:flex;align-items:center;gap:10px;height:42px;padding:0 14px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;margin-bottom:10px" style-hover="border-color:var(--border-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11M12 3l-4 4M12 3l4 4"></path><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>Importar desde Excel</button>
+                <button onClick="{{ exportAll }}" style="width:100%;display:flex;align-items:center;gap:10px;height:42px;padding:0 14px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer" style-hover="border-color:var(--border-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V3M12 14l4-4M12 14l-4-4"></path><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>Exportar todo (.csv)</button>
+              </div>
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:22px 24px">
+                <div style="font-size:14.5px;font-weight:600;margin-bottom:14px">Cuenta</div>
+                <button onClick="{{ go.onboarding }}" style="width:100%;height:42px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;margin-bottom:10px" style-hover="border-color:var(--border-strong)">Reconfigurar fondos</button>
+                <button onClick="{{ go.auth }}" style="width:100%;height:42px;border:1px solid var(--neg);border-radius:9px;background:var(--neg-bg);color:var(--neg);font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer">Cerrar sesión</button>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+</div>

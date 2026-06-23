@@ -1,0 +1,211 @@
+<!-- Wealet — pantalla: dashboard
+     Referencia de diseño extraída de Wealet.dc.html (solo esta pantalla).
+     Trabaja SOLO esta pantalla en Claude Code; no abras el .dc.html completo.
+     Sintaxis del prototipo: {{ x }} = interpolación, <sc-if>/<sc-for> = condicional/loop.
+     Los tokens de color/tipografía viven en el <style> de abajo. -->
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Geist',system-ui,-apple-system,sans-serif;background:#F6F8FB;color:#12294A;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(100,116,139,.28);border-radius:8px;border:3px solid transparent;background-clip:padding-box}
+  :root{
+    --bg:#F6F8FB;--card:#FFFFFF;--card-2:#F1F5FA;--tint:#F3F8FE;--border:#E6EBF2;--border-strong:#D6DEEA;
+    --text:#12294A;--muted:#64748B;--navy:#12294A;
+    --pos:#037940;--pos-bg:#E7F4EC;--neg:#DC2626;--neg-bg:#FBEAEA;--warn:#D97706;--warn-bg:#FBF1E1;--info:#2563EB;--info-bg:#E9F0FE;
+    --disp:#16A89A;--disp-bg:#E3F5F2;--res:#2563EB;--res-bg:#E9F0FE;--comp:#D97706;--comp-bg:#FBF1E1;
+    --grad:linear-gradient(120deg,#1FA9E0 0%,#16A89A 52%,#6BBF3F 100%);
+    --shadow:0 1px 2px rgba(18,41,74,.05),0 1px 3px rgba(18,41,74,.04);
+    --shadow-lg:0 8px 30px rgba(18,41,74,.10),0 2px 8px rgba(18,41,74,.06);
+    --field:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    --bg:#0F2240;--card:#1A2F52;--card-2:#16294A;--tint:#16314F;--border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.15);
+    --text:#E6ECF5;--muted:#93A4C0;--navy:#0F2240;
+    --pos:#34D17E;--pos-bg:rgba(52,209,126,.13);--neg:#F87171;--neg-bg:rgba(248,113,113,.13);--warn:#FBBF24;--warn-bg:rgba(251,191,36,.13);--info:#60A5FA;--info-bg:rgba(96,165,250,.13);
+    --disp:#2DD4BF;--disp-bg:rgba(45,212,191,.13);--res:#60A5FA;--res-bg:rgba(96,165,250,.13);--comp:#FBBF24;--comp-bg:rgba(251,191,36,.13);
+    --shadow:0 1px 2px rgba(0,0,0,.24),0 1px 3px rgba(0,0,0,.18);
+    --shadow-lg:0 12px 36px rgba(0,0,0,.34),0 3px 10px rgba(0,0,0,.24);
+    --field:#16294A;
+  }
+  @keyframes wl-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  @keyframes wl-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes wl-pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  @keyframes wl-fade{from{opacity:0}to{opacity:1}}
+</style>
+<div data-theme="light" style="background:var(--bg);color:var(--text);font-family:'Geist',system-ui,sans-serif;padding:16px">
+<sc-if value="{{ show.dashboard }}" hint-placeholder-val="{{ true }}">
+          <div key="dash">
+            <!-- greeting -->
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap">
+              <div>
+                <div style="font-size:24px;font-weight:600;letter-spacing:-.02em">Hola, Ignacio</div>
+                <div style="font-size:14px;color:var(--muted);margin-top:3px">Esto es lo que pasó con tu dinero en <b style="color:var(--text);font-weight:600">junio</b>.</div>
+              </div>
+              <button style="display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer" style-hover="border-color:var(--border-strong)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                Junio 2026
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+            </div>
+
+            <!-- HERO ROW -->
+            <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:16px;margin-bottom:16px">
+              <!-- Patrimonio -->
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:22px 24px">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div style="font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)">Patrimonio total</div>
+                  <div style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--pos);font-weight:600;background:var(--pos-bg);padding:3px 8px;border-radius:20px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 18 18 6"></polyline><polyline points="9 6 18 6 18 15"></polyline></svg>
+                    +7,2%
+                  </div>
+                </div>
+                <div style="font-size:38px;font-weight:600;letter-spacing:-.025em;margin:10px 0 18px;font-variant-numeric:tabular-nums">$16.039.000</div>
+                <!-- segmented -->
+                <div style="display:flex;height:12px;border-radius:7px;overflow:hidden;gap:2px;margin-bottom:14px">
+                  <div style="width:7.7%;background:var(--disp)" title="Disponible"></div>
+                  <div style="width:45.8%;background:var(--res)" title="Reserva"></div>
+                  <div style="width:46.5%;background:var(--comp)" title="Comprometido"></div>
+                </div>
+                <div style="display:flex;gap:18px;flex-wrap:wrap">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="width:9px;height:9px;border-radius:3px;background:var(--disp)"></span>
+                    <div><div style="font-size:11.5px;color:var(--muted)">Disponible</div><div style="font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums">$1.240.000</div></div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="width:9px;height:9px;border-radius:3px;background:var(--res)"></span>
+                    <div><div style="font-size:11.5px;color:var(--muted)">Reserva</div><div style="font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums">$7.349.000</div></div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="width:9px;height:9px;border-radius:3px;background:var(--comp)"></span>
+                    <div><div style="font-size:11.5px;color:var(--muted)">Comprometido</div><div style="font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums">$7.450.000</div></div>
+                  </div>
+                </div>
+              </div>
+              <!-- Runway (gradient signature) -->
+              <div style="position:relative;border-radius:14px;padding:22px 24px;overflow:hidden;background:#0F2240;color:#fff;box-shadow:var(--shadow)">
+                <div style="position:absolute;inset:0;background:var(--grad);opacity:.16"></div>
+                <div style="position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:var(--grad);opacity:.22;filter:blur(8px)"></div>
+                <div style="position:relative">
+                  <div style="display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.72)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path><circle cx="12" cy="12" r="5"></circle></svg>
+                    Runway sin ingreso
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:8px;margin:10px 0 6px">
+                    <span style="font-size:46px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;background:linear-gradient(120deg,#7FD4FF,#5DE0C8 52%,#A7E07A);-webkit-background-clip:text;background-clip:text;color:transparent">4,8</span>
+                    <span style="font-size:18px;font-weight:500;color:rgba(255,255,255,.82)">meses</span>
+                  </div>
+                  <div style="font-size:13px;color:rgba(255,255,255,.74);line-height:1.5;max-width:280px">Tus fondos colchón ($4.740.000) cubren ~5 meses a tu gasto promedio de <b style="color:#fff;font-weight:600">$984.000</b>.</div>
+                  <div style="display:flex;gap:3px;margin-top:18px;align-items:flex-end;height:30px">
+                    <sc-for list="{{ runwaySpark }}" as="h" hint-placeholder-count="12">
+                      <span style="flex:1;border-radius:2px;background:rgba(255,255,255,.32);height:{{ h.h }}"></span>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- STAT ROW -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px">
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:18px 20px">
+                <div style="font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)">Balance del mes</div>
+                <div style="font-size:26px;font-weight:600;letter-spacing:-.02em;margin-top:8px;font-variant-numeric:tabular-nums;color:var(--pos)">+$1.153.000</div>
+                <div style="font-size:12.5px;color:var(--muted);margin-top:4px">Ingresos − gastos de junio</div>
+              </div>
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:18px 20px">
+                <div style="display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:var(--pos)"></span>Ingresos</div>
+                <div style="font-size:26px;font-weight:600;letter-spacing:-.02em;margin-top:8px;font-variant-numeric:tabular-nums">$2.340.000</div>
+                <div style="font-size:12.5px;color:var(--muted);margin-top:4px">3 fuentes este mes</div>
+              </div>
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:18px 20px">
+                <div style="display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:var(--neg)"></span>Gastos</div>
+                <div style="font-size:26px;font-weight:600;letter-spacing:-.02em;margin-top:8px;font-variant-numeric:tabular-nums">$1.187.000</div>
+                <div style="font-size:12.5px;color:var(--muted);margin-top:4px">−12% vs. mayo</div>
+              </div>
+            </div>
+
+            <!-- TWO COLUMN -->
+            <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px">
+              <!-- left -->
+              <div style="display:flex;flex-direction:column;gap:16px">
+                <!-- net flow -->
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:20px 24px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+                    <div style="font-size:14.5px;font-weight:600">Flujo neto mensual</div>
+                    <div style="font-size:12px;color:var(--muted)">Últimos 6 meses</div>
+                  </div>
+                  <div style="display:flex;align-items:stretch;gap:14px;height:150px">
+                    <sc-for list="{{ netFlow }}" as="m" hint-placeholder-count="6">
+                      <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                        <div style="flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center"><div style="width:60%;max-width:34px;border-radius:5px 5px 0 0;background:{{ m.posBg }};height:{{ m.posH }}"></div></div>
+                        <div style="height:1px;width:100%;background:var(--border-strong)"></div>
+                        <div style="flex:1;width:100%;display:flex;align-items:flex-start;justify-content:center"><div style="width:60%;max-width:34px;border-radius:0 0 5px 5px;background:{{ m.negBg }};height:{{ m.negH }}"></div></div>
+                        <div style="font-size:11.5px;color:var(--muted);margin-top:6px;font-weight:500">{{ m.m }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <!-- recent -->
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px 14px">
+                    <div style="font-size:14.5px;font-weight:600">Movimientos recientes</div>
+                    <span onClick="{{ go.transacciones }}" style="font-size:12.5px;color:var(--info);font-weight:600;cursor:pointer">Ver todos</span>
+                  </div>
+                  <sc-for list="{{ recentTx }}" as="t" hint-placeholder-count="6">
+                    <div style="display:flex;align-items:center;gap:14px;padding:11px 24px;border-top:1px solid var(--border)">
+                      <span style="width:34px;height:34px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:{{ t.iconBg }};color:{{ t.iconColor }}">{{ t.icon }}</span>
+                      <div style="flex:1;min-width:0">
+                        <div style="font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div>
+                        <div style="font-size:12px;color:var(--muted);margin-top:1px">{{ t.meta }}</div>
+                      </div>
+                      <div style="font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;color:{{ t.amtColor }}">{{ t.amt }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <!-- right -->
+              <div style="display:flex;flex-direction:column;gap:16px">
+                <!-- 50/30/20 -->
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:20px 24px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                    <div style="font-size:14.5px;font-weight:600">Salud financiera</div>
+                    <span style="font-size:11px;font-weight:600;color:var(--res);background:var(--res-bg);padding:3px 9px;border-radius:20px">50 / 30 / 20</span>
+                  </div>
+                  <div style="font-size:12.5px;color:var(--muted);margin-bottom:18px">Adherencia de junio vs. tu objetivo</div>
+                  <div style="display:flex;flex-direction:column;gap:16px">
+                    <sc-for list="{{ ratio }}" as="r" hint-placeholder-count="3">
+                      <div>
+                        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+                          <span style="font-size:13px;font-weight:500">{{ r.name }}</span>
+                          <span style="font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums">{{ r.real }}% · meta {{ r.target }}%</span>
+                        </div>
+                        <div style="position:relative;height:8px;background:var(--card-2);border-radius:6px;overflow:visible">
+                          <div style="height:100%;border-radius:6px;background:{{ r.color }};width:{{ r.realW }}"></div>
+                          <div style="position:absolute;top:-3px;width:2px;height:14px;border-radius:2px;background:var(--text);opacity:.55;left:{{ r.targetW }}"></div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <!-- categories -->
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:20px 24px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                    <div style="font-size:14.5px;font-weight:600">Gasto por categoría</div>
+                    <span style="font-size:12px;color:var(--muted)">Junio</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:13px">
+                    <sc-for list="{{ catSpend }}" as="c" hint-placeholder-count="6">
+                      <div style="display:flex;align-items:center;gap:11px">
+                        <span style="width:9px;height:9px;border-radius:3px;flex:none;background:{{ c.color }}"></span>
+                        <span style="font-size:13px;flex:none;width:92px">{{ c.name }}</span>
+                        <div style="flex:1;height:6px;background:var(--card-2);border-radius:4px;overflow:hidden"><div style="height:100%;border-radius:4px;background:{{ c.color }};opacity:.85;width:{{ c.w }}"></div></div>
+                        <span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;width:74px;text-align:right">{{ c.amt }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+</div>

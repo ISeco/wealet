@@ -1,0 +1,58 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Wealet logo centered SVG</title>
+  <desc>Editable SVG reconstruction of the Wealet logo with the W mark and chart bars optically centered inside the navy app icon.</desc>
+  <defs>
+    <linearGradient id="iconBg" x1="180" y1="200" x2="520" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#052B67"></stop>
+      <stop offset="0.55" stop-color="#021B49"></stop>
+      <stop offset="1" stop-color="#010F2E"></stop>
+    </linearGradient>
+
+    <linearGradient id="wGradient" x1="210" y1="320" x2="520" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#10C7D9"></stop>
+      <stop offset="0.46" stop-color="#00A99D"></stop>
+      <stop offset="1" stop-color="#8BD84A"></stop>
+    </linearGradient>
+
+    <linearGradient id="barGradient" x1="310" y1="250" x2="455" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7FDC4A"></stop>
+      <stop offset="0.55" stop-color="#00BFA6"></stop>
+      <stop offset="1" stop-color="#047B8F"></stop>
+    </linearGradient>
+
+    <filter id="softShadow" x="90" y="120" width="540" height="540" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#00112D" flood-opacity="0.16"></feDropShadow>
+    </filter>
+
+    <clipPath id="iconClip">
+      <rect x="150" y="220" width="360" height="360" rx="72"></rect>
+    </clipPath>
+  </defs>
+
+  <rect width="1600" height="900" fill="#FFFFFF"></rect>
+
+  
+  <g filter="url(#softShadow)">
+    <rect x="150" y="220" width="360" height="360" rx="72" fill="url(#iconBg)"></rect>
+  </g>
+
+  <g clip-path="url(#iconClip)">
+    
+    <g opacity="0.96" transform="translate(335 348) scale(0.92 0.90) translate(-385.5 -355.5)">
+      <path d="M304 353C304 344.716 310.716 338 319 338H348V457H304V353Z" fill="url(#barGradient)" opacity="0.68"></path>
+      <path d="M361 315C361 306.716 367.716 300 376 300H406V457H361V315Z" fill="url(#barGradient)" opacity="0.86"></path>
+      <path d="M420 269C420 260.716 426.716 254 435 254H467V457H420V269Z" fill="url(#barGradient)"></path>
+    </g>
+
+    
+    <g transform="translate(330 418) scale(0.82 0.90) translate(-398 -419)">
+      <path d="M228 351&#xA;               C220 338 224 322 238 316&#xA;               C254 309 269 316 277 331&#xA;               L326 423&#xA;               C331 432 343 432 348 423&#xA;               L381 362&#xA;               C389 347 407 347 415 362&#xA;               L447 422&#xA;               C452 432 465 432 470 422&#xA;               L518 331&#xA;               C526 316 542 309 557 316&#xA;               C572 323 576 340 568 354&#xA;               L492 495&#xA;               C478 522 439 522 425 495&#xA;               L398 443&#xA;               C394 436 384 436 380 443&#xA;               L352 496&#xA;               C338 522 300 522 286 496&#xA;               L228 351Z" fill="url(#wGradient)"></path>
+
+      
+      <path d="M372 441&#xA;               L398 392&#xA;               C402 385 411 385 415 392&#xA;               L447 452&#xA;               C451 460 461 462 468 457&#xA;               L433 494&#xA;               C430 497 426 497 423 493&#xA;               L397 443&#xA;               C393 436 384 436 380 443&#xA;               L351 497&#xA;               C348 502 342 504 337 501&#xA;               L372 441Z" fill="#72C95A" opacity="0.72"></path>
+    </g>
+  </g>
+
+  
+  <text x="615" y="503" fill="#011B47" font-family="Inter, Avenir Next, Poppins, Montserrat, Arial, sans-serif" font-size="152" font-weight="700" letter-spacing="-5">Wealet</text>
+</svg>

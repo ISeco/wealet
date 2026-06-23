@@ -1,0 +1,117 @@
+<!-- Wealet — pantalla: transferencias
+     Referencia de diseño extraída de Wealet.dc.html (solo esta pantalla).
+     Trabaja SOLO esta pantalla en Claude Code; no abras el .dc.html completo.
+     Sintaxis del prototipo: {{ x }} = interpolación, <sc-if>/<sc-for> = condicional/loop.
+     Los tokens de color/tipografía viven en el <style> de abajo. -->
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Geist',system-ui,-apple-system,sans-serif;background:#F6F8FB;color:#12294A;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(100,116,139,.28);border-radius:8px;border:3px solid transparent;background-clip:padding-box}
+  :root{
+    --bg:#F6F8FB;--card:#FFFFFF;--card-2:#F1F5FA;--tint:#F3F8FE;--border:#E6EBF2;--border-strong:#D6DEEA;
+    --text:#12294A;--muted:#64748B;--navy:#12294A;
+    --pos:#037940;--pos-bg:#E7F4EC;--neg:#DC2626;--neg-bg:#FBEAEA;--warn:#D97706;--warn-bg:#FBF1E1;--info:#2563EB;--info-bg:#E9F0FE;
+    --disp:#16A89A;--disp-bg:#E3F5F2;--res:#2563EB;--res-bg:#E9F0FE;--comp:#D97706;--comp-bg:#FBF1E1;
+    --grad:linear-gradient(120deg,#1FA9E0 0%,#16A89A 52%,#6BBF3F 100%);
+    --shadow:0 1px 2px rgba(18,41,74,.05),0 1px 3px rgba(18,41,74,.04);
+    --shadow-lg:0 8px 30px rgba(18,41,74,.10),0 2px 8px rgba(18,41,74,.06);
+    --field:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    --bg:#0F2240;--card:#1A2F52;--card-2:#16294A;--tint:#16314F;--border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.15);
+    --text:#E6ECF5;--muted:#93A4C0;--navy:#0F2240;
+    --pos:#34D17E;--pos-bg:rgba(52,209,126,.13);--neg:#F87171;--neg-bg:rgba(248,113,113,.13);--warn:#FBBF24;--warn-bg:rgba(251,191,36,.13);--info:#60A5FA;--info-bg:rgba(96,165,250,.13);
+    --disp:#2DD4BF;--disp-bg:rgba(45,212,191,.13);--res:#60A5FA;--res-bg:rgba(96,165,250,.13);--comp:#FBBF24;--comp-bg:rgba(251,191,36,.13);
+    --shadow:0 1px 2px rgba(0,0,0,.24),0 1px 3px rgba(0,0,0,.18);
+    --shadow-lg:0 12px 36px rgba(0,0,0,.34),0 3px 10px rgba(0,0,0,.24);
+    --field:#16294A;
+  }
+  @keyframes wl-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  @keyframes wl-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes wl-pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  @keyframes wl-fade{from{opacity:0}to{opacity:1}}
+</style>
+<div data-theme="light" style="background:var(--bg);color:var(--text);font-family:'Geist',system-ui,sans-serif;padding:16px">
+<sc-if value="{{ show.transferencias }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:660px;margin:0 auto">
+            <div style="text-align:center;margin-bottom:6px">
+              <div style="font-size:20px;font-weight:600;letter-spacing:-.02em">Mover dinero entre fondos</div>
+              <div style="font-size:13.5px;color:var(--muted);margin-top:4px">Una transferencia reasigna saldo. Tu patrimonio neto no cambia.</div>
+            </div>
+
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:24px;margin-top:22px">
+              <!-- from / to -->
+              <div style="display:grid;grid-template-columns:1fr 48px 1fr;align-items:center;gap:8px">
+                <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:var(--card-2)">
+                  <div style="font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Desde</div>
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <span style="width:36px;height:36px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-family:'Geist Mono',monospace;background:var(--disp-bg);color:var(--disp)">LI</span>
+                    <div style="min-width:0"><div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fondo Libre</div><div style="font-size:12px;color:var(--muted)">Disponible</div></div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;flex:none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </div>
+                  <div style="margin-top:14px;font-size:12px;color:var(--muted)">Saldo actual</div>
+                  <div style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums">$1.240.000</div>
+                  <div style="font-size:12px;color:var(--neg);margin-top:2px;font-variant-numeric:tabular-nums">→ $940.000 después</div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:center">
+                  <span style="width:40px;height:40px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+                  </span>
+                </div>
+                <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:var(--card-2)">
+                  <div style="font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Hacia</div>
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <span style="width:36px;height:36px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-family:'Geist Mono',monospace;background:var(--res-bg);color:var(--res)">EM</span>
+                    <div style="min-width:0"><div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fondo Emergencia</div><div style="font-size:12px;color:var(--muted)">Reserva</div></div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;flex:none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </div>
+                  <div style="margin-top:14px;font-size:12px;color:var(--muted)">Saldo actual</div>
+                  <div style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums">$3.500.000</div>
+                  <div style="font-size:12px;color:var(--pos);margin-top:2px;font-variant-numeric:tabular-nums">→ $3.800.000 después</div>
+                </div>
+              </div>
+
+              <!-- amount -->
+              <div style="margin-top:22px">
+                <div style="font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:8px">Monto a transferir</div>
+                <div style="display:flex;align-items:center;height:60px;border:1px solid var(--border-strong);border-radius:12px;background:var(--field);padding:0 18px">
+                  <span style="font-size:28px;font-weight:500;color:var(--muted)">$</span>
+                  <input value="300.000" style="flex:1;border:none;background:none;outline:none;font-family:inherit;font-size:28px;font-weight:600;color:var(--text);margin-left:8px;font-variant-numeric:tabular-nums">
+                </div>
+                <div style="display:flex;gap:8px;margin-top:10px">
+                  <span style="font-size:12px;padding:5px 11px;border-radius:8px;background:var(--card-2);border:1px solid var(--border);color:var(--muted);cursor:pointer">$100.000</span>
+                  <span style="font-size:12px;padding:5px 11px;border-radius:8px;background:var(--info-bg);border:1px solid var(--border);color:var(--info);font-weight:600;cursor:pointer">$300.000</span>
+                  <span style="font-size:12px;padding:5px 11px;border-radius:8px;background:var(--card-2);border:1px solid var(--border);color:var(--muted);cursor:pointer">$500.000</span>
+                  <span style="font-size:12px;padding:5px 11px;border-radius:8px;background:var(--card-2);border:1px solid var(--border);color:var(--muted);cursor:pointer">Todo</span>
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px">
+                <div><div style="font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:8px">Fecha</div><div style="display:flex;align-items:center;justify-content:space-between;height:44px;border:1px solid var(--border);border-radius:10px;background:var(--field);padding:0 14px"><span style="font-size:14px;font-variant-numeric:tabular-nums">18 jun 2026</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line></svg></div></div>
+                <div><div style="font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:8px">Nota (opcional)</div><div style="display:flex;align-items:center;height:44px;border:1px solid var(--border);border-radius:10px;background:var(--field);padding:0 14px"><input value="Refuerzo colchón" style="flex:1;border:none;background:none;outline:none;font-family:inherit;font-size:14px;color:var(--text)"></div></div>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--pos-bg);border-radius:10px;margin-top:18px">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--pos)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6L9 17l-5-5"></path></svg>
+                <div style="font-size:12.5px;color:var(--text)">Patrimonio total intacto: <b>$16.039.000</b>. Solo cambia cómo está repartido.</div>
+              </div>
+
+              <div style="display:flex;gap:10px;margin-top:20px">
+                <button style="flex:1;height:46px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer">Cancelar</button>
+                <button style="flex:1.6;height:46px;border:none;border-radius:10px;background:var(--grad);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>Transferir $300.000</button>
+              </div>
+            </div>
+
+            <div style="margin-top:24px">
+              <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px">Transferencias recientes</div>
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden">
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border)"><span style="font-size:12px;color:var(--muted);width:56px;font-variant-numeric:tabular-nums">14 jun</span><span style="font-size:13.5px;flex:1">Fondo Libre <span style="color:var(--muted)">→</span> Fondo Moto</span><span style="font-size:13.5px;font-weight:600;color:var(--info);font-variant-numeric:tabular-nums">$120.000</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border)"><span style="font-size:12px;color:var(--muted);width:56px;font-variant-numeric:tabular-nums">07 jun</span><span style="font-size:13.5px;flex:1">Empresa <span style="color:var(--muted)">→</span> Fondo Inversión</span><span style="font-size:13.5px;font-weight:600;color:var(--info);font-variant-numeric:tabular-nums">$450.000</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 18px"><span style="font-size:12px;color:var(--muted);width:56px;font-variant-numeric:tabular-nums">01 jun</span><span style="font-size:13.5px;flex:1">Fondo Libre <span style="color:var(--muted)">→</span> Fondo Emergencia</span><span style="font-size:13.5px;font-weight:600;color:var(--info);font-variant-numeric:tabular-nums">$300.000</span></div>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+</div>

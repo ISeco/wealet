@@ -35,12 +35,17 @@ Base path: `/api/v1`. Swagger at `/api/docs`.
 ```
 Auth
   POST  /auth/register
-  POST  /auth/login         → { accessToken } + set-cookie refresh
-  POST  /auth/refresh       → rotates refresh, issues new access token
-  POST  /auth/logout        → revokes refresh token
+  POST  /auth/login            → { accessToken } + set-cookie refresh
+  POST  /auth/refresh          → rotates refresh, issues new access token
+  POST  /auth/logout           → revokes refresh token
+  POST  /auth/change-password  ← nuevo (Ajustes)
+
+Users
+  GET    /users/me             → profile: id, email, displayName, theme, onboardingCompleted(At)
+  PATCH  /users/me             → update displayName / theme / onboardingCompleted
 
 Transactions
-  GET    /transactions?from=&to=&type=&categoryId=&fundId=&page=&limit=
+  GET    /transactions?from=&to=&type=&categoryId=&fundId=&q=&page=&limit=   (q ← nuevo: búsqueda)
   POST   /transactions
   GET    /transactions/:id
   PATCH  /transactions/:id
@@ -48,7 +53,10 @@ Transactions
 
 Funds
   GET    /funds                   → list with derived balance per fund
+  GET    /funds/:id               ← nuevo: single fund detail
+  GET    /funds/:id/history?months=12   ← nuevo: balance evolution (detail chart)
   POST   /funds
+  POST   /funds/preset            ← nuevo: create preset (sobres/Jars/50-30-20) atomically (onboarding)
   PATCH  /funds/:id
   DELETE /funds/:id               → soft archive if fund has movements
 
@@ -67,6 +75,7 @@ Reports (read-only, aggregated in SQL)
   GET  /reports/by-category?from=&to=     → breakdown for chart
   GET  /reports/net-worth                 → available / reserve / committed
   GET  /reports/runway                    → months of runway (cushion ÷ burn)
+  GET  /reports/cash-flow?months=12       ← nuevo: monthly net flow (dashboard bars)
 
 Import / Export
   POST /import/preview    (multipart) → parsed rows, errors, duplicates flagged
@@ -95,13 +104,39 @@ lib/
   money.ts        format amounts by currency
 features/
   auth/           login, register, route guard
-  transactions/   list, filters, create/edit form
+  onboarding/     preset / import-Excel wizard
   dashboard/      summary cards + Recharts charts
-  import-export/  file uploader + preview table
+  funds/          fund list + detail (balance history)
+  transactions/   list, filters, create/edit form
+  transfers/      move money between funds (A→B)
+  categories/     CRUD + color
   health/         framework adherence visual
+  import-export/  file uploader + preview table
+  settings/       profile, prefs, theme
 components/ui/    reusable UI components
 ```
 
 - **TanStack Query (React Query)** for all server state. No Redux.
 - Local UI state with `useState` only.
 - Shared types from `packages/shared`.
+
+---
+
+## Screen → endpoints
+
+Design reference per screen lives in `docs/design/screens/` (one isolated `.html` each).
+
+| Screen (`features/`) | Endpoints |
+|---|---|
+| auth | `POST /auth/login`, `/auth/register`, `/auth/refresh`, `/auth/logout` |
+| onboarding | `POST /funds/preset`; (Excel path) `POST /import/preview`, `/import/commit`; `PATCH /users/me`; `PUT /health/profile` |
+| dashboard | `GET /reports/summary`, `/reports/net-worth`, `/reports/runway`, `/reports/cash-flow`, `/reports/by-category`, `/health/assessment`, `/transactions?limit=`, `/funds` |
+| funds | `GET /funds`, `/funds/:id`, `/funds/:id/history`, `/transactions?fundId=` |
+| transactions | `GET /transactions` (+filters), `POST/GET/PATCH/DELETE /transactions/:id`, `GET /transfers` (transfers tab) |
+| transfers | `POST /transfers`, `GET /funds` |
+| health | `GET /health/assessment`, `GET/PUT /health/profile` |
+| categories | `GET/POST/PATCH/DELETE /categories`, `GET /reports/by-category` |
+| import-export | `POST /import/preview`, `/import/commit`, `GET /export` |
+| settings | `GET/PATCH /users/me`, `POST /auth/change-password`, `PATCH /funds/:id` (countsForRunway), `PUT /health/profile`, `GET /export` |
+
+Endpoints marked `← nuevo` were added after the design review — gaps the screens revealed. Rationale in the Notion architecture doc, §5.

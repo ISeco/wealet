@@ -1,0 +1,34 @@
+# Referencia de diseño — por pantalla
+
+Cada `.html` es **una sola pantalla** extraída del prototipo de Claude Design (`Wealet.dc.html`), aislada para poder trabajarla en Claude Code **sin cargar la app completa** en contexto.
+
+## Cómo usarlo con Claude Code
+
+Cuando trabajes una pantalla, referenciá **solo su archivo** + su feature + sus endpoints. Ejemplo para el login:
+
+> "Implementa la pantalla de login en `apps/web/src/features/auth/`. Diseño de referencia: `docs/design/screens/auth.html`. Endpoints: `POST /auth/login`, `/auth/register`, `/auth/refresh`. No toques otras features."
+
+No abras `Wealet.dc.html` completo (162 KB, toda la app) — contamina el contexto.
+
+## Pantallas
+
+| Archivo | Pantalla | Feature (`apps/web/src/features/`) |
+|---|---|---|
+| `auth.html` | Login + registro | `auth/` |
+| `onboarding.html` | Onboarding (preset / importar Excel) | `onboarding/` |
+| `dashboard.html` | Dashboard | `dashboard/` |
+| `fondos.html` | Fondos (lista + detalle) | `funds/` |
+| `transacciones.html` | Transacciones (tabs, filtros) | `transactions/` |
+| `transferencias.html` | Transferencias entre fondos | `transfers/` |
+| `salud.html` | Salud financiera (3 frameworks) | `health/` |
+| `categorias.html` | Categorías | `categories/` |
+| `import.html` | Importar Excel (3 pasos) | `import-export/` |
+| `settings.html` | Ajustes / perfil | `settings/` |
+| `design-system.html` | Design System (tokens, paleta) | `components/ui/` + `lib/theme` |
+| `modal-txform.html` | Modal de alta de transacción | `transactions/` |
+| `palette-quick.html` | Paleta rápida ⌘K | `app/` (global) |
+
+## Notas
+- Sintaxis del prototipo: `{{ x }}` = interpolación, `<sc-if>` / `<sc-for>` = condicional / loop. Es **referencia visual y de estructura**, no código a copiar tal cual — se traduce a React limpio.
+- Los tokens (colores, dark mode, tipografía Geist) viven en el `<style>` al inicio de cada archivo. La fuente canónica es `design-system.html` y `docs/conventions.md`.
+- Mapeo pantalla → endpoints en `docs/modules.md`.

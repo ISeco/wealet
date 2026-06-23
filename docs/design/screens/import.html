@@ -1,0 +1,113 @@
+<!-- Wealet — pantalla: import
+     Referencia de diseño extraída de Wealet.dc.html (solo esta pantalla).
+     Trabaja SOLO esta pantalla en Claude Code; no abras el .dc.html completo.
+     Sintaxis del prototipo: {{ x }} = interpolación, <sc-if>/<sc-for> = condicional/loop.
+     Los tokens de color/tipografía viven en el <style> de abajo. -->
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Geist',system-ui,-apple-system,sans-serif;background:#F6F8FB;color:#12294A;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(100,116,139,.28);border-radius:8px;border:3px solid transparent;background-clip:padding-box}
+  :root{
+    --bg:#F6F8FB;--card:#FFFFFF;--card-2:#F1F5FA;--tint:#F3F8FE;--border:#E6EBF2;--border-strong:#D6DEEA;
+    --text:#12294A;--muted:#64748B;--navy:#12294A;
+    --pos:#037940;--pos-bg:#E7F4EC;--neg:#DC2626;--neg-bg:#FBEAEA;--warn:#D97706;--warn-bg:#FBF1E1;--info:#2563EB;--info-bg:#E9F0FE;
+    --disp:#16A89A;--disp-bg:#E3F5F2;--res:#2563EB;--res-bg:#E9F0FE;--comp:#D97706;--comp-bg:#FBF1E1;
+    --grad:linear-gradient(120deg,#1FA9E0 0%,#16A89A 52%,#6BBF3F 100%);
+    --shadow:0 1px 2px rgba(18,41,74,.05),0 1px 3px rgba(18,41,74,.04);
+    --shadow-lg:0 8px 30px rgba(18,41,74,.10),0 2px 8px rgba(18,41,74,.06);
+    --field:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    --bg:#0F2240;--card:#1A2F52;--card-2:#16294A;--tint:#16314F;--border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.15);
+    --text:#E6ECF5;--muted:#93A4C0;--navy:#0F2240;
+    --pos:#34D17E;--pos-bg:rgba(52,209,126,.13);--neg:#F87171;--neg-bg:rgba(248,113,113,.13);--warn:#FBBF24;--warn-bg:rgba(251,191,36,.13);--info:#60A5FA;--info-bg:rgba(96,165,250,.13);
+    --disp:#2DD4BF;--disp-bg:rgba(45,212,191,.13);--res:#60A5FA;--res-bg:rgba(96,165,250,.13);--comp:#FBBF24;--comp-bg:rgba(251,191,36,.13);
+    --shadow:0 1px 2px rgba(0,0,0,.24),0 1px 3px rgba(0,0,0,.18);
+    --shadow-lg:0 12px 36px rgba(0,0,0,.34),0 3px 10px rgba(0,0,0,.24);
+    --field:#16294A;
+  }
+  @keyframes wl-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  @keyframes wl-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes wl-pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  @keyframes wl-fade{from{opacity:0}to{opacity:1}}
+</style>
+<div data-theme="light" style="background:var(--bg);color:var(--text);font-family:'Geist',system-ui,sans-serif;padding:16px">
+<sc-if value="{{ show.import }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:920px;margin:0 auto">
+            <!-- stepper -->
+            <div style="display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:26px">
+              <sc-for list="{{ impSteps }}" as="s" hint-placeholder-count="3">
+                <div onClick="{{ s.go }}" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                  <span style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;background:{{ s.circBg }};color:{{ s.circColor }}">{{ s.n }}</span>
+                  <span style="font-size:13.5px;font-weight:600;color:{{ s.lblColor }};margin-right:22px">{{ s.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- STEP 1 -->
+            <sc-if value="{{ impStep1 }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="background:var(--card);border:2px dashed var(--border-strong);border-radius:16px;padding:56px 24px;text-align:center">
+                <div style="width:56px;height:56px;border-radius:14px;background:var(--tint);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11M12 3l-4 4M12 3l4 4"></path><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>
+                </div>
+                <div style="font-size:16px;font-weight:600">Arrastra tu cartola o Excel aquí</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:6px">Formatos .xlsx, .csv · columnas fecha, descripción, monto, fondo</div>
+                <button onClick="{{ impTo2 }}" style="margin-top:20px;height:40px;padding:0 18px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="border-color:var(--border-strong)">Seleccionar archivo</button>
+              </div>
+              <div onClick="{{ impTo2 }}" style="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:14px 18px;margin-top:16px;cursor:pointer">
+                <span style="width:38px;height:38px;border-radius:9px;background:var(--pos-bg);color:var(--pos);display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"></path><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg></span>
+                <div style="flex:1"><div style="font-size:13.5px;font-weight:600">cartola_junio_2026.xlsx</div><div style="font-size:12px;color:var(--muted)">152 filas detectadas · 38 KB</div></div>
+                <span style="font-size:13px;color:var(--info);font-weight:600">Continuar →</span>
+              </div>
+            </div>
+            </sc-if>
+
+            <!-- STEP 2: PREVIEW -->
+            <sc-if value="{{ impStep2 }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px">
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:14px 18px"><div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:var(--pos)"></span>Válidas</div><div style="font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:4px">138</div></div>
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:14px 18px"><div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:var(--warn)"></span>Duplicadas</div><div style="font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:4px">11</div></div>
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:14px 18px"><div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:var(--neg)"></span>Con errores</div><div style="font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:4px">3</div></div>
+              </div>
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden">
+                <div style="display:grid;grid-template-columns:80px 1fr 130px 150px 110px;gap:12px;padding:11px 20px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)"><div>Fecha</div><div>Descripción</div><div style="text-align:right">Monto</div><div>Fondo</div><div>Estado</div></div>
+                <sc-for list="{{ impRows }}" as="r" hint-placeholder-count="8">
+                  <div style="display:grid;grid-template-columns:80px 1fr 130px 150px 110px;gap:12px;align-items:center;padding:11px 20px;border-bottom:1px solid var(--border);background:{{ r.rowBg }};opacity:{{ r.faded }}">
+                    <div style="font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums">{{ r.d }}</div>
+                    <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.desc }}</div>
+                    <div style="font-size:13px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;color:{{ r.amtColor }}">{{ r.amt }}</div>
+                    <div style="font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.fund }}</div>
+                    <div><span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:{{ r.stBg }};color:{{ r.stColor }}">{{ r.stLabel }}</span></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--warn-bg);border-radius:10px;margin-top:16px">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg>
+                <div style="font-size:12.5px;color:var(--text)">Se importarán <b>138 transacciones</b>. Las duplicadas se omiten y las 3 con error necesitan que asignes un fondo antes de continuar.</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:20px">
+                <button onClick="{{ impTo1 }}" style="height:44px;padding:0 18px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer">← Volver</button>
+                <button onClick="{{ impTo3 }}" style="height:44px;padding:0 22px;border:none;border-radius:10px;background:var(--grad);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:var(--shadow)">Confirmar e importar 138</button>
+              </div>
+            </div>
+            </sc-if>
+
+            <!-- STEP 3: DONE -->
+            <sc-if value="{{ impStep3 }}" hint-placeholder-val="{{ false }}">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:56px 24px;text-align:center">
+              <div style="width:60px;height:60px;border-radius:50%;background:var(--pos-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 18px"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--pos)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div>
+              <div style="font-size:20px;font-weight:600">¡Listo, Ignacio!</div>
+              <div style="font-size:14px;color:var(--muted);margin-top:8px;max-width:380px;margin-left:auto;margin-right:auto;line-height:1.55">Se importaron <b style="color:var(--text)">138 transacciones</b> de junio y se distribuyeron en tus fondos. Tu patrimonio está al día.</div>
+              <div style="display:flex;gap:10px;justify-content:center;margin-top:24px">
+                <button onClick="{{ impTo1 }}" style="height:42px;padding:0 18px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer">Importar otro</button>
+                <button onClick="{{ go.transacciones }}" style="height:42px;padding:0 20px;border:none;border-radius:9px;background:var(--grad);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:var(--shadow)">Ver transacciones</button>
+              </div>
+            </div>
+            </sc-if>
+          </div>
+          </sc-if>
+</div>
