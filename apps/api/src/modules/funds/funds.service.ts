@@ -1,0 +1,142 @@
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, QueryFailedError, Repository } from 'typeorm';
+import { CreateFundDto } from './dto/create-fund.dto';
+import { UpdateFundDto } from './dto/update-fund.dto';
+import { Fund } from './entities/fund.entity';
+
+const UNIQUE_VIOLATION = '23505';
+
+export interface FundWithBalance {
+  fund: Fund;
+  balance: string;
+}
+
+interface FundBalanceRow {
+  fund_id: string;
+  balance: string;
+}
+
+@Injectable()
+export class FundsService {
+  constructor(
+    @InjectRepository(Fund)
+    private readonly fundsRepository: Repository<Fund>,
+    @InjectDataSource() private readonly dataSource: DataSource,
+  ) {}
+
+  async findAllWithBalances(userId: string): Promise<FundWithBalance[]> {
+    const funds = await this.fundsRepository.find({
+      where: { userId },
+      order: { createdAt: 'ASC' },
+    });
+    if (funds.length === 0) {
+      return [];
+    }
+
+    const balanceByFundId = await this.getBalancesByFundId(userId);
+    return funds.map((fund) => ({
+      fund,
+      balance: balanceByFundId.get(fund.id) ?? '0',
+    }));
+  }
+
+  async create(userId: string, dto: CreateFundDto): Promise<FundWithBalance> {
+    const fund = this.fundsRepository.create({ ...dto, userId });
+    const saved = await this.save(fund);
+    return { fund: saved, balance: '0' };
+  }
+
+  async findOneOrThrow(userId: string, id: string): Promise<Fund> {
+    const fund = await this.fundsRepository.findOne({
+      where: { id, userId },
+    });
+    if (!fund) {
+      throw new NotFoundException('Fund not found');
+    }
+    return fund;
+  }
+
+  async update(
+    userId: string,
+    id: string,
+    dto: UpdateFundDto,
+  ): Promise<FundWithBalance> {
+    const fund = await this.findOneOrThrow(userId, id);
+    Object.assign(fund, dto);
+    const saved = await this.save(fund);
+    const balance =
+      (await this.getBalancesByFundId(userId)).get(saved.id) ?? '0';
+    return { fund: saved, balance };
+  }
+
+  /** Returns null when the fund was hard-deleted; otherwise the archived fund. */
+  async remove(userId: string, id: string): Promise<FundWithBalance | null> {
+    const fund = await this.findOneOrThrow(userId, id);
+    const hasMovements = await this.hasMovements(id);
+
+    if (!hasMovements) {
+      await this.fundsRepository.delete({ id, userId });
+      return null;
+    }
+
+    fund.archivedAt = new Date();
+    fund.isOperative = false;
+    const saved = await this.save(fund);
+    const balance =
+      (await this.getBalancesByFundId(userId)).get(saved.id) ?? '0';
+    return { fund: saved, balance };
+  }
+
+  private async save(fund: Fund): Promise<Fund> {
+    try {
+      return await this.fundsRepository.save(fund);
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        (error as QueryFailedError & { code?: string }).code ===
+          UNIQUE_VIOLATION
+      ) {
+        throw new ConflictException('A fund with this name already exists');
+      }
+      throw error;
+    }
+  }
+
+  private async hasMovements(fundId: string): Promise<boolean> {
+    const rows: Array<{ count: string }> = await this.dataSource.query(
+      `SELECT COUNT(*) AS count FROM (
+         SELECT 1 FROM transactions WHERE fund_id = $1
+         UNION ALL
+         SELECT 1 FROM transfers WHERE from_fund_id = $1 OR to_fund_id = $1
+       ) movements`,
+      [fundId],
+    );
+    return Number(rows[0].count) > 0;
+  }
+
+  private async getBalancesByFundId(
+    userId: string,
+  ): Promise<Map<string, string>> {
+    const rows: FundBalanceRow[] = await this.dataSource.query(
+      `SELECT f.id AS fund_id, COALESCE(SUM(m.amount), 0)::text AS balance
+       FROM funds f
+       LEFT JOIN (
+         SELECT fund_id, CASE WHEN type = 'income' THEN amount ELSE -amount END AS amount
+         FROM transactions WHERE user_id = $1
+         UNION ALL
+         SELECT to_fund_id AS fund_id, amount FROM transfers WHERE user_id = $1
+         UNION ALL
+         SELECT from_fund_id AS fund_id, -amount FROM transfers WHERE user_id = $1
+       ) m ON m.fund_id = f.id
+       WHERE f.user_id = $1
+       GROUP BY f.id`,
+      [userId],
+    );
+    return new Map(rows.map((row) => [row.fund_id, row.balance]));
+  }
+}
