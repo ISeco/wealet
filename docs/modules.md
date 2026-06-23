@@ -53,10 +53,10 @@ Transactions
 
 Funds
   GET    /funds                   → list with derived balance per fund
-  GET    /funds/:id               ← nuevo: single fund detail
-  GET    /funds/:id/history?months=12   ← nuevo: balance evolution (detail chart)
+  GET    /funds/:id               → single fund detail
+  GET    /funds/:id/history?months=12   → balance evolution (detail chart)
   POST   /funds
-  POST   /funds/preset            ← nuevo: create preset (sobres/Jars/50-30-20) atomically (onboarding)
+  POST   /funds/preset            → create preset (sobres/Jars/50-30-20) atomically (onboarding)
   PATCH  /funds/:id
   DELETE /funds/:id               → soft archive if fund has movements
 
