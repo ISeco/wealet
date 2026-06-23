@@ -10,6 +10,12 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -22,11 +28,15 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { toTransactionResponseDto } from './mappers/transaction.mapper';
 import { TransactionsService } from './transactions.service';
 
+@ApiTags('transactions')
+@ApiBearerAuth()
 @Controller('transactions')
 @UseGuards(JwtAuthGuard)
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
+  @ApiOperation({ summary: 'List transactions with filters and pagination' })
+  @ApiOkResponse({ type: PaginatedTransactionsResponseDto })
   @Get()
   async findAll(
     @CurrentUser() userId: string,
@@ -39,6 +49,8 @@ export class TransactionsController {
     return { data: data.map(toTransactionResponseDto), total, page, limit };
   }
 
+  @ApiOperation({ summary: 'Create a transaction against a fund' })
+  @ApiOkResponse({ type: TransactionResponseDto })
   @Post()
   async create(
     @CurrentUser() userId: string,
@@ -48,6 +60,8 @@ export class TransactionsController {
     return toTransactionResponseDto(transaction);
   }
 
+  @ApiOperation({ summary: 'Get a transaction by id' })
+  @ApiOkResponse({ type: TransactionResponseDto })
   @Get(':id')
   async findOne(
     @CurrentUser() userId: string,
@@ -60,6 +74,8 @@ export class TransactionsController {
     return toTransactionResponseDto(transaction);
   }
 
+  @ApiOperation({ summary: 'Update a transaction' })
+  @ApiOkResponse({ type: TransactionResponseDto })
   @Patch(':id')
   async update(
     @CurrentUser() userId: string,
@@ -70,6 +86,7 @@ export class TransactionsController {
     return toTransactionResponseDto(transaction);
   }
 
+  @ApiOperation({ summary: 'Delete a transaction' })
   @Delete(':id')
   @HttpCode(204)
   async remove(

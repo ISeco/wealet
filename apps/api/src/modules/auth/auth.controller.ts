@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { CookieOptions, Request, Response } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -23,6 +24,7 @@ import { toUserResponseDto } from './mappers/user.mapper';
 
 const REFRESH_COOKIE_NAME = 'refresh_token';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -31,6 +33,7 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
+  @ApiOperation({ summary: 'Register a new user' })
   @Post('register')
   async register(
     @Body() dto: RegisterDto,
@@ -41,6 +44,7 @@ export class AuthController {
     return authResponse;
   }
 
+  @ApiOperation({ summary: 'Log in and receive an access token' })
   @Post('login')
   async login(
     @Body() dto: LoginDto,
@@ -51,6 +55,9 @@ export class AuthController {
     return authResponse;
   }
 
+  @ApiOperation({
+    summary: 'Rotate the refresh token and issue a new access token',
+  })
   @Post('refresh')
   async refresh(
     @Req() req: Request,
@@ -67,6 +74,7 @@ export class AuthController {
     return authResponse;
   }
 
+  @ApiOperation({ summary: 'Revoke the current refresh token' })
   @Post('logout')
   @HttpCode(204)
   async logout(
@@ -80,6 +88,8 @@ export class AuthController {
     res.clearCookie(REFRESH_COOKIE_NAME, this.cookieOptions());
   }
 
+  @ApiOperation({ summary: 'Get the currently authenticated user' })
+  @ApiBearerAuth()
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async me(@CurrentUser() userId: string): Promise<UserResponseDto> {
@@ -108,7 +118,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
-      path: '/auth',
+      path: '/api/v1/auth',
     };
   }
 }
