@@ -10,7 +10,7 @@ services:
     runtime: node
     plan: free
     branch: dev
-    buildCommand: pnpm install --frozen-lockfile && pnpm --filter api build
+    buildCommand: corepack enable && corepack prepare pnpm@11.8.0 --activate && pnpm install --frozen-lockfile && pnpm --filter api build
     startCommand: pnpm --filter api migration:run && node apps/api/dist/main.js
     healthCheckPath: /health
     envVars:
