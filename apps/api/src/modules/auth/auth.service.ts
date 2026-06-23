@@ -15,6 +15,7 @@ import { AuthConfig } from '../../config/auth.config';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { toUserResponseDto } from './mappers/user.mapper';
 
@@ -105,6 +106,25 @@ export class AuthService {
       record.revokedAt = new Date();
       await this.refreshTokenRepository.save(record);
     }
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
+    }
+
+    const valid = await this.verifyPassword(
+      dto.currentPassword,
+      user.passwordHash,
+    );
+    if (!valid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const passwordHash = await this.hashPassword(dto.newPassword);
+    await this.usersService.updatePasswordHash(userId, passwordHash);
+    await this.revokeAllForUser(userId);
   }
 
   private async issueTokens(user: User): Promise<IssuedTokens> {

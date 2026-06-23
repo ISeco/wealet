@@ -38,7 +38,7 @@ Auth
   POST  /auth/login            → { accessToken } + set-cookie refresh
   POST  /auth/refresh          → rotates refresh, issues new access token
   POST  /auth/logout           → revokes refresh token
-  POST  /auth/change-password  ← nuevo (Ajustes)
+  POST  /auth/change-password  → requires JWT; revokes all refresh tokens (Ajustes)
 
 Users
   GET    /users/me             → profile: id, email, displayName, theme, onboardingCompleted(At)

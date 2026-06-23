@@ -6,14 +6,18 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { CookieOptions, Request, Response } from 'express';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AuthConfig } from '../../config/auth.config';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 
 const REFRESH_COOKIE_NAME = 'refresh_token';
@@ -79,6 +83,18 @@ export class AuthController {
       await this.authService.logout(rawToken);
     }
     res.clearCookie(REFRESH_COOKIE_NAME, this.cookieOptions());
+  }
+
+  @ApiOperation({ summary: 'Change the current user password' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('change-password')
+  @HttpCode(204)
+  async changePassword(
+    @CurrentUser() userId: string,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<void> {
+    await this.authService.changePassword(userId, dto);
   }
 
   private setRefreshCookie(res: Response, token: string): void {
