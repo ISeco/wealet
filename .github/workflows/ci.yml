@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [dev]
+    branches: [dev, main]
   pull_request:
-    branches: [dev]
+    branches: [dev, main]
 
 jobs:
   ci:
@@ -16,11 +16,11 @@ jobs:
         env:
           POSTGRES_USER: wealet
           POSTGRES_PASSWORD: wealet
-          POSTGRES_DB: wealet
+          POSTGRES_DB: wealet_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U wealet -d wealet"
+          --health-cmd "pg_isready -U wealet -d wealet_test"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
@@ -31,7 +31,9 @@ jobs:
       DB_PORT: 5432
       DB_USERNAME: wealet
       DB_PASSWORD: wealet
-      DB_DATABASE: wealet
+      DB_DATABASE: wealet_test
+      JWT_SECRET: ci-test-secret
+      PASSWORD_PEPPER: ci-test-pepper
 
     steps:
       - uses: actions/checkout@v4
@@ -51,4 +53,8 @@ jobs:
 
       - run: pnpm test
 
+      - run: pnpm --filter api test:e2e
+
       - run: pnpm --filter api build
+
+      - run: pnpm --filter web build

@@ -46,6 +46,10 @@ Apply naturally when the use case fits. Never force them.
 
 The cross-user auth tests are mandatory — they prove multi-tenancy actually works, not just in theory.
 
+**Local e2e DB**: e2e tests run against `wealet_test` (separate Postgres DB), not `wealet_dev` — `apps/api/test/setup-env.ts` loads `apps/api/.env.test` (gitignored, same shape as `.env.example` with `DB_DATABASE=wealet_test`) before the app boots, overriding whatever `.env` set. In CI this file doesn't exist, so the job-level env vars (pointing at the ephemeral Postgres service, also named `wealet_test`) are used untouched.
+
+**Zero-step setup on a fresh clone**: `docker-compose.yml` mounts `docker/init-test-db.sql`, which creates the `wealet_test` database the first time the Postgres container initializes its volume. `pnpm --filter api test:e2e` runs a `pretest:e2e` hook (`apps/api/scripts/migrate-test-db.js`) that applies pending migrations to `wealet_test` automatically before every e2e run — no manual `migration:run` step needed after `docker-compose up` + `pnpm install`.
+
 ---
 
 ## CI/CD
