@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { assignDefined } from '../../common/utils/assign-defined';
 import { Category } from '../categories/entities/category.entity';
 import { FundsService } from '../funds/funds.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -70,6 +71,9 @@ export class TransactionsService {
     if (query.fundId) {
       qb.andWhere('transaction.fundId = :fundId', { fundId: query.fundId });
     }
+    if (query.q) {
+      qb.andWhere('transaction.description ILIKE :q', { q: `%${query.q}%` });
+    }
 
     const [data, total] = await qb
       .orderBy('transaction.occurredOn', 'DESC')
@@ -104,7 +108,7 @@ export class TransactionsService {
       await this.assertCategoryAccessible(userId, dto.categoryId);
     }
 
-    Object.assign(transaction, dto);
+    assignDefined(transaction, dto);
     return this.transactionsRepository.save(transaction);
   }
 

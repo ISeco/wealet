@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { assignDefined } from '../../common/utils/assign-defined';
 import { AssessmentResponseDto } from './dto/assessment-response.dto';
 import { BucketAssessmentDto } from './dto/bucket-assessment.dto';
 import { UpdateHealthProfileDto } from './dto/update-health-profile.dto';
@@ -56,7 +57,7 @@ export class HealthService {
       }
     }
 
-    Object.assign(profile, dto);
+    assignDefined(profile, dto);
     return this.healthProfileRepository.save(profile);
   }
 

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, IsNull, QueryFailedError, Repository } from 'typeorm';
+import { assignDefined } from '../../common/utils/assign-defined';
 import { CreateFundDto } from './dto/create-fund.dto';
 import { CreatePresetFundsDto } from './dto/create-preset-funds.dto';
 import { FundHistoryPointDto } from './dto/fund-history-point.dto';
@@ -73,7 +74,7 @@ export class FundsService {
     dto: UpdateFundDto,
   ): Promise<FundWithBalance> {
     const fund = await this.findOneOrThrow(userId, id);
-    Object.assign(fund, dto);
+    assignDefined(fund, dto);
     const saved = await this.save(fund);
     const balance =
       (await this.getBalancesByFundId(userId)).get(saved.id) ?? '0';

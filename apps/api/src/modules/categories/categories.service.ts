@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, QueryFailedError, Repository } from 'typeorm';
+import { assignDefined } from '../../common/utils/assign-defined';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
@@ -53,7 +54,7 @@ export class CategoriesService {
     dto: UpdateCategoryDto,
   ): Promise<Category> {
     const category = await this.findOwnedOrThrow(userId, id);
-    Object.assign(category, dto);
+    assignDefined(category, dto);
     return this.save(category);
   }
 

@@ -4,7 +4,9 @@ import {
   IsEnum,
   IsInt,
   IsOptional,
+  IsString,
   IsUUID,
+  MaxLength,
   Min,
 } from 'class-validator';
 import { TransactionType } from '../../../common/enums/transaction-type.enum';
@@ -29,6 +31,11 @@ export class TransactionQueryDto {
   @IsOptional()
   @IsUUID()
   fundId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  q?: string;
 
   @IsOptional()
   @Type(() => Number)
