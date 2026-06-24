@@ -40,7 +40,9 @@ describe('Funds cross-user isolation (e2e)', () => {
       .get(`/${GLOBAL_PREFIX}/funds`)
       .set('Authorization', `Bearer ${userB.accessToken}`)
       .expect(200);
-    expect(res.body.find((f: { id: string }) => f.id === fundOfA)).toBeUndefined();
+    expect(
+      res.body.find((f: { id: string }) => f.id === fundOfA),
+    ).toBeUndefined();
   });
 
   it('returns 404 when user B reads user A fund by id', async () => {

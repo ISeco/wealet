@@ -34,6 +34,11 @@ export async function createTestApp(): Promise<{
   return { app, dataSource: moduleFixture.get(DataSource) };
 }
 
+interface RegisterResponseBody {
+  accessToken: string;
+  user: { id: string };
+}
+
 export async function registerTestUser(
   app: INestApplication<App>,
   label: string,
@@ -44,7 +49,8 @@ export async function registerTestUser(
     .send({ email, password: 'Sup3rSecret!' })
     .expect(201);
 
-  return { userId: res.body.user.id, accessToken: res.body.accessToken };
+  const body = res.body as RegisterResponseBody;
+  return { userId: body.user.id, accessToken: body.accessToken };
 }
 
 export async function deleteTestUsers(
