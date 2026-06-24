@@ -4,7 +4,7 @@ export function HomePlaceholder() {
   const { user, logout } = useAuth()
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 16 }}>
       <div style={{ fontSize: 20, fontWeight: 600, color: 'var(--text)' }}>Hola, {user?.displayName ?? user?.email}</div>
       <button
         type="button"
