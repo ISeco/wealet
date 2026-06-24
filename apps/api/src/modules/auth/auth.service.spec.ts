@@ -84,7 +84,11 @@ describe('AuthService', () => {
       usersService.findByEmail.mockResolvedValue(buildUser());
 
       await expect(
-        authService.register({ email: 'test@test.com', password: 'pw123456' }),
+        authService.register({
+          email: 'test@test.com',
+          password: 'Pw123456!',
+          displayName: 'Test User',
+        }),
       ).rejects.toThrow(ConflictException);
     });
 
@@ -95,14 +99,15 @@ describe('AuthService', () => {
 
       await authService.register({
         email: 'test@test.com',
-        password: 'pw123456',
+        password: 'Pw123456!',
+        displayName: 'Test User',
       });
 
-      expect(argon2.hash).toHaveBeenCalledWith('pw123456pepper');
+      expect(argon2.hash).toHaveBeenCalledWith('Pw123456!pepper');
       expect(usersService.create).toHaveBeenCalledWith(
         'test@test.com',
         'argon2-hash',
-        undefined,
+        'Test User',
       );
     });
   });

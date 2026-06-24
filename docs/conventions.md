@@ -23,6 +23,7 @@ Apply naturally when the use case fits. Never force them.
 | **Money helper** | `formatMoney`/`parseMoney` in `common/money/` format `bigint` for presentation — not a `Money(amount, currency)` Value Object, since nothing yet needs Money instances to carry behavior beyond formatting |
 | **Unit of Work** | `DataSource.transaction()` for atomic transfers |
 | **Factory / Seed** | Jars of Eker preset = factory that creates 6 Fund rows |
+| **Component extraction** (frontend) | When two or more forms/screens in a feature repeat the same markup (a field, a button, an icon), pull it into a small component under `features/<feature>/components/` instead of duplicating it. See `features/auth/components/` |
 
 ### What we deliberately do NOT do
 - No microservices, CQRS/event-sourcing, or hexagonal ports-and-adapters

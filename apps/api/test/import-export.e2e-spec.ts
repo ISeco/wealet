@@ -77,7 +77,7 @@ describe('Import/Export (e2e)', () => {
     const email = `e2e.import-export.${Date.now()}@wealet.test`;
     const registerRes = await request(app.getHttpServer())
       .post(`/${GLOBAL_PREFIX}/auth/register`)
-      .send({ email, password: 'Sup3rSecret!' })
+      .send({ email, password: 'Sup3rSecret!', displayName: 'Import Export' })
       .expect(201);
 
     accessToken = registerRes.body.accessToken;

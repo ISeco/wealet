@@ -46,7 +46,7 @@ export async function registerTestUser(
   const email = `e2e.${label}.${Date.now()}.${Math.random().toString(36).slice(2)}@wealet.test`;
   const res = await request(app.getHttpServer())
     .post(`/${GLOBAL_PREFIX}/auth/register`)
-    .send({ email, password: 'Sup3rSecret!' })
+    .send({ email, password: 'Sup3rSecret!', displayName: label })
     .expect(201);
 
   const body = res.body as RegisterResponseBody;
