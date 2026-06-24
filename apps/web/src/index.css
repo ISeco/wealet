@@ -8,8 +8,8 @@ body {
 }
 body {
   font-family: 'Geist', system-ui, -apple-system, sans-serif;
-  background: #f6f8fb;
-  color: #12294a;
+  background: var(--bg);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
