@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type SubmitEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError } from '../../lib/api/client'
 import { EmailField } from './components/EmailField'
@@ -26,7 +26,7 @@ export function RegisterForm() {
 
   const passwordValid = isPasswordStrong(password)
 
-  async function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
 
