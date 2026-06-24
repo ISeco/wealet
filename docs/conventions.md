@@ -17,10 +17,10 @@ Apply naturally when the use case fits. Never force them.
 
 | Pattern | Where it applies |
 |---|---|
-| **Repository** (interface + DI token) | Services depend on the interface, not TypeORM concrete class |
+| **Repository** (TypeORM `Repository<Entity>` via `@InjectRepository()`) | Services depend on it directly — no extra interface/DI-token layer; NestJS DI already lets tests mock it |
 | **Strategy** | `FinancialFrameworkStrategy` — adding a new framework = new class only, existing code untouched |
 | **DTO + Mapper** | No entity leaks through the API surface |
-| **Money Value Object** | `Money(amount, currency)` instead of raw `bigint` everywhere (avoids primitive obsession) |
+| **Money helper** | `formatMoney`/`parseMoney` in `common/money/` format `bigint` for presentation — not a `Money(amount, currency)` Value Object, since nothing yet needs Money instances to carry behavior beyond formatting |
 | **Unit of Work** | `DataSource.transaction()` for atomic transfers |
 | **Factory / Seed** | Jars of Eker preset = factory that creates 6 Fund rows |
 

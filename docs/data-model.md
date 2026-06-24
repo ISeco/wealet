@@ -7,10 +7,13 @@ All user-owned entities have: `userId` (uuid fk → User, indexed).
 
 ```
 User
-  id              uuid pk
-  email           citext unique not null
-  passwordHash    text not null
-  displayName     text
+  id                      uuid pk
+  email                   citext unique not null
+  passwordHash            text not null
+  displayName             text
+  theme                   enum(light | dark | system) default 'system'
+  onboardingCompleted     bool default false
+  onboardingCompletedAt   timestamptz null
   createdAt, updatedAt
 
 RefreshToken
