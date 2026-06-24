@@ -111,10 +111,13 @@ export class AuthController {
   }
 
   private cookieOptions(): CookieOptions {
+    const isProduction = process.env.NODE_ENV === 'production';
     return {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      secure: isProduction,
+      // SameSite=None requires Secure; browsers reject it otherwise, so
+      // local/dev (http, not Secure) needs Lax instead.
+      sameSite: isProduction ? 'none' : 'lax',
       path: '/api/v1/auth',
     };
   }

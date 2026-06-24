@@ -1,111 +1,82 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+* {
   box-sizing: border-box;
 }
-
+html,
 body {
   margin: 0;
+  padding: 0;
 }
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+body {
+  font-family: 'Geist', system-ui, -apple-system, sans-serif;
+  background: #f6f8fb;
+  color: #12294a;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.28);
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
-p {
-  margin: 0;
+:root {
+  --bg: #f6f8fb;
+  --card: #ffffff;
+  --card-2: #f1f5fa;
+  --tint: #f3f8fe;
+  --border: #e6ebf2;
+  --border-strong: #d6deea;
+  --text: #12294a;
+  --muted: #64748b;
+  --navy: #12294a;
+  --pos: #037940;
+  --pos-bg: #e7f4ec;
+  --neg: #dc2626;
+  --neg-bg: #fbeaea;
+  --warn: #d97706;
+  --warn-bg: #fbf1e1;
+  --info: #2563eb;
+  --info-bg: #e9f0fe;
+  --disp: #16a89a;
+  --disp-bg: #e3f5f2;
+  --res: #2563eb;
+  --res-bg: #e9f0fe;
+  --comp: #d97706;
+  --comp-bg: #fbf1e1;
+  --grad: linear-gradient(120deg, #1fa9e0 0%, #16a89a 52%, #6bbf3f 100%);
+  --shadow: 0 1px 2px rgba(18, 41, 74, 0.05), 0 1px 3px rgba(18, 41, 74, 0.04);
+  --shadow-lg: 0 8px 30px rgba(18, 41, 74, 0.1), 0 2px 8px rgba(18, 41, 74, 0.06);
+  --field: #ffffff;
 }
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+[data-theme='dark'] {
+  --bg: #0f2240;
+  --card: #1a2f52;
+  --card-2: #16294a;
+  --tint: #16314f;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --text: #e6ecf5;
+  --muted: #93a4c0;
+  --navy: #0f2240;
+  --pos: #34d17e;
+  --pos-bg: rgba(52, 209, 126, 0.13);
+  --neg: #f87171;
+  --neg-bg: rgba(248, 113, 113, 0.13);
+  --warn: #fbbf24;
+  --warn-bg: rgba(251, 191, 36, 0.13);
+  --info: #60a5fa;
+  --info-bg: rgba(96, 165, 250, 0.13);
+  --disp: #2dd4bf;
+  --disp-bg: rgba(45, 212, 191, 0.13);
+  --res: #60a5fa;
+  --res-bg: rgba(96, 165, 250, 0.13);
+  --comp: #fbbf24;
+  --comp-bg: rgba(251, 191, 36, 0.13);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.24), 0 1px 3px rgba(0, 0, 0, 0.18);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.34), 0 3px 10px rgba(0, 0, 0, 0.24);
+  --field: #16294a;
 }
