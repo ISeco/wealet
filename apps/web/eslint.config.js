@@ -17,6 +17,14 @@ export default defineConfig([
     ],
     languageOptions: {
       globals: globals.browser,
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      // Flags usage of any API marked @deprecated in its JSDoc (e.g. React's FormEvent).
+      '@typescript-eslint/no-deprecated': 'error',
     },
   },
 ])
