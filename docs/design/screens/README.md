@@ -14,6 +14,7 @@ No abras `Wealet.dc.html` completo (162 KB, toda la app) — contamina el contex
 
 | Archivo | Pantalla | Feature (`apps/web/src/features/`) |
 |---|---|---|
+| `_app-shell.html` | **Layout compartido** (sidebar + topbar) | `app/` (AppLayout) |
 | `auth.html` | Login + registro | `auth/` |
 | `onboarding.html` | Onboarding (preset / importar Excel) | `onboarding/` |
 | `dashboard.html` | Dashboard | `dashboard/` |
@@ -27,6 +28,14 @@ No abras `Wealet.dc.html` completo (162 KB, toda la app) — contamina el contex
 | `design-system.html` | Design System (tokens, paleta) | `components/ui/` + `lib/theme` |
 | `modal-txform.html` | Modal de alta de transacción | `transactions/` |
 | `palette-quick.html` | Paleta rápida ⌘K | `app/` (global) |
+
+## Layout compartido (importante)
+
+Las pantallas in-app (dashboard, fondos, transacciones, transferencias, salud, categorias, import, settings, design-system) son **solo contenido**: se renderizan **dentro** del `_app-shell.html` (sidebar de 252px + topbar con breadcrumb, título, buscador ⌘K y toggle de tema). Los archivos por pantalla **no repiten** el shell — solo traen lo que va en el área de contenido.
+
+En React esto es un `AppLayout` = `<Sidebar/>` + `<TopBar/>` + `<Outlet/>`, y cada pantalla es una página que entra por el `<Outlet/>`. Constrúyelo una vez en `app/` y reúsalo.
+
+`auth.html` y `onboarding.html` son **full-screen** — no usan el shell.
 
 ## Notas
 - Sintaxis del prototipo: `{{ x }}` = interpolación, `<sc-if>` / `<sc-for>` = condicional / loop. Es **referencia visual y de estructura**, no código a copiar tal cual — se traduce a React limpio.

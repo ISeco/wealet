@@ -98,7 +98,7 @@ Health
 ## Frontend structure (`apps/web/src/`)
 
 ```
-app/              router, providers
+app/              router, providers, AppLayout (Sidebar + TopBar shell)
 lib/
   api/            fetch client + refresh interceptor (retries once on 401)
   money.ts        format amounts by currency
