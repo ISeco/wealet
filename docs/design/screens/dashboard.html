@@ -34,7 +34,7 @@
   @keyframes wl-fade{from{opacity:0}to{opacity:1}}
 </style>
 <div data-theme="light" style="background:var(--bg);color:var(--text);font-family:'Geist',system-ui,sans-serif;padding:16px">
-<sc-if value="{{ show.dashboard }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ show.dashboard }}" hint-placeholder-val="{{ true }}">
           <div key="dash">
             <!-- greeting -->
             <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap">
@@ -42,11 +42,25 @@
                 <div style="font-size:24px;font-weight:600;letter-spacing:-.02em">Hola, Ignacio</div>
                 <div style="font-size:14px;color:var(--muted);margin-top:3px">Esto es lo que pasó con tu dinero en <b style="color:var(--text);font-weight:600">junio</b>.</div>
               </div>
-              <button style="display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer" style-hover="border-color:var(--border-strong)">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                Junio 2026
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </button>
+              <div style="display:flex;align-items:center;gap:8px;position:relative">
+                <button style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--muted);cursor:pointer" style-hover="border-color:var(--border-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg></button>
+                <button onClick="{{ toggleMonth }}" style="display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer" style-hover="border-color:var(--border-strong)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  Junio 2026
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <button style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--muted);cursor:pointer" style-hover="border-color:var(--border-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg></button>
+                <sc-if value="{{ monthOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:46px;right:0;z-index:30;width:200px;background:var(--card);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow-lg);padding:6px">
+                  <sc-for list="{{ monthList }}" as="m" hint-placeholder-count="7">
+                    <div onClick="{{ toggleMonth }}" style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:{{ m.fw }};background:{{ m.bg }};color:{{ m.color }}" style-hover="background:var(--card-2)">
+                      {{ m.m }}
+                      <sc-if value="{{ m.active }}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+                </sc-if>
+              </div>
             </div>
 
             <!-- HERO ROW -->

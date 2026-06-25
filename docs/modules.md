@@ -76,6 +76,8 @@ Reports (read-only, aggregated in SQL)
   GET  /reports/net-worth                 → available / reserve / committed
   GET  /reports/runway                    → months of runway (cushion ÷ burn)
   GET  /reports/cash-flow?months=12       → monthly net flow (dashboard bars), excludes transfers
+  GET  /reports/months                    ← nuevo: meses con datos (primer mes con tx → actual), para el selector de mes del dashboard
+  · param ?month=YYYY-MM en summary / by-category / net-worth / health-assessment ← nuevo: el dashboard tiene selector de mes; net-worth y assessment deben aceptarlo además de from/to
 
 Import / Export
   POST /import/preview    (multipart) → parsed rows, errors, duplicates flagged
@@ -130,9 +132,10 @@ Design reference per screen lives in `docs/design/screens/` (one isolated `.html
 |---|---|
 | auth | `POST /auth/login`, `/auth/register`, `/auth/refresh`, `/auth/logout` |
 | onboarding | `POST /funds/preset`; (Excel path) `POST /import/preview`, `/import/commit`; `PATCH /users/me`; `PUT /health/profile` |
-| dashboard | `GET /reports/summary`, `/reports/net-worth`, `/reports/runway`, `/reports/cash-flow`, `/reports/by-category`, `/health/assessment`, `/transactions?limit=`, `/funds` |
-| funds | `GET /funds`, `/funds/:id`, `/funds/:id/history`, `/transactions?fundId=` |
-| transactions | `GET /transactions` (+filters), `POST/GET/PATCH/DELETE /transactions/:id`, `GET /transfers` (transfers tab) |
+| dashboard | `GET /reports/summary`, `/reports/net-worth`, `/reports/runway`, `/reports/cash-flow`, `/reports/by-category`, `/health/assessment`, `/transactions?limit=`, `/funds`, `/reports/months` (selector de mes; reports aceptan `?month=`) |
+| funds | `GET /funds`, `/funds/:id`, `/funds/:id/history`, `/transactions?fundId=`, `POST /funds` (drawer "Nuevo fondo"), `PATCH /funds/:id`, `DELETE /funds/:id` |
+| transactions | `GET /transactions` (+filters), `POST/GET/PATCH/DELETE /transactions/:id` (`PATCH` también reasigna fondo desde la fila), `GET /transfers` (transfers tab), `GET /funds` (opciones del reassign por fila) |
+| categories | `GET /categories` (`?scope=mine\|system\|all`; campo `isSystem`), `POST` (drawer Nueva), `PATCH /:id` (drawer Editar — mismo drawer), `DELETE /:id` (confirm centrado; solo categorías propias), `GET /reports/by-category` |
 | transfers | `POST /transfers`, `GET /funds` |
 | health | `GET /health/assessment`, `GET/PUT /health/profile` |
 | categories | `GET/POST/PATCH/DELETE /categories`, `GET /reports/by-category` |

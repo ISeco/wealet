@@ -34,7 +34,7 @@
   @keyframes wl-fade{from{opacity:0}to{opacity:1}}
 </style>
 <div data-theme="light" style="background:var(--bg);color:var(--text);font-family:'Geist',system-ui,sans-serif;padding:16px">
-<sc-if value="{{ show.transacciones }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ show.transacciones }}" hint-placeholder-val="{{ false }}">
           <div>
             <!-- toolbar -->
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
@@ -42,9 +42,45 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 <input placeholder="Buscar transacciones…" style="flex:1;border:none;background:none;outline:none;font-family:inherit;font-size:13.5px;color:var(--text)">
               </div>
-              <button style="display:flex;align-items:center;gap:8px;height:38px;padding:0 13px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="border-color:var(--border-strong)">
+              <div style="position:relative">
+              <button onClick="{{ toggleFilters }}" style="display:flex;align-items:center;gap:8px;height:38px;padding:0 13px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="border-color:var(--border-strong)">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18M6 12h12M10 19h4"></path></svg>Filtros<span style="font-size:11px;color:#fff;background:var(--info);border-radius:20px;padding:0 6px;font-weight:600">2</span>
               </button>
+              <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:46px;left:0;z-index:30;width:332px;background:var(--card);border:1px solid var(--border-strong);border-radius:13px;box-shadow:var(--shadow-lg);padding:18px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                  <span style="font-size:14px;font-weight:600;color:var(--text)">Filtrar movimientos</span>
+                  <span onClick="{{ toggleFilters }}" style="display:flex;cursor:pointer;color:var(--muted)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></span>
+                </div>
+
+                <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px">Rango de fechas</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                  <div style="flex:1;display:flex;align-items:center;height:36px;padding:0 10px;border:1px solid var(--border-strong);border-radius:8px;background:var(--field);font-size:12.5px;color:var(--text)">01 jun 2026</div>
+                  <span style="color:var(--muted);font-size:12px">→</span>
+                  <div style="flex:1;display:flex;align-items:center;height:36px;padding:0 10px;border:1px solid var(--border-strong);border-radius:8px;background:var(--field);font-size:12.5px;color:var(--text)">30 jun 2026</div>
+                </div>
+
+                <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px">Fondo</div>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px">
+                  <sc-for list="{{ filterFondos }}" as="f" hint-placeholder-count="6">
+                    <span style="font-size:12px;font-weight:500;padding:5px 11px;border-radius:7px;cursor:pointer;border:1px solid {{ f.bd }};background:{{ f.bg }};color:{{ f.color }}">{{ f.n }}</span>
+                  </sc-for>
+                </div>
+
+                <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px">Categoría</div>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px">
+                  <sc-for list="{{ filterCats }}" as="c" hint-placeholder-count="7">
+                    <span style="font-size:12px;font-weight:500;padding:5px 11px;border-radius:7px;cursor:pointer;border:1px solid var(--border-strong);background:var(--card);color:var(--muted)">{{ c.n }}</span>
+                  </sc-for>
+                </div>
+
+                <div style="display:flex;gap:9px;padding-top:14px;border-top:1px solid var(--border)">
+                  <button onClick="{{ toggleFilters }}" style="flex:1;height:38px;border:1px solid var(--border-strong);border-radius:8px;background:var(--card);color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">Limpiar</button>
+                  <button onClick="{{ toggleFilters }}" style="flex:1;height:38px;border:none;border-radius:8px;background:var(--grad);color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">Aplicar</button>
+                </div>
+              </div>
+              </sc-if>
+              </div>
               <button onClick="{{ exportView }}" style="display:flex;align-items:center;gap:8px;height:38px;padding:0 13px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer" style-hover="border-color:var(--border-strong)">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V3M12 14l4-4M12 14l-4-4"></path><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>Exportar
               </button>
@@ -65,7 +101,7 @@
               </div>
             </div>
             <!-- table -->
-            <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:visible">
               <div style="display:grid;grid-template-columns:84px 1fr 168px 150px 132px;gap:12px;padding:11px 22px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)">
                 <div>Fecha</div><div>Descripción</div><div>Fondo</div><div>Categoría</div><div style="text-align:right">Monto</div>
               </div>
@@ -76,7 +112,30 @@
                     <span style="width:30px;height:30px;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;background:{{ t.iconBg }};color:{{ t.iconColor }}">{{ t.icon }}</span>
                     <span style="font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.t }}</span>
                   </div>
-                  <div style="font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.f }}</div>
+                  <div style="position:relative;min-width:0">
+                    <sc-if value="{{ t.canReassign }}" hint-placeholder-val="{{ true }}">
+                    <span onClick="{{ t.openReassign }}" style="display:inline-flex;align-items:center;gap:5px;max-width:100%;font-size:12.5px;color:var(--muted);cursor:pointer;padding:4px 8px;margin-left:-8px;border-radius:7px;transition:background .12s,color .12s" style-hover="background:var(--card-2);color:var(--text)">
+                      <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.f }}</span>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.6"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </span>
+                    </sc-if>
+                    <sc-if value="{{ t.isXfer }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">{{ t.f }}</span>
+                    </sc-if>
+                    <sc-if value="{{ t.reassignOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:34px;left:-8px;z-index:40;width:228px;background:var(--card);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow-lg);padding:6px">
+                      <div style="display:flex;align-items:center;gap:7px;padding:7px 9px 8px;font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3M2 12h13M19 15l3-3-3-3M22 12H9"></path></svg>Mover a otro fondo
+                      </div>
+                      <sc-for list="{{ t.fundOpts }}" as="o" hint-placeholder-count="6">
+                        <div onClick="{{ o.pick }}" style="display:flex;align-items:center;justify-content:space-between;padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13px;background:{{ o.bg }};color:{{ o.color }};font-weight:{{ o.fw }}" style-hover="background:var(--card-2)">
+                          {{ o.name }}
+                          <span style="display:flex;opacity:{{ o.check }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                        </div>
+                      </sc-for>
+                    </div>
+                    </sc-if>
+                  </div>
                   <div style="display:flex;align-items:center;gap:7px;min-width:0"><span style="width:7px;height:7px;border-radius:2px;flex:none;background:{{ t.catDot }}"></span><span style="font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.c }}</span></div>
                   <div style="font-size:13.5px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;color:{{ t.amtColor }}">{{ t.amt }}</div>
                 </div>

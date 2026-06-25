@@ -22,11 +22,14 @@ No abras `Wealet.dc.html` completo (162 KB, toda la app) — contamina el contex
 | `transacciones.html` | Transacciones (tabs, filtros) | `transactions/` |
 | `transferencias.html` | Transferencias entre fondos | `transfers/` |
 | `salud.html` | Salud financiera (3 frameworks) | `health/` |
-| `categorias.html` | Categorías | `categories/` |
+| `categorias.html` | Categorías (tabs Todas/Mías/Sistema, tarjetas con badge Sistema o íconos editar/eliminar) | `categories/` |
 | `import.html` | Importar Excel (3 pasos) | `import-export/` |
 | `settings.html` | Ajustes / perfil | `settings/` |
 | `design-system.html` | Design System (tokens, paleta) | `components/ui/` + `lib/theme` |
-| `modal-txform.html` | Modal de alta de transacción | `transactions/` |
+| `drawer-txform.html` | Drawer lateral de alta de transacción | `transactions/` |
+| `drawer-fundform.html` | Drawer "Nuevo fondo" (nombre, clasificación, color, runway) | `funds/` |
+| `drawer-catform.html` | Drawer compartido Nueva/Editar categoría (nombre, tipo, color, preview) | `categories/` |
+| `confirm-catdelete.html` | Modal centrado de confirmación al eliminar categoría | `categories/` |
 | `palette-quick.html` | Paleta rápida ⌘K | `app/` (global) |
 
 ## Layout compartido (importante)
