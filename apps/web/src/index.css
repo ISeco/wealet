@@ -52,6 +52,11 @@ body {
   --shadow-lg: 0 8px 30px rgba(18, 41, 74, 0.1), 0 2px 8px rgba(18, 41, 74, 0.06);
   --field: #ffffff;
 }
+@keyframes wl-fade {
+  from { opacity: 0 }
+  to   { opacity: 1 }
+}
+
 [data-theme='dark'] {
   --bg: #0f2240;
   --card: #1a2f52;
