@@ -2,12 +2,11 @@ import { apiFetch } from '../../lib/api/client'
 import type {
   CreateTransactionPayload,
   PaginatedTransactions,
-  PaginatedTransfers,
   Transaction,
   TransactionQuery,
-  TransferQuery,
   UpdateTransactionPayload,
 } from './types'
+import type { PaginatedTransfers, TransferQuery } from '../transfers/types'
 
 function toQueryString(query: TransactionQuery): string {
   const params = new URLSearchParams()

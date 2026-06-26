@@ -8,6 +8,7 @@ import { TransactionsTabs, type TabValue } from './TransactionsTabs'
 import { TransactionsTable, type TableRow } from './TransactionsTable'
 import { TransactionFormModal } from './TransactionFormModal'
 import type { Transaction, TransactionFilters } from './types'
+import type { Transfer } from '../transfers/types'
 
 const LIMIT = 20
 
@@ -68,9 +69,9 @@ export function TransactionsPage() {
 
   const rows: TableRow[] = useMemo(() => {
     if (isTransfersTab) {
-      return (transferData?.data ?? []).map((t) => ({ kind: 'transfer', data: t }))
+      return (transferData?.data ?? []).map((t: Transfer) => ({ kind: 'transfer', data: t }))
     }
-    return (txData?.data ?? []).map((t) => ({ kind: 'transaction', data: t }))
+    return (txData?.data ?? []).map((t: Transaction) => ({ kind: 'transaction', data: t }))
   }, [isTransfersTab, txData, transferData])
 
   const total = isTransfersTab ? (transferData?.total ?? 0) : (txData?.total ?? 0)

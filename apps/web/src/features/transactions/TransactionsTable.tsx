@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import type { Fund } from '../funds'
 import type { Category } from '../categories'
-import type { Transaction, Transfer } from './types'
+import type { Transaction } from './types'
+import type { Transfer } from '../transfers/types'
 
 export type TableRow =
   | { kind: 'transaction'; data: Transaction }
