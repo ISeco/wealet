@@ -11,6 +11,7 @@ function NavRow({ item, active }: { item: NavItem; active: boolean }) {
   return (
     <div
       onClick={item.disabled ? undefined : () => navigate(item.path)}
+      className={`nav-row${item.disabled ? ' nav-row--disabled' : ''}`}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -21,7 +22,7 @@ function NavRow({ item, active }: { item: NavItem; active: boolean }) {
         fontSize: 13.5,
         position: 'relative',
         fontWeight: active ? 600 : 500,
-        background: active ? 'var(--card-2)' : 'transparent',
+        background: active ? 'var(--nav-active)' : 'transparent',
         color: item.disabled ? 'var(--muted)' : active ? 'var(--text)' : 'var(--muted)',
         opacity: item.disabled ? 0.55 : 1,
       }}
@@ -98,6 +99,7 @@ export function Sidebar() {
       <div style={{ borderTop: '1px solid var(--border)', padding: 12 }}>
         <div
           onClick={() => navigate('/ajustes')}
+          className="user-row"
           style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 10, cursor: 'pointer' }}
         >
           <div

@@ -24,6 +24,7 @@ body {
   background-clip: padding-box;
 }
 :root {
+  --nav-active: linear-gradient(120deg, rgba(31,169,224,.15), rgba(22,168,154,.13), rgba(107,191,63,.12));
   --bg: #f6f8fb;
   --card: #ffffff;
   --card-2: #f1f5fa;
@@ -56,6 +57,12 @@ body {
   from { opacity: 0 }
   to   { opacity: 1 }
 }
+.nav-row { transition: background .15s, color .15s; }
+.nav-row:hover { background: var(--card-2); }
+.nav-row--disabled:hover { background: transparent; }
+.user-row:hover { background: var(--card-2); }
+.topbar-btn { transition: border-color .15s; }
+.topbar-btn:hover { border-color: var(--border-strong) !important; }
 
 [data-theme='dark'] {
   --bg: #0f2240;

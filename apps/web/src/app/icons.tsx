@@ -46,7 +46,7 @@ export function TransfersIcon({ color = 'currentColor' }: IconProps) {
 export function HealthIcon({ color = 'currentColor' }: IconProps) {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" stroke={color} {...base}>
-      <path d="M20.8 8.6c0 4-4.4 6.8-8.8 10.2C7.6 15.4 3.2 12.6 3.2 8.6a4.6 4.6 0 0 1 8.8-1.8 4.6 4.6 0 0 1 8.8 1.8z"></path>
+      <polyline points="3 12 7 12 9 5 12 19 15 9 17 12 21 12"></polyline>
     </svg>
   )
 }
@@ -63,8 +63,9 @@ export function CategoriesIcon({ color = 'currentColor' }: IconProps) {
 export function ImportIcon({ color = 'currentColor' }: IconProps) {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" stroke={color} {...base}>
-      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-      <path d="M14 3v6h6"></path>
+      <path d="M12 3v11"></path>
+      <path d="M8 10l4 4 4-4"></path>
+      <path d="M4 18h16"></path>
     </svg>
   )
 }
@@ -72,8 +73,12 @@ export function ImportIcon({ color = 'currentColor' }: IconProps) {
 export function SettingsIcon({ color = 'currentColor' }: IconProps) {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" stroke={color} {...base}>
-      <circle cx="12" cy="12" r="3"></circle>
-      <path d="M19.4 13a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V19a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path>
+      <line x1="4" y1="6" x2="20" y2="6"></line>
+      <line x1="4" y1="12" x2="20" y2="12"></line>
+      <line x1="4" y1="18" x2="20" y2="18"></line>
+      <circle cx="8" cy="6" r="2" fill="var(--card)"></circle>
+      <circle cx="16" cy="12" r="2" fill="var(--card)"></circle>
+      <circle cx="11" cy="18" r="2" fill="var(--card)"></circle>
     </svg>
   )
 }

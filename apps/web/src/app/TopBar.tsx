@@ -32,6 +32,7 @@ export function TopBar() {
       </div>
       <button
         type="button"
+        className="topbar-btn"
         onClick={() => window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT))}
         style={{
           display: 'flex',
@@ -56,6 +57,7 @@ export function TopBar() {
       </button>
       <button
         type="button"
+        className="topbar-btn"
         aria-label="Tema"
         onClick={toggleTheme}
         style={{
