@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { forwardRef, useState } from 'react'
 import { EyeIcon, LockIcon } from './icons'
 import { TextField } from './TextField'
 
@@ -12,11 +12,15 @@ interface PasswordFieldProps {
   maxLength?: number
 }
 
-export function PasswordField({ label = 'Contraseña', value, onChange, onFocus, error, invalid, maxLength }: PasswordFieldProps) {
+export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(function PasswordField(
+  { label = 'Contraseña', value, onChange, onFocus, error, invalid, maxLength },
+  ref,
+) {
   const [visible, setVisible] = useState(false)
 
   return (
     <TextField
+      ref={ref}
       label={label}
       icon={<LockIcon />}
       type={visible ? 'text' : 'password'}
@@ -31,4 +35,4 @@ export function PasswordField({ label = 'Contraseña', value, onChange, onFocus,
       endAdornment={<EyeIcon onClick={() => setVisible((v) => !v)} />}
     />
   )
-}
+})

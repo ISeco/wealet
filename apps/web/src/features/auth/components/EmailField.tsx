@@ -1,3 +1,4 @@
+import { forwardRef } from 'react'
 import { MailIcon } from './icons'
 import { TextField } from './TextField'
 
@@ -8,9 +9,13 @@ interface EmailFieldProps {
   error?: string | null
 }
 
-export function EmailField({ value, onChange, onBlur, error }: EmailFieldProps) {
+export const EmailField = forwardRef<HTMLInputElement, EmailFieldProps>(function EmailField(
+  { value, onChange, onBlur, error },
+  ref,
+) {
   return (
     <TextField
+      ref={ref}
       label="Correo"
       icon={<MailIcon />}
       type="email"
@@ -22,4 +27,4 @@ export function EmailField({ value, onChange, onBlur, error }: EmailFieldProps) 
       placeholder="tucorreo@ejemplo.com"
     />
   )
-}
+})

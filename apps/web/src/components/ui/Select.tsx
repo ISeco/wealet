@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type CSSProperties } from 'react'
+import { useState, useRef, useEffect, forwardRef, type CSSProperties } from 'react'
 
 interface SelectOption {
   value: string
@@ -14,9 +14,13 @@ interface SelectProps {
   style?: CSSProperties
   required?: boolean
   disabled?: boolean
+  error?: boolean
 }
 
-export function Select({ label, options, placeholder, value = '', onChange, style, disabled }: SelectProps) {
+export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select(
+  { label, options, placeholder, value = '', onChange, style, disabled, error },
+  ref,
+) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -49,7 +53,7 @@ export function Select({ label, options, placeholder, value = '', onChange, styl
   const triggerStyle: CSSProperties = {
     width: '100%',
     height: 40,
-    border: '1px solid var(--border-strong)',
+    border: `1px solid ${error ? 'var(--neg)' : 'var(--border-strong)'}`,
     borderRadius: 9,
     background: 'var(--field)',
     padding: '0 12px',
@@ -72,7 +76,7 @@ export function Select({ label, options, placeholder, value = '', onChange, styl
         <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text)', marginBottom: 7 }}>{label}</div>
       )}
 
-      <button type="button" onClick={() => !disabled && setOpen((o) => !o)} style={triggerStyle}>
+      <button ref={ref} type="button" onClick={() => !disabled && setOpen((o) => !o)} style={triggerStyle}>
         <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
           {selected?.label ?? placeholder ?? ''}
         </span>
@@ -155,4 +159,4 @@ export function Select({ label, options, placeholder, value = '', onChange, styl
       )}
     </div>
   )
-}
+})

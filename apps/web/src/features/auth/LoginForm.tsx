@@ -1,10 +1,13 @@
 import { useState, type SubmitEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError } from '../../lib/api/client'
+import { useFormFieldErrors } from '../../lib/useFormFieldErrors'
 import { EmailField } from './components/EmailField'
 import { PasswordField } from './components/PasswordField'
 import { SubmitButton } from './components/SubmitButton'
 import { useAuth } from './useAuth'
+
+const FIELDS = ['email', 'password'] as const
 
 export function LoginForm() {
   const { login } = useAuth()
@@ -13,10 +16,18 @@ export function LoginForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const { fieldErrors, register, clearFieldError, validate } = useFormFieldErrors(FIELDS)
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
+
+    const isValid = validate({
+      email: !email.trim(),
+      password: !password,
+    })
+    if (!isValid) return
+
     setSubmitting(true)
     try {
       await login({ email, password })
@@ -30,9 +41,25 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <EmailField value={email} onChange={setEmail} />
+      <EmailField
+        ref={register('email')}
+        value={email}
+        onChange={(value) => {
+          setEmail(value)
+          clearFieldError('email')
+        }}
+        error={fieldErrors.email ? 'Ingresa tu correo.' : null}
+      />
 
-      <PasswordField value={password} onChange={setPassword} error={error} />
+      <PasswordField
+        ref={register('password')}
+        value={password}
+        onChange={(value) => {
+          setPassword(value)
+          clearFieldError('password')
+        }}
+        error={fieldErrors.password ? 'Ingresa tu contraseña.' : error}
+      />
 
       <SubmitButton submitting={submitting} label="Iniciar sesión" submittingLabel="Iniciando sesión…" />
     </form>

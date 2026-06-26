@@ -25,6 +25,12 @@ export function formatMoney(amount: string, currency: string): string {
   }).format(numericValue)
 }
 
+/** Formats a digit-only string (e.g. "10000") with thousand separators (e.g. "10.000"). */
+export function formatThousands(digits: string): string {
+  if (!digits) return ''
+  return new Intl.NumberFormat('es-CL').format(BigInt(digits))
+}
+
 /** Parses a user-entered amount (e.g. "12.500" or "12500,50") into minor units. */
 export function parseMoney(input: string, currency: string): string {
   const exponent = getCurrencyExponent(currency)

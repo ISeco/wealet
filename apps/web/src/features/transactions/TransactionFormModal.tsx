@@ -4,12 +4,14 @@ import { Select } from '../../components/ui/Select'
 import { TrashIcon } from '../../app/icons'
 import { useFunds } from '../funds'
 import { useCategories } from '../categories'
-import { parseMoney } from '../../lib/money'
+import { formatThousands, parseMoney } from '../../lib/money'
+import { useFormFieldErrors } from '../../lib/useFormFieldErrors'
 import { ApiError } from '../../lib/api/client'
 import { useCreateTransaction, useDeleteTransaction, useUpdateTransaction } from './hooks'
 import type { Transaction, TransactionType } from './types'
 
 const CURRENCY = 'CLP'
+const REQUIRED_FIELDS = ['fundId', 'categoryId', 'amount', 'occurredOn'] as const
 
 interface TransactionFormModalProps {
   transaction: Transaction | null
@@ -32,6 +34,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   const [description, setDescription] = useState(transaction?.description ?? '')
   const [occurredOn, setOccurredOn] = useState(transaction?.occurredOn ?? new Date().toISOString().slice(0, 10))
   const [error, setError] = useState<string | null>(null)
+  const { fieldErrors, register, clearFieldError, validate } = useFormFieldErrors(REQUIRED_FIELDS)
 
   const createMutation = useCreateTransaction()
   const updateMutation = useUpdateTransaction()
@@ -45,7 +48,13 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
     event.preventDefault()
     setError(null)
 
-    if (!fundId || !categoryId || !amount || !occurredOn) {
+    const isValid = validate({
+      fundId: !fundId,
+      categoryId: !categoryId,
+      amount: !amount,
+      occurredOn: !occurredOn,
+    })
+    if (!isValid) {
       setError('Completa todos los campos requeridos.')
       return
     }
@@ -55,6 +64,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
       minorUnits = parseMoney(amount, CURRENCY)
     } catch {
       setError('Monto inválido.')
+      validate({ amount: true })
       return
     }
 
@@ -211,11 +221,15 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
 
         <div>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Monto</div>
-          <div style={{ display: 'flex', alignItems: 'center', height: 52, border: '1px solid var(--border-strong)', borderRadius: 10, background: 'var(--field)', padding: '0 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', height: 52, border: `1px solid ${fieldErrors.amount ? 'var(--neg)' : 'var(--border-strong)'}`, borderRadius: 10, background: 'var(--field)', padding: '0 16px' }}>
             <span style={{ fontSize: 24, fontWeight: 500, color: 'var(--muted)' }}>$</span>
             <input
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
+              ref={register('amount')}
+              value={formatThousands(amount)}
+              onChange={(event) => {
+                setAmount(event.target.value.replace(/\D/g, ''))
+                clearFieldError('amount')
+              }}
               inputMode="numeric"
               placeholder="0"
               required
@@ -236,29 +250,49 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
         </div>
 
         <Select
+          ref={register('fundId')}
           label="Fondo de origen"
           placeholder="Selecciona un fondo"
           value={fundId}
-          onChange={(event) => setFundId(event.target.value)}
+          onChange={(event) => {
+            setFundId(event.target.value)
+            clearFieldError('fundId')
+          }}
           options={(funds ?? []).map((fund) => ({ value: fund.id, label: fund.name }))}
           required
+          error={fieldErrors.fundId}
           style={{ height: 44, borderRadius: 10 }}
         />
 
         <Select
+          ref={register('categoryId')}
           label="Categoría"
           placeholder="Selecciona una categoría"
           value={categoryId}
-          onChange={(event) => setCategoryId(event.target.value)}
+          onChange={(event) => {
+            setCategoryId(event.target.value)
+            clearFieldError('categoryId')
+          }}
           options={filteredCategories.map((category) => ({ value: category.id, label: category.name }))}
           required
+          error={fieldErrors.categoryId}
           style={{ height: 44, borderRadius: 10 }}
         />
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
             <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Fecha</div>
-            <input type="date" value={occurredOn} onChange={(event) => setOccurredOn(event.target.value)} required style={fieldStyle} />
+            <input
+              ref={register('occurredOn')}
+              type="date"
+              value={occurredOn}
+              onChange={(event) => {
+                setOccurredOn(event.target.value)
+                clearFieldError('occurredOn')
+              }}
+              required
+              style={{ ...fieldStyle, border: `1px solid ${fieldErrors.occurredOn ? 'var(--neg)' : 'var(--border)'}` }}
+            />
           </div>
           <div>
             <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Descripción</div>

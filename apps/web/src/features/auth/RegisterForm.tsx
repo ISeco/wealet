@@ -1,6 +1,7 @@
 import { useState, type SubmitEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError } from '../../lib/api/client'
+import { useFormFieldErrors } from '../../lib/useFormFieldErrors'
 import { EmailField } from './components/EmailField'
 import { FieldError } from './components/FieldError'
 import { PasswordField } from './components/PasswordField'
@@ -11,9 +12,10 @@ import { TextField } from './components/TextField'
 import { useAuth } from './useAuth'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const FIELDS = ['displayName', 'email', 'password'] as const
 
 export function RegisterForm() {
-  const { register } = useAuth()
+  const { register: registerUser } = useAuth()
   const navigate = useNavigate()
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
@@ -23,6 +25,7 @@ export function RegisterForm() {
   const [displayNameError, setDisplayNameError] = useState<string | null>(null)
   const [emailError, setEmailError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const { register: registerField, validate } = useFormFieldErrors(FIELDS)
 
   const passwordValid = isPasswordStrong(password)
 
@@ -33,18 +36,18 @@ export function RegisterForm() {
     const trimmedDisplayName = displayName.trim()
     const nameInvalid = trimmedDisplayName.length === 0
     const emailInvalid = !EMAIL_REGEX.test(email)
+    const passwordInvalid = !passwordValid
 
     setDisplayNameError(nameInvalid ? 'Ingresa tu nombre.' : null)
     setEmailError(emailInvalid ? 'Ingresa un correo válido.' : null)
     setPasswordTouched(true)
 
-    if (nameInvalid || emailInvalid || !passwordValid) {
-      return
-    }
+    const isValid = validate({ displayName: nameInvalid, email: emailInvalid, password: passwordInvalid })
+    if (!isValid) return
 
     setSubmitting(true)
     try {
-      await register({ email, password, displayName: trimmedDisplayName })
+      await registerUser({ email, password, displayName: trimmedDisplayName })
       navigate('/', { replace: true })
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'No pudimos crear tu cuenta. Intenta de nuevo.')
@@ -56,6 +59,7 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <TextField
+        ref={registerField('displayName')}
         label="Nombre"
         required
         placeholder="Tu nombre"
@@ -66,6 +70,7 @@ export function RegisterForm() {
       />
 
       <EmailField
+        ref={registerField('email')}
         value={email}
         onChange={setEmail}
         onBlur={() => setEmailError(email.length > 0 && !EMAIL_REGEX.test(email) ? 'Ingresa un correo válido.' : null)}
@@ -74,6 +79,7 @@ export function RegisterForm() {
 
       <div>
         <PasswordField
+          ref={registerField('password')}
           value={password}
           onChange={setPassword}
           onFocus={() => setPasswordTouched(true)}

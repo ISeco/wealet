@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode } from 'react'
+import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react'
 import { FieldError } from './FieldError'
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -10,7 +10,10 @@ interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   invalid?: boolean
 }
 
-export function TextField({ label, icon, endAdornment, error, invalid, ...inputProps }: TextFieldProps) {
+export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(
+  { label, icon, endAdornment, error, invalid, ...inputProps },
+  ref,
+) {
   const showInvalidStyle = invalid || Boolean(error)
 
   return (
@@ -30,6 +33,7 @@ export function TextField({ label, icon, endAdornment, error, invalid, ...inputP
       >
         {icon}
         <input
+          ref={ref}
           {...inputProps}
           style={{
             flex: 1,
@@ -47,4 +51,4 @@ export function TextField({ label, icon, endAdornment, error, invalid, ...inputP
       {error && <FieldError message={error} />}
     </div>
   )
-}
+})
