@@ -20,6 +20,7 @@ modules/
   categories/       CRUD + system category seed
   transactions/     CRUD, filters, pagination
   transfers/        atomic reallocation between funds
+  activity/         unified paginated timeline: transactions + transfers via SQL UNION
   reports/          read-only aggregations: summary, by-category, net-worth, runway
   import-export/    SheetJS parse → preview → commit (with dedupe); export
   health/           framework adherence (50/30/20, Jars of Eker, fondos)
@@ -61,8 +62,15 @@ Funds
   DELETE /funds/:id               → soft archive if fund has movements
 
 Transfers
-  GET    /transfers?from=&to=
+  GET    /transfers?from=&to=&page=&limit=
   POST   /transfers               → atomic debit + credit between funds
+
+Activity (unified timeline — transactions + transfers merged and paginated server-side)
+  GET    /activity?from=&to=&type=transaction|transfer&subtype=income|expense&fundId=&categoryId=&q=&page=&limit=
+         → { data: ActivityItem[], total, page, limit }
+         ActivityItem: { type, id, amount, amountFormatted, currency, occurredOn, createdAt,
+                         description?, subtype?, fundId?, categoryId?, source?, updatedAt?,  ← transaction fields
+                         fromFundId?, toFundId?, note? }                                      ← transfer fields
 
 Categories
   GET    /categories
@@ -134,7 +142,7 @@ Design reference per screen lives in `docs/design/screens/` (one isolated `.html
 | onboarding | `POST /funds/preset`; (Excel path) `POST /import/preview`, `/import/commit`; `PATCH /users/me`; `PUT /health/profile` |
 | dashboard | `GET /reports/summary`, `/reports/net-worth`, `/reports/runway`, `/reports/cash-flow`, `/reports/by-category`, `/health/assessment`, `/transactions?limit=`, `/funds`, `/reports/months` (selector de mes; reports aceptan `?month=`) |
 | funds | `GET /funds`, `/funds/:id`, `/funds/:id/history`, `/transactions?fundId=`, `POST /funds` (drawer "Nuevo fondo"), `PATCH /funds/:id`, `DELETE /funds/:id` |
-| transactions | `GET /transactions` (+filters), `POST/GET/PATCH/DELETE /transactions/:id` (`PATCH` también reasigna fondo desde la fila), `GET /transfers` (transfers tab), `GET /funds` (opciones del reassign por fila) |
+| transactions | `GET /activity` (+filters, `?type=transaction\|transfer` para filtrar por tab; `?subtype=income\|expense` para tabs de tipo), `POST/GET/PATCH/DELETE /transactions/:id` (`PATCH` también reasigna fondo desde la fila), `GET /funds` (opciones del reassign por fila) |
 | categories | `GET /categories` (`?scope=mine\|system\|all`; campo `isSystem`), `POST` (drawer Nueva), `PATCH /:id` (drawer Editar — mismo drawer), `DELETE /:id` (confirm centrado; solo categorías propias), `GET /reports/by-category` |
 | transfers | `POST /transfers`, `GET /funds` |
 | health | `GET /health/assessment`, `GET/PUT /health/profile` |

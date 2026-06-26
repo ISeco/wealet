@@ -89,6 +89,20 @@ Fund balance is derived via SQL aggregation (never a stored column).
 
 ---
 
+## ADR-08 — Endpoint unificado `/activity` para el timeline de Transacciones
+
+La vista Transacciones muestra transacciones y transferencias mezcladas en un timeline cronológico.
+
+**Problema:** el enfoque de doble llamada (`GET /transactions` + `GET /transfers`) hace imposible paginar el resultado combinado correctamente — la página 1 de cada stream no equivale a los N eventos más recientes del timeline unificado. Cualquier intento de mezclar en el cliente produce un orden incorrecto.
+
+**Solución:** endpoint único `GET /activity` que ejecuta un `UNION ALL` en SQL entre `transactions` y `transfers`, aplica filtros, ordena por `occurred_on DESC`, y pagina sobre el resultado combinado. La respuesta incluye un discriminador `type: 'transaction' | 'transfer'` para que el frontend renderice cada item según su naturaleza.
+
+**Trade-off:** TypeORM no soporta UNION nativo — se usa `DataSource.query()` con raw SQL parametrizado. Es aceptable porque es un endpoint de lectura puro, la query usa parámetros posicionales (sin concatenación de strings de usuario), y sigue el patrón ya establecido en `reports.service.ts`.
+
+**`GET /transfers` se mantiene** para el formulario de creación y cualquier uso puntual que no necesite el timeline combinado. `/activity` es el endpoint del listado paginado.
+
+---
+
 ## §7 — Engineering Best Practices
 
 ### Architecture
