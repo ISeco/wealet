@@ -23,7 +23,7 @@ export const navMain: NavItem[] = [
   { key: 'dashboard', label: 'Dashboard', path: '/', icon: DashboardIcon },
   { key: 'funds', label: 'Fondos', path: '/fondos', icon: FundsIcon },
   { key: 'transactions', label: 'Transacciones', path: '/transacciones', icon: TransactionsIcon},
-  { key: 'transfers', label: 'Transferencias', path: '/transferencias', icon: TransfersIcon, disabled: true },
+  { key: 'transfers', label: 'Transferencias', path: '/transferencias', icon: TransfersIcon },
   { key: 'health', label: 'Salud financiera', path: '/salud', icon: HealthIcon, disabled: true },
   { key: 'categories', label: 'Categorías', path: '/categorias', icon: CategoriesIcon },
 ]
@@ -38,4 +38,5 @@ export const pageTitles: Record<string, { crumb: string; title: string }> = {
   '/fondos': { crumb: 'General', title: 'Fondos' },
   '/transacciones': { crumb: 'General', title: 'Transacciones' },
   '/categorias': { crumb: 'General', title: 'Categorías' },
+  '/transferencias': { crumb: 'General', title: 'Transferencias' },
 }

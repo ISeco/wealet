@@ -4,6 +4,7 @@ import { AuthPage, ProtectedRoute } from '../features/auth'
 import { CategoriesPage } from '../features/categories'
 import { FundsPage, FundDetailPage } from '../features/funds'
 import { TransactionsPage } from '../features/transactions'
+import { TransfersPage } from '../features/transfers'
 import { AppLayout } from './AppLayout'
 import { HomePlaceholder } from './HomePlaceholder'
 
@@ -19,6 +20,7 @@ export function AppRouter() {
             <Route path="/fondos" element={<FundsPage />} />
             <Route path="/fondos/:id" element={<FundDetailPage />} />
             <Route path="/transacciones" element={<TransactionsPage />} />
+            <Route path="/transferencias" element={<TransfersPage />} />
             <Route path="/categorias" element={<CategoriesPage />} />
           </Route>
         </Route>
