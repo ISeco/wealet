@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthPage, ProtectedRoute } from '../features/auth'
+import { CategoriesPage } from '../features/categories'
 import { FundsPage } from '../features/funds'
 import { TransactionsPage } from '../features/transactions'
 import { AppLayout } from './AppLayout'
@@ -16,6 +17,7 @@ export function AppRouter() {
             <Route path="/" element={<HomePlaceholder />} />
             <Route path="/fondos" element={<FundsPage />} />
             <Route path="/transacciones" element={<TransactionsPage />} />
+            <Route path="/categorias" element={<CategoriesPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

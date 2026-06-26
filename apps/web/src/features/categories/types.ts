@@ -9,3 +9,15 @@ export interface Category {
   createdAt: string
   updatedAt: string
 }
+
+export interface CreateCategoryPayload {
+  name: string
+  type: CategoryType
+  color?: string | null
+}
+
+export interface UpdateCategoryPayload {
+  name?: string
+  type?: CategoryType
+  color?: string | null
+}
