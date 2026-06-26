@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useCategories } from '../categories'
 import { useTransactions } from '../transactions/hooks'
+import { TransactionFormModal } from '../transactions/TransactionFormModal'
+import type { Transaction } from '../transactions'
 import { useFundHistory, useFunds } from './hooks'
 import { FundFormDrawer } from './components/FundFormDrawer'
 import { FundHeaderCard } from './components/FundHeaderCard'
@@ -16,6 +18,7 @@ interface FundDetailProps {
 
 export function FundDetail({ fundId, onBack }: FundDetailProps) {
   const [showEdit, setShowEdit] = useState(false)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const { data: funds = [] } = useFunds()
   const { data: history = [] } = useFundHistory(fundId)
   const { data: categories = [] } = useCategories()
@@ -84,6 +87,7 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
       <FundTransactionsList
         transactions={recentTxData?.data ?? []}
         categoryMap={categoryMap}
+        onTransactionClick={setSelectedTransaction}
       />
 
       {showEdit && (
@@ -91,6 +95,13 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
           fund={fund}
           onClose={() => setShowEdit(false)}
           onDelete={onBack}
+        />
+      )}
+
+      {selectedTransaction && (
+        <TransactionFormModal
+          transaction={selectedTransaction}
+          onClose={() => setSelectedTransaction(null)}
         />
       )}
     </div>
