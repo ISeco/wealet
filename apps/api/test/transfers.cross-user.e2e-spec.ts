@@ -70,7 +70,7 @@ describe('Transfers cross-user isolation (e2e)', () => {
       .set('Authorization', `Bearer ${userB.accessToken}`)
       .expect(200);
     expect(
-      res.body.find((t: { id: string }) => t.id === transferOfA),
+      res.body.data.find((t: { id: string }) => t.id === transferOfA),
     ).toBeUndefined();
   });
 
