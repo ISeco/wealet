@@ -4,9 +4,10 @@ import type { Transaction } from '../../transactions'
 interface FundTransactionsListProps {
   transactions: Transaction[]
   categoryMap: Record<string, Category>
+  onTransactionClick?: (transaction: Transaction) => void
 }
 
-export function FundTransactionsList({ transactions, categoryMap }: FundTransactionsListProps) {
+export function FundTransactionsList({ transactions, categoryMap, onTransactionClick }: FundTransactionsListProps) {
   return (
     <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
       <div style={{ padding: '16px 24px 12px', fontSize: 14, fontWeight: 600 }}>Movimientos del fondo</div>
@@ -19,7 +20,18 @@ export function FundTransactionsList({ transactions, categoryMap }: FundTransact
           const isIncome = t.type === 'income'
           const cat = categoryMap[t.categoryId]
           return (
-            <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 24px', borderTop: '1px solid var(--border)' }}>
+            <div
+              key={t.id}
+              onClick={onTransactionClick ? () => onTransactionClick(t) : undefined}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                padding: '11px 24px',
+                borderTop: '1px solid var(--border)',
+                cursor: onTransactionClick ? 'pointer' : 'default',
+              }}
+            >
               <span style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isIncome ? 'var(--pos-bg)' : 'var(--neg-bg)', color: isIncome ? 'var(--pos)' : 'var(--neg)' }}>
                 {isIncome ? (
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
