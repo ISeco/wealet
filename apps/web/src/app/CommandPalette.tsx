@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ComponentType } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { isMacPlatform } from '../lib/platform'
-import { DashboardIcon, SearchIcon, TransactionsIcon } from './icons'
+import { DashboardIcon, SearchIcon, TransfersIcon } from './icons'
 
 export const OPEN_COMMAND_PALETTE_EVENT = 'wealet:open-command-palette'
 
@@ -34,7 +34,7 @@ export function CommandPalette() {
         label: 'Ir a Transacciones',
         bg: 'var(--disp-bg)',
         color: 'var(--disp)',
-        icon: TransactionsIcon,
+        icon: TransfersIcon,
         onSelect: () => navigate('/transacciones'),
       },
     ],

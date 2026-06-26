@@ -25,7 +25,7 @@ export function FundsIcon({ color = 'currentColor' }: IconProps) {
   )
 }
 
-export function TransactionsIcon({ color = 'currentColor' }: IconProps) {
+export function TransfersIcon({ color = 'currentColor' }: IconProps) {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" stroke={color} {...base}>
       <path d="M4 7h16M4 7l4-4M4 7l4 4"></path>
@@ -34,7 +34,7 @@ export function TransactionsIcon({ color = 'currentColor' }: IconProps) {
   )
 }
 
-export function TransfersIcon({ color = 'currentColor' }: IconProps) {
+export function TransactionsIcon({ color = 'currentColor' }: IconProps) {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" stroke={color} {...base}>
       <path d="M7 16V4M7 4L3 8M7 4l4 4"></path>

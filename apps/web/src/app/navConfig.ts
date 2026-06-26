@@ -6,8 +6,8 @@ import {
   HealthIcon,
   ImportIcon,
   SettingsIcon,
-  TransactionsIcon,
   TransfersIcon,
+  TransactionsIcon,
 } from './icons'
 
 export interface NavItem {
@@ -22,7 +22,7 @@ export interface NavItem {
 export const navMain: NavItem[] = [
   { key: 'dashboard', label: 'Dashboard', path: '/', icon: DashboardIcon },
   { key: 'funds', label: 'Fondos', path: '/fondos', icon: FundsIcon },
-  { key: 'transactions', label: 'Transacciones', path: '/transacciones', icon: TransactionsIcon },
+  { key: 'transactions', label: 'Transacciones', path: '/transacciones', icon: TransactionsIcon},
   { key: 'transfers', label: 'Transferencias', path: '/transferencias', icon: TransfersIcon, disabled: true },
   { key: 'health', label: 'Salud financiera', path: '/salud', icon: HealthIcon, disabled: true },
   { key: 'categories', label: 'Categorías', path: '/categorias', icon: CategoriesIcon },
