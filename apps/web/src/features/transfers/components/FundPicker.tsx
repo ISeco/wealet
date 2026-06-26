@@ -11,6 +11,7 @@ interface FundPickerProps {
   onChange: (id: string) => void
   exclude: string | null
   projectedBalance: number | null
+  disabled?: boolean
 }
 
 const fmt = new Intl.NumberFormat('es-CL', {
@@ -20,12 +21,14 @@ const fmt = new Intl.NumberFormat('es-CL', {
   maximumFractionDigits: 0,
 })
 
-export function FundPicker({ label, direction, funds, selectedId, onChange, exclude, projectedBalance }: FundPickerProps) {
+export function FundPicker({ label, direction, funds, selectedId, onChange, exclude, projectedBalance, disabled }: FundPickerProps) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const selected = funds.find((f) => f.id === selectedId) ?? null
-  const available = funds.filter((f) => f.id !== exclude && !f.archivedAt)
+  const available = funds.filter(
+    (f) => f.id !== exclude && !f.archivedAt && (direction === 'to' || Number(f.balance) > 0),
+  )
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -42,7 +45,7 @@ export function FundPicker({ label, direction, funds, selectedId, onChange, excl
   const projectedColor = direction === 'from' ? 'var(--neg)' : 'var(--pos)'
 
   return (
-    <div ref={containerRef} style={{ border: '1px solid var(--border)', borderRadius: 12, padding: 16, background: 'var(--card-2)', position: 'relative' }}>
+    <div ref={containerRef} style={{ border: '1px solid var(--border)', borderRadius: 12, padding: 16, background: disabled ? 'var(--card)' : 'var(--card-2)', position: 'relative', opacity: disabled ? 0.45 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
       <div style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 12 }}>
         {label}
       </div>

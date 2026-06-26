@@ -215,6 +215,7 @@ export function TransfersPage() {
             onChange={setToFundId}
             exclude={fromFundId}
             projectedBalance={toProjected}
+            disabled={!fromFundId}
           />
         </div>
 
