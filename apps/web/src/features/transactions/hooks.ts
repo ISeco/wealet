@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as api from './api'
 import type { CreateTransactionPayload, TransactionQuery, UpdateTransactionPayload } from './types'
-import type { TransferQuery } from '../transfers/types'
 
 export function useTransactions(query: TransactionQuery) {
   return useQuery({
@@ -44,9 +43,3 @@ export function useDeleteTransaction() {
   })
 }
 
-export function useTransfers(query: TransferQuery) {
-  return useQuery({
-    queryKey: ['transfers', query],
-    queryFn: () => api.listTransfers(query),
-  })
-}
