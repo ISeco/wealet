@@ -1,5 +1,6 @@
+// apps/web/src/features/funds/FundsPage.tsx
 import { useState } from 'react'
-import { FundDetail } from './FundDetail'
+import { useNavigate } from 'react-router-dom'
 import { FundFormDrawer } from './components/FundFormDrawer'
 import { useFunds } from './hooks'
 import type { Fund, FundClassification } from './types'
@@ -14,19 +15,10 @@ const CLASS_DESC: Record<FundClassification, string> = {
 }
 
 export function FundsPage() {
-  const [selectedFundId, setSelectedFundId] = useState<string | null>(null)
+  const navigate = useNavigate()
   const [showForm, setShowForm] = useState(false)
 
   const { data: funds = [], isLoading } = useFunds()
-
-  if (selectedFundId) {
-    return (
-      <>
-        <FundDetail fundId={selectedFundId} onBack={() => setSelectedFundId(null)} />
-        {showForm && <FundFormDrawer onClose={() => setShowForm(false)} />}
-      </>
-    )
-  }
 
   const totalBalance = funds.reduce((sum, f) => sum + Number(f.balance), 0)
 
@@ -89,7 +81,7 @@ export function FundsPage() {
               key={fund.id}
               fund={fund}
               totalBalance={totalBalance}
-              onClick={() => setSelectedFundId(fund.id)}
+              onClick={() => navigate('/fondos/' + fund.id)}
             />
           ))}
         </div>
