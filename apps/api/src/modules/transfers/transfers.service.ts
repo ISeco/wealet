@@ -12,6 +12,13 @@ import { Transfer } from './entities/transfer.entity';
 
 const DEFAULT_CURRENCY = 'CLP';
 
+export interface PaginatedTransfers {
+  data: Transfer[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 @Injectable()
 export class TransfersService {
   constructor(
@@ -52,7 +59,13 @@ export class TransfersService {
     });
   }
 
-  async findAll(userId: string, query: TransferQueryDto): Promise<Transfer[]> {
+  async findAll(
+    userId: string,
+    query: TransferQueryDto,
+  ): Promise<PaginatedTransfers> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
     const qb = this.transfersRepository
       .createQueryBuilder('transfer')
       .where('transfer.userId = :userId', { userId });
@@ -64,6 +77,12 @@ export class TransfersService {
       qb.andWhere('transfer.occurredOn <= :to', { to: query.to });
     }
 
-    return qb.orderBy('transfer.occurredOn', 'DESC').getMany();
+    const [data, total] = await qb
+      .orderBy('transfer.occurredOn', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return { data, total, page, limit };
   }
 }

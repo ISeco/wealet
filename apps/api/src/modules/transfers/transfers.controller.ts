@@ -11,7 +11,11 @@ import { CreateTransferDto } from './dto/create-transfer.dto';
 import { TransferQueryDto } from './dto/transfer-query.dto';
 import { TransferResponseDto } from './dto/transfer-response.dto';
 import { toTransferResponseDto } from './mappers/transfer.mapper';
-import { TransfersService } from './transfers.service';
+import { PaginatedTransfers, TransfersService } from './transfers.service';
+
+interface PaginatedTransferResponse extends Omit<PaginatedTransfers, 'data'> {
+  data: TransferResponseDto[];
+}
 
 @ApiTags('transfers')
 @ApiBearerAuth()
@@ -21,14 +25,16 @@ export class TransfersController {
   constructor(private readonly transfersService: TransfersService) {}
 
   @ApiOperation({ summary: 'List transfers between funds, filtered by date' })
-  @ApiOkResponse({ type: TransferResponseDto, isArray: true })
   @Get()
   async findAll(
     @CurrentUser() userId: string,
     @Query() query: TransferQueryDto,
-  ): Promise<TransferResponseDto[]> {
-    const transfers = await this.transfersService.findAll(userId, query);
-    return transfers.map(toTransferResponseDto);
+  ): Promise<PaginatedTransferResponse> {
+    const { data, ...meta } = await this.transfersService.findAll(
+      userId,
+      query,
+    );
+    return { ...meta, data: data.map(toTransferResponseDto) };
   }
 
   @ApiOperation({ summary: 'Atomically transfer an amount between two funds' })
