@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { EditIcon, LockIcon, PlusIcon, TrashIcon } from '../../app/icons'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { CategoryFormDrawer } from './components/CategoryFormDrawer'
 import { useCategories, useDeleteCategory } from './hooks'
@@ -17,46 +18,27 @@ export function CategoriesPage() {
   const deleteMutation = useDeleteCategory()
 
   const [scope, setScope] = useState<Scope>('all')
-  const [formOpen, setFormOpen] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<Category | undefined>()
+  // null = closed, 'new' = create, Category = edit
+  const [editing, setEditing] = useState<Category | 'new' | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Category | undefined>()
+  const [deleteError, setDeleteError] = useState(false)
 
-  const filtered = categories.filter((c) => {
-    if (scope === 'mine') return !c.isSystem
-    if (scope === 'system') return c.isSystem
-    return true
-  })
+  const mine = categories.filter((c) => !c.isSystem)
+  const system = categories.filter((c) => c.isSystem)
+  const scopeCounts = { all: categories.length, mine: mine.length, system: system.length }
 
+  const filtered = scope === 'mine' ? mine : scope === 'system' ? system : categories
   const expenses = filtered.filter((c) => c.type === 'expense')
   const incomes = filtered.filter((c) => c.type === 'income')
 
-  function countFor(scope: Scope) {
-    return categories.filter((c) => {
-      if (scope === 'mine') return !c.isSystem
-      if (scope === 'system') return c.isSystem
-      return true
-    }).length
-  }
-
-  function openCreate() {
-    setEditingCategory(undefined)
-    setFormOpen(true)
-  }
-
-  function openEdit(cat: Category) {
-    setEditingCategory(cat)
-    setFormOpen(true)
-  }
-
-  function closeForm() {
-    setFormOpen(false)
-    setEditingCategory(undefined)
-  }
-
   async function handleDelete() {
     if (!deleteTarget) return
-    await deleteMutation.mutateAsync(deleteTarget.id)
-    setDeleteTarget(undefined)
+    try {
+      await deleteMutation.mutateAsync(deleteTarget.id)
+      setDeleteTarget(undefined)
+    } catch {
+      setDeleteError(true)
+    }
   }
 
   if (isLoading) {
@@ -77,12 +59,10 @@ export function CategoriesPage() {
         </div>
         <button
           type="button"
-          onClick={openCreate}
+          onClick={() => setEditing('new')}
           style={{ display: 'flex', alignItems: 'center', gap: 7, height: 36, padding: '0 14px', border: 'none', borderRadius: 9, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow)', flexShrink: 0 }}
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
+          <PlusIcon />
           Nueva categoría
         </button>
       </div>
@@ -105,43 +85,33 @@ export function CategoriesPage() {
             >
               {tab.label}
               <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', background: 'var(--bg)', borderRadius: 20, padding: '1px 7px', fontVariantNumeric: 'tabular-nums' }}>
-                {countFor(tab.value)}
+                {scopeCounts[tab.value]}
               </span>
             </div>
           )
         })}
       </div>
 
-      <SectionLabel label="Gastos" count={expenses.length} />
-      {expenses.length === 0 ? (
-        <div style={{ fontSize: 13, color: 'var(--muted)', padding: '14px 0 26px' }}>
-          No hay categorías de gasto en este grupo.
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14, marginBottom: 26 }}>
-          {expenses.map((cat) => (
-            <CategoryCard key={cat.id} category={cat} onEdit={openEdit} onDelete={setDeleteTarget} />
-          ))}
-        </div>
-      )}
+      <CategorySection
+        label="Gastos"
+        categories={expenses}
+        emptyText="No hay categorías de gasto en este grupo."
+        bottomGap
+        onEdit={(c) => setEditing(c)}
+        onDelete={setDeleteTarget}
+      />
+      <CategorySection
+        label="Ingresos"
+        categories={incomes}
+        emptyText="No hay categorías de ingreso en este grupo."
+        onEdit={(c) => setEditing(c)}
+        onDelete={setDeleteTarget}
+      />
 
-      <SectionLabel label="Ingresos" count={incomes.length} />
-      {incomes.length === 0 ? (
-        <div style={{ fontSize: 13, color: 'var(--muted)', padding: '14px 0' }}>
-          No hay categorías de ingreso en este grupo.
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
-          {incomes.map((cat) => (
-            <CategoryCard key={cat.id} category={cat} onEdit={openEdit} onDelete={setDeleteTarget} />
-          ))}
-        </div>
-      )}
-
-      {formOpen && (
+      {editing !== null && (
         <CategoryFormDrawer
-          category={editingCategory}
-          onClose={closeForm}
+          category={editing === 'new' ? undefined : editing}
+          onClose={() => setEditing(null)}
         />
       )}
 
@@ -149,28 +119,45 @@ export function CategoriesPage() {
         <ConfirmDialog
           title={`Eliminar «${deleteTarget.name}»`}
           description={
-            <>Esta categoría se quitará de tu lista. Tus movimientos <b style={{ color: 'var(--text)', fontWeight: 600 }}>no se borran</b>: quedarán sin categoría hasta que les asignes otra.</>
+            <>Esta categoría se quitará de tu lista. Tus movimientos <b style={{ color: 'var(--text)', fontWeight: 600 }}>no se borran</b>: quedarán sin categoría hasta que les asignes otra.{deleteError && <span style={{ display: 'block', color: 'var(--neg)', marginTop: 6 }}>Error al eliminar. Intenta nuevamente.</span>}</>
           }
           isPending={deleteMutation.isPending}
           onConfirm={handleDelete}
-          onClose={() => setDeleteTarget(undefined)}
+          onClose={() => { setDeleteTarget(undefined); setDeleteError(false) }}
         />
       )}
     </div>
   )
 }
 
-function SectionLabel({ label, count }: { label: string; count: number }) {
+function CategorySection({ label, categories, emptyText, bottomGap, onEdit, onDelete }: {
+  label: string
+  categories: Category[]
+  emptyText: string
+  bottomGap?: boolean
+  onEdit: (c: Category) => void
+  onDelete: (c: Category) => void
+}) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted)' }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>· {count}</span>
+    <div style={{ marginBottom: bottomGap ? 26 : 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted)' }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>· {categories.length}</span>
+      </div>
+      {categories.length === 0 ? (
+        <div style={{ fontSize: 13, color: 'var(--muted)', padding: '14px 0' }}>{emptyText}</div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+          {categories.map((cat) => (
+            <CategoryCard key={cat.id} category={cat} onEdit={onEdit} onDelete={onDelete} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
 
 function CategoryCard({ category, onEdit, onDelete }: { category: Category; onEdit: (c: Category) => void; onDelete: (c: Category) => void }) {
-  const typeLabel = category.type === 'expense' ? 'Gasto' : 'Ingreso'
   const swatchColor = category.color ?? 'var(--border-strong)'
 
   return (
@@ -178,13 +165,13 @@ function CategoryCard({ category, onEdit, onDelete }: { category: Category; onEd
       <span style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0, background: swatchColor }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{category.name}</div>
-        <div style={{ fontSize: 12, color: category.type === 'income' ? 'var(--pos)' : 'var(--muted)' }}>{typeLabel}</div>
+        <div style={{ fontSize: 12, color: category.type === 'income' ? 'var(--pos)' : 'var(--muted)' }}>
+          {category.type === 'expense' ? 'Gasto' : 'Ingreso'}
+        </div>
       </div>
       {category.isSystem ? (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', background: 'var(--card-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 7px' }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" />
-          </svg>
+          <LockIcon color="var(--muted)" />
           Sistema
         </span>
       ) : (
@@ -195,9 +182,7 @@ function CategoryCard({ category, onEdit, onDelete }: { category: Category; onEd
             aria-label="Editar"
             style={{ width: 30, height: 30, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--card)', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
-            </svg>
+            <EditIcon />
           </button>
           <button
             type="button"
@@ -205,9 +190,7 @@ function CategoryCard({ category, onEdit, onDelete }: { category: Category; onEd
             aria-label="Eliminar"
             style={{ width: 30, height: 30, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--card)', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-            </svg>
+            <TrashIcon />
           </button>
         </div>
       )}

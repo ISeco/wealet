@@ -158,3 +158,21 @@ export function TrashIcon({ color = 'currentColor' }: IconProps) {
     </svg>
   )
 }
+
+export function EditIcon({ color = 'currentColor' }: IconProps) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" stroke={color} {...base}>
+      <path d="M12 20h9"></path>
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path>
+    </svg>
+  )
+}
+
+export function LockIcon({ color = 'currentColor' }: IconProps) {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" stroke={color} {...base}>
+      <rect x="5" y="11" width="14" height="9" rx="2"></rect>
+      <path d="M8 11V8a4 4 0 0 1 8 0v3"></path>
+    </svg>
+  )
+}
