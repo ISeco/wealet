@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthPage, ProtectedRoute } from '../features/auth'
+import { FundsPage } from '../features/funds'
 import { TransactionsPage } from '../features/transactions'
 import { AppLayout } from './AppLayout'
 import { HomePlaceholder } from './HomePlaceholder'
@@ -13,6 +14,7 @@ export function AppRouter() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/" element={<HomePlaceholder />} />
+            <Route path="/fondos" element={<FundsPage />} />
             <Route path="/transacciones" element={<TransactionsPage />} />
           </Route>
         </Route>

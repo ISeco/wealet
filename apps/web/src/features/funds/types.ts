@@ -13,3 +13,17 @@ export interface Fund {
   createdAt: string
   updatedAt: string
 }
+
+export interface FundHistoryPoint {
+  month: string
+  balance: string
+}
+
+export interface CreateFundPayload {
+  name: string
+  classification: FundClassification
+  color?: string
+  countsForRunway?: boolean
+}
+
+export type UpdateFundPayload = Partial<CreateFundPayload>
