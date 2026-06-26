@@ -95,7 +95,7 @@ export function FundPicker({ label, direction, funds, selectedId, onChange, excl
           {available.length === 0 ? (
             <div style={{ padding: '12px 16px', fontSize: 13, color: 'var(--muted)' }}>Sin fondos disponibles</div>
           ) : (
-            available.map((fund) => {
+            available.map((fund, idx) => {
               const fChip = getFundChip(fund)
               const fCls = classColor(fund.classification)
               const isSelected = fund.id === selectedId
@@ -103,7 +103,7 @@ export function FundPicker({ label, direction, funds, selectedId, onChange, excl
                 <div
                   key={fund.id}
                   onClick={() => { onChange(fund.id); setOpen(false) }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', cursor: 'pointer', background: isSelected ? 'var(--tint)' : 'transparent', borderBottom: '1px solid var(--border)' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', cursor: 'pointer', background: isSelected ? 'var(--tint)' : 'transparent', borderBottom: idx < available.length - 1 ? '1px solid var(--border)' : 'none' }}
                   onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = 'var(--card-2)' }}
                   onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
                 >

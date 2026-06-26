@@ -20,7 +20,7 @@ function todayISO(): string {
 function formatDateLabel(iso: string): string {
   const [, m, d] = iso.split('-')
   const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
-  return `${parseInt(d)} ${MONTHS[parseInt(m) - 1]}`
+  return `${parseInt(d, 10)} ${MONTHS[parseInt(m, 10) - 1]}`
 }
 
 export function TransfersPage() {
@@ -53,9 +53,9 @@ export function TransfersPage() {
 
   const quickAmounts = fromFund
     ? [
-        { label: '25%', value: Math.floor(fromBalance * 0.25) },
-        { label: '50%', value: Math.floor(fromBalance * 0.5) },
-        { label: '75%', value: Math.floor(fromBalance * 0.75) },
+        { label: '25%', value: Math.floor(fromBalance / 4) },
+        { label: '50%', value: Math.floor(fromBalance / 2) },
+        { label: '75%', value: Math.floor(fromBalance * 3 / 4) },
         { label: 'Todo', value: fromBalance },
       ]
     : []
