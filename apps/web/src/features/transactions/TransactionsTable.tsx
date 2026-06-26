@@ -3,6 +3,7 @@ import type { Fund } from '../funds'
 import type { Category } from '../categories'
 import type { Transaction } from './types'
 import type { Transfer } from '../transfers/types'
+import { TransfersIcon } from '../../app/icons'
 
 export type TableRow =
   | { kind: 'transaction'; data: Transaction }
@@ -97,9 +98,7 @@ export function TransactionsTable({ rows, funds, categories, onRowClick, onReass
                     color: 'var(--info)',
                   }}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 9l-3 3 3 3M2 12h13M19 15l3-3-3-3M22 12H9" />
-                  </svg>
+                  <TransfersIcon size={14} />
                 </span>
                 <span style={{ fontSize: 13.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {t.note || 'Transferencia'}

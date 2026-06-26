@@ -1,13 +1,15 @@
 import { apiFetch } from '../../lib/api/client'
 import type {
+  ActivityQuery,
   CreateTransactionPayload,
+  PaginatedActivity,
   PaginatedTransactions,
   Transaction,
   TransactionQuery,
   UpdateTransactionPayload,
 } from './types'
 
-function toQueryString(query: TransactionQuery): string {
+function toQueryString(query: object): string {
   const params = new URLSearchParams()
   for (const [key, value] of Object.entries(query)) {
     if (value !== undefined && value !== '') {
@@ -32,4 +34,8 @@ export function updateTransaction(id: string, payload: UpdateTransactionPayload)
 
 export function deleteTransaction(id: string): Promise<void> {
   return apiFetch<void>(`/transactions/${id}`, { method: 'DELETE' })
+}
+
+export function listActivity(query: ActivityQuery): Promise<PaginatedActivity> {
+  return apiFetch<PaginatedActivity>(`/activity${toQueryString(query)}`)
 }

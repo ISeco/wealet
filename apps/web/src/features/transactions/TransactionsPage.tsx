@@ -2,14 +2,12 @@ import { useMemo, useState } from 'react'
 import { useFunds } from '../funds'
 import { useCategories } from '../categories'
 import { Pagination } from '../../components/ui/Pagination'
-import { useTransactions, useUpdateTransaction } from './hooks'
-import { useTransfers } from '../transfers'
+import { useActivity, useUpdateTransaction } from './hooks'
 import { TransactionsToolbar } from './TransactionsToolbar'
 import { TransactionsTabs, type TabValue } from './TransactionsTabs'
 import { TransactionsTable, type TableRow } from './TransactionsTable'
 import { TransactionFormModal } from './TransactionFormModal'
-import type { Transaction, TransactionFilters } from './types'
-import type { Transfer } from '../transfers/types'
+import type { ActivityItem, ActivitySubtype, ActivityType, Transaction, TransactionFilters } from './types'
 
 const LIMIT = 20
 
@@ -26,6 +24,42 @@ function formatChipDate(from?: string, to?: string): string | null {
   return from ?? to ?? null
 }
 
+function toTableRow(item: ActivityItem): TableRow {
+  if (item.type === 'transfer') {
+    return {
+      kind: 'transfer',
+      data: {
+        id: item.id,
+        fromFundId: item.fromFundId!,
+        toFundId: item.toFundId!,
+        amount: item.amount,
+        amountFormatted: item.amountFormatted,
+        currency: item.currency,
+        occurredOn: item.occurredOn,
+        note: item.note ?? null,
+        createdAt: item.createdAt,
+      },
+    }
+  }
+  return {
+    kind: 'transaction',
+    data: {
+      id: item.id,
+      fundId: item.fundId!,
+      categoryId: item.categoryId!,
+      type: item.subtype!,
+      amount: item.amount,
+      amountFormatted: item.amountFormatted,
+      currency: item.currency,
+      description: item.description ?? null,
+      occurredOn: item.occurredOn,
+      source: item.source!,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt ?? item.createdAt,
+    },
+  }
+}
+
 export function TransactionsPage() {
   const [tab, setTab] = useState<TabValue>('all')
   const [filters, setFilters] = useState<TransactionFilters>({})
@@ -37,45 +71,38 @@ export function TransactionsPage() {
   const { data: categories = [] } = useCategories()
   const { mutate: updateTransaction } = useUpdateTransaction()
 
-  const isTransfersTab = tab === 'transfers'
+  const activityQuery = useMemo(() => {
+    let type: ActivityType | undefined
+    let subtype: ActivitySubtype | undefined
 
-  const txQuery = useMemo(
-    () => ({
-      type: tab === 'all' || isTransfersTab ? undefined : tab,
-      fundId: filters.fundId,
-      categoryId: filters.categoryId,
+    if (tab === 'transfers') {
+      type = 'transfer'
+    } else if (tab === 'income' || tab === 'expense') {
+      type = 'transaction'
+      subtype = tab
+    }
+
+    return {
       from: filters.from,
       to: filters.to,
+      type,
+      subtype,
+      fundId: filters.fundId,
+      categoryId: filters.categoryId,
       q: search || undefined,
       page,
       limit: LIMIT,
-    }),
-    [tab, filters, search, page, isTransfersTab],
-  )
-
-  const transferQuery = useMemo(
-    () => ({
-      from: filters.from,
-      to: filters.to,
-      page,
-      limit: LIMIT,
-    }),
-    [filters.from, filters.to, page],
-  )
-
-  const { data: txData, isLoading: txLoading } = useTransactions(txQuery)
-  const { data: transferData, isLoading: transferLoading } = useTransfers(transferQuery)
-
-  const isLoading = isTransfersTab ? transferLoading : txLoading
-
-  const rows: TableRow[] = useMemo(() => {
-    if (isTransfersTab) {
-      return (transferData?.data ?? []).map((t: Transfer) => ({ kind: 'transfer', data: t }))
     }
-    return (txData?.data ?? []).map((t: Transaction) => ({ kind: 'transaction', data: t }))
-  }, [isTransfersTab, txData, transferData])
+  }, [tab, filters, search, page])
 
-  const total = isTransfersTab ? (transferData?.total ?? 0) : (txData?.total ?? 0)
+  const { data: activityData, isLoading } = useActivity(activityQuery)
+
+  const rows: TableRow[] = useMemo(
+    () => (activityData?.data ?? []).map(toTableRow),
+    [activityData],
+  )
+
+  const total = activityData?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / LIMIT))
 
   const filtersActive = [filters.fundId, filters.categoryId, filters.from, filters.to].filter(Boolean).length
@@ -99,9 +126,10 @@ export function TransactionsPage() {
     updateTransaction({ id: transactionId, payload: { fundId: newFundId } })
   }
 
-  // active filter chips
   const dateChip = formatChipDate(filters.from, filters.to)
   const fundChip = filters.fundId ? (funds.find((f) => f.id === filters.fundId)?.name ?? null) : null
+
+  const itemLabel = tab === 'transfers' ? 'transferencias' : tab === 'all' ? 'registros' : 'transacciones'
 
   return (
     <div>
@@ -157,7 +185,7 @@ export function TransactionsPage() {
       {total > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 4px' }}>
           <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>
-            Mostrando <b style={{ color: 'var(--text)' }}>{rows.length}</b> de {total} {isTransfersTab ? 'transferencias' : 'transacciones'}
+            Mostrando <b style={{ color: 'var(--text)' }}>{rows.length}</b> de {total} {itemLabel}
           </div>
           <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>

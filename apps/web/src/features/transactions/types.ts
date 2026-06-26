@@ -52,3 +52,46 @@ export interface TransactionFilters {
   from?: string
   to?: string
 }
+
+export type ActivityType = 'transaction' | 'transfer'
+export type ActivitySubtype = 'income' | 'expense'
+
+export interface ActivityItem {
+  type: ActivityType
+  id: string
+  amount: string
+  amountFormatted: string
+  currency: string
+  occurredOn: string
+  createdAt: string
+  // transaction-specific
+  description?: string | null
+  subtype?: ActivitySubtype
+  fundId?: string
+  categoryId?: string
+  source?: TransactionSource
+  updatedAt?: string
+  // transfer-specific
+  fromFundId?: string
+  toFundId?: string
+  note?: string | null
+}
+
+export interface PaginatedActivity {
+  data: ActivityItem[]
+  total: number
+  page: number
+  limit: number
+}
+
+export interface ActivityQuery {
+  from?: string
+  to?: string
+  type?: ActivityType
+  subtype?: ActivitySubtype
+  fundId?: string
+  categoryId?: string
+  q?: string
+  page?: number
+  limit?: number
+}
