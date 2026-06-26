@@ -19,6 +19,10 @@ Personal finance app built on an envelope/fund system. Full-stack portfolio proj
 - New migration: `pnpm --filter api migration:generate -- src/database/migrations/MigrationName`
 - Run migrations: `pnpm --filter api migration:run`
 
+## Language
+
+- All user-facing text (UI labels, placeholders, messages, buttons) must use **español neutro** — no regional variants. Avoid voseo ("tenés", "hacés") and any River Plate or country-specific expressions. Use tuteo ("tienes", "haces") or infinitives instead.
+
 ## Code Style
 
 - Controller → Service → Repository. Controllers never touch repositories directly.
