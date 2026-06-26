@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import authConfig from './config/auth.config';
 import databaseConfig from './config/database.config';
 import { envValidationSchema } from './config/env.validation';
+import { ActivityModule } from './modules/activity/activity.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { FundsModule } from './modules/funds/funds.module';
@@ -33,6 +34,7 @@ import { UsersModule } from './modules/users/users.module';
     CategoriesModule,
     TransactionsModule,
     TransfersModule,
+    ActivityModule,
     ReportsModule,
     HealthModule,
     ImportExportModule,
