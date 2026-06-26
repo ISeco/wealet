@@ -1,6 +1,7 @@
 import { useState, type SubmitEvent } from 'react'
 import { Modal } from '../../components/ui/Modal'
 import { Select } from '../../components/ui/Select'
+import { DateInput } from '../../components/ui/DateInput'
 import { TrashIcon } from '../../app/icons'
 import { useFunds } from '../funds'
 import { useCategories } from '../categories'
@@ -280,20 +281,17 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
         />
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <div>
-            <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Fecha</div>
-            <input
-              ref={register('occurredOn')}
-              type="date"
-              value={occurredOn}
-              onChange={(event) => {
-                setOccurredOn(event.target.value)
-                clearFieldError('occurredOn')
-              }}
-              required
-              style={{ ...fieldStyle, border: `1px solid ${fieldErrors.occurredOn ? 'var(--neg)' : 'var(--border)'}` }}
-            />
-          </div>
+          <DateInput
+            ref={register('occurredOn')}
+            label="Fecha"
+            value={occurredOn}
+            onChange={(event) => {
+              setOccurredOn(event.target.value)
+              clearFieldError('occurredOn')
+            }}
+            required
+            error={fieldErrors.occurredOn}
+          />
           <div>
             <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Descripción</div>
             <input

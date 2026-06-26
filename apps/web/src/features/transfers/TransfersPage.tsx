@@ -1,6 +1,7 @@
 // apps/web/src/features/transfers/TransfersPage.tsx
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { DateInput } from '../../components/ui/DateInput'
 import { useFunds } from '../funds'
 import { FundPicker } from './components/FundPicker'
 import { useCreateTransfer, useTransfers } from './hooks'
@@ -267,23 +268,11 @@ export function TransfersPage() {
 
         {/* Date + Note */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 18 }}>
-          <div>
-            <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Fecha</div>
-            <div style={{ position: 'relative', height: 44, border: '1px solid var(--border)', borderRadius: 10, background: 'var(--field)', display: 'flex', alignItems: 'center', padding: '0 14px', gap: 8 }}>
-              <span style={{ fontSize: 14, fontVariantNumeric: 'tabular-nums', flex: 1, color: 'var(--text)' }}>
-                {occurredOn}
-              </span>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              <input
-                type="date"
-                value={occurredOn}
-                onChange={(e) => setOccurredOn(e.target.value)}
-                style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%' }}
-              />
-            </div>
-          </div>
+          <DateInput
+            label="Fecha"
+            value={occurredOn}
+            onChange={(e) => setOccurredOn(e.target.value)}
+          />
           <div>
             <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Nota (opcional)</div>
             <div style={{ display: 'flex', alignItems: 'center', height: 44, border: '1px solid var(--border)', borderRadius: 10, background: 'var(--field)', padding: '0 14px' }}>
