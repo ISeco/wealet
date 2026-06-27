@@ -4,7 +4,8 @@
 
 - **API completa**: todos los endpoints documentados están implementados. Incluye `/reports/months` y `?month=YYYY-MM` en summary / by-category / net-worth para el selector de mes del dashboard.
 - **Frontend funcional end-to-end**: auth, funds, transactions, transfers, categories, health. El dashboard solo tiene la HealthCard activa; el resto de las cards son placeholder "Próximamente".
-- **Frontend pendiente**: onboarding, import-export y settings no están construidos. Los endpoints de API que necesitan ya existen y están testeados.
+- **Frontend pendiente**: onboarding e import-export no están construidos. Los endpoints de API que necesitan ya existen y están testeados.
+- **Settings implementado**: pantalla `/ajustes` completa — perfil (displayName editable, cambiar contraseña con logout automático), framework por defecto, runway fund toggles, tema claro/oscuro, exportar .xlsx. Botones Importar y Reconfigurar fondos deshabilitados hasta que esas pantallas existan. Se agregó `refetchUser()` al `AuthContext` para que el sidebar refleje el nombre actualizado sin recargar.
 - **Health — cambio de modelo**: el campo `config` jsonb fue eliminado de `HealthProfile`. Los targets del framework viven como `frameworkSlot` + `targetPercentage` en cada `Fund`, sembrados automáticamente al cambiar de framework. El patrón Strategy fue evaluado y eliminado; la lógica es inline en `health.service.ts`.
 - **Import/Export**: API completa (preview → commit con dedupe → export .xlsx); pantalla frontend sin construir.
 
@@ -134,7 +135,7 @@ features/
   health/         framework adherence visual; selector de mes convierte YYYY-MM → from/to en cliente
   [pendiente] onboarding/     preset / import-Excel wizard
   [pendiente] import-export/  file uploader + preview table
-  [pendiente] settings/       profile, prefs, theme
+  settings/                   profile, prefs, theme, runway toggles, export
 components/ui/    reusable UI components
 ```
 

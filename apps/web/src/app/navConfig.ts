@@ -30,7 +30,7 @@ export const navMain: NavItem[] = [
 
 export const navSys: NavItem[] = [
   { key: 'import', label: 'Importar Excel', path: '/import', icon: ImportIcon, disabled: true },
-  { key: 'settings', label: 'Ajustes', path: '/ajustes', icon: SettingsIcon, disabled: true },
+  { key: 'settings', label: 'Ajustes', path: '/ajustes', icon: SettingsIcon },
 ]
 
 export const pageTitles: Record<string, { crumb: string; title: string }> = {
@@ -40,4 +40,5 @@ export const pageTitles: Record<string, { crumb: string; title: string }> = {
   '/categorias': { crumb: 'General', title: 'Categorías' },
   '/transferencias': { crumb: 'General', title: 'Transferencias' },
   '/salud': { crumb: 'General', title: 'Salud financiera' },
+  '/ajustes': { crumb: 'Sistema', title: 'Ajustes' },
 }

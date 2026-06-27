@@ -16,7 +16,6 @@ export function getHealthAssessment(month?: string): Promise<AssessmentResponse>
 export function updateHealthProfile(framework: HealthFramework): Promise<HealthProfile> {
   return apiFetch<HealthProfile>('/health/profile', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ framework }),
+    body: { framework },
   })
 }

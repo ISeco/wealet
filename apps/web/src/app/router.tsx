@@ -5,6 +5,7 @@ import { CategoriesPage } from '../features/categories'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { FundsPage, FundDetailPage } from '../features/funds'
 import { HealthPage } from '../features/health/HealthPage'
+import { SettingsPage } from '../features/settings'
 import { TransactionsPage } from '../features/transactions'
 import { TransfersPage } from '../features/transfers'
 import { AppLayout } from './AppLayout'
@@ -24,6 +25,7 @@ export function AppRouter() {
             <Route path="/transferencias" element={<TransfersPage />} />
             <Route path="/categorias" element={<CategoriesPage />} />
             <Route path="/salud" element={<HealthPage />} />
+            <Route path="/ajustes" element={<SettingsPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

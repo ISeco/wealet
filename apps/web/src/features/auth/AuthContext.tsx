@@ -54,9 +54,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus('unauthenticated')
   }, [])
 
+  const refetchUser = useCallback(async () => {
+    const me = await authApi.getMe()
+    setUser(me)
+  }, [])
+
   const value = useMemo<AuthContextValue>(
-    () => ({ user, status, login, register, logout }),
-    [user, status, login, register, logout],
+    () => ({ user, status, login, register, logout, refetchUser }),
+    [user, status, login, register, logout, refetchUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

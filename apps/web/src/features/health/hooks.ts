@@ -20,8 +20,9 @@ export function useActivateFramework() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (framework: HealthFramework) => updateHealthProfile(framework),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['health'] })
+    onSuccess: (updatedProfile) => {
+      queryClient.setQueryData(['health', 'profile'], updatedProfile)
+      queryClient.invalidateQueries({ queryKey: ['health', 'assessment'] })
       queryClient.invalidateQueries({ queryKey: ['funds'] })
     },
   })
