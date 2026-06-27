@@ -19,6 +19,7 @@ export interface FundAssessment {
 
 export interface AssessmentResponse {
   framework: HealthFramework
-  totalIncome: string
+  /** Period income for flow-based frameworks; total fund balance for FONDOS. */
+  totalBase: string
   funds: FundAssessment[]
 }

@@ -1,5 +1,5 @@
 import { formatMoney } from '../../../lib/money'
-import type { FundAssessment, FundClassification } from '../types'
+import type { FundAssessment, FundClassification, HealthFramework } from '../types'
 
 const CLS_COLOR: Record<FundClassification, string> = {
   available: 'var(--disp)',
@@ -18,15 +18,24 @@ function statusTag(diff: number): { label: string; color: string } {
 
 interface Props {
   funds: FundAssessment[]
-  totalIncome: string
+  totalBase: string
+  framework: HealthFramework
 }
 
-export function AdherenceChart({ funds, totalIncome }: Props) {
+export function AdherenceChart({ funds, totalBase, framework }: Props) {
+  const isFondos = framework === 'fondos'
+  const subtitle = isFondos
+    ? 'La línea marca tu meta; la barra, tu saldo actual como % del total'
+    : 'La línea marca tu meta; la barra, dónde estás hoy'
+  const emptyLabel = isFondos
+    ? 'Sin saldo en fondos'
+    : 'Sin ingresos registrados en el período'
+
   return (
     <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', padding: '22px 24px' }}>
       <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 4 }}>Objetivo vs. real</div>
       <div style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 20 }}>
-        La línea marca tu meta; la barra, dónde estás hoy
+        {subtitle}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -72,9 +81,9 @@ export function AdherenceChart({ funds, totalIncome }: Props) {
         })}
       </div>
 
-      {Number(totalIncome) === 0 && (
+      {Number(totalBase) === 0 && (
         <div style={{ marginTop: 16, fontSize: 12, color: 'var(--muted)', textAlign: 'center' }}>
-          Sin ingresos registrados en el período
+          {emptyLabel}
         </div>
       )}
     </div>

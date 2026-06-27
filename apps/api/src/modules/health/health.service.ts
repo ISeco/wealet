@@ -71,6 +71,65 @@ export class HealthService {
   ): Promise<AssessmentResponseDto> {
     const profile = await this.getOrCreateProfile(userId);
 
+    if (profile.framework === HealthFramework.FONDOS) {
+      return this.getFondosAssessment(userId, profile.framework);
+    }
+    return this.getFlowAssessment(userId, profile.framework, from, to);
+  }
+
+  private async getFondosAssessment(
+    userId: string,
+    framework: HealthFramework,
+  ): Promise<AssessmentResponseDto> {
+    const rows: FundFlowRow[] = await this.dataSource.query(
+      `SELECT f.id AS fund_id, f.name AS fund_name,
+              f.classification, f.framework_slot, f.target_percentage,
+              COALESCE(SUM(m.amount), 0)::text AS amount
+       FROM funds f
+       LEFT JOIN (
+         SELECT fund_id,
+           CASE WHEN type = 'income' THEN amount ELSE -amount END AS amount
+         FROM transactions WHERE user_id = $1
+         UNION ALL
+         SELECT to_fund_id AS fund_id, amount FROM transfers WHERE user_id = $1
+         UNION ALL
+         SELECT from_fund_id AS fund_id, -amount FROM transfers WHERE user_id = $1
+       ) m ON m.fund_id = f.id
+       WHERE f.user_id = $1
+         AND f.archived_at IS NULL
+         AND f.framework_slot IS NULL
+       GROUP BY f.id, f.name, f.classification, f.framework_slot, f.target_percentage
+       ORDER BY f.created_at ASC`,
+      [userId],
+    );
+
+    const totalBalance = rows.reduce((sum, r) => sum + Number(r.amount), 0);
+    const funds: FundAssessmentDto[] = rows.map((row) => {
+      const actualAmount = row.amount;
+      const actualPercentage =
+        totalBalance > 0
+          ? Number(((Number(actualAmount) / totalBalance) * 100).toFixed(2))
+          : 0;
+      return {
+        fundId: row.fund_id,
+        fundName: row.fund_name,
+        classification: row.classification,
+        frameworkSlot: row.framework_slot,
+        targetPercentage: row.target_percentage ?? 0,
+        actualPercentage,
+        actualAmount,
+      };
+    });
+
+    return { framework, totalBase: totalBalance.toString(), funds };
+  }
+
+  private async getFlowAssessment(
+    userId: string,
+    framework: HealthFramework,
+    from: string,
+    to: string,
+  ): Promise<AssessmentResponseDto> {
     const [{ total_income: totalIncome }]: Array<{ total_income: string }> =
       await this.dataSource.query(
         `SELECT COALESCE(SUM(amount), 0)::text AS total_income
@@ -98,7 +157,7 @@ export class HealthService {
        ) m ON m.fund_id = f.id AND m.occurred_on BETWEEN $2 AND $3
        WHERE f.user_id = $1
          AND f.archived_at IS NULL
-         AND ${this.fundSlotFilter(profile.framework)}
+         AND ${this.fundSlotFilter(framework)}
        GROUP BY f.id, f.name, f.classification, f.framework_slot, f.target_percentage
        ORDER BY f.created_at ASC`,
       [userId, from, to],
@@ -122,7 +181,7 @@ export class HealthService {
       };
     });
 
-    return { framework: profile.framework, totalIncome, funds };
+    return { framework, totalBase: totalIncome, funds };
   }
 
   private fundSlotFilter(framework: HealthFramework): string {
