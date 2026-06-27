@@ -44,13 +44,13 @@ export class ReportsService {
         `SELECT COALESCE(SUM(m.amount), 0)::text AS balance
          FROM (
            SELECT CASE WHEN type = 'income' THEN amount ELSE -amount END AS amount
-           FROM transactions WHERE user_id = $1 AND occurred_on <= $3
+           FROM transactions WHERE user_id = $1 AND occurred_on <= $2
            UNION ALL
-           SELECT amount FROM transfers WHERE user_id = $1 AND occurred_on <= $3
+           SELECT amount FROM transfers WHERE user_id = $1 AND occurred_on <= $2
            UNION ALL
-           SELECT -amount FROM transfers WHERE user_id = $1 AND occurred_on <= $3
+           SELECT -amount FROM transfers WHERE user_id = $1 AND occurred_on <= $2
          ) m`,
-        [userId, from, to],
+        [userId, to],
       );
 
     const [{ income, expense }]: Array<{ income: string; expense: string }> =
