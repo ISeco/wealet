@@ -108,9 +108,19 @@ const RECS: Record<
 }
 
 export function getRecommendations(funds: FundAssessment[]): Recommendation[] {
-  return funds.map((fund) => {
-    const diff = fund.actualPercentage - fund.targetPercentage
-    const rec = RECS[fund.classification]
+  // Aggregate per classification so jars_eker/fondos never produce duplicate cards
+  const groups = new Map<FundClassification, { totalActual: number; totalTarget: number }>()
+  for (const fund of funds) {
+    const g = groups.get(fund.classification) ?? { totalActual: 0, totalTarget: 0 }
+    groups.set(fund.classification, {
+      totalActual: g.totalActual + fund.actualPercentage,
+      totalTarget: g.totalTarget + fund.targetPercentage,
+    })
+  }
+
+  return Array.from(groups.entries()).map(([classification, { totalActual, totalTarget }]) => {
+    const diff = totalActual - totalTarget
+    const rec = RECS[classification]
     if (diff < -5) return { ...rec.under, icon: 'down' as const }
     if (diff > 5)  return { ...rec.over,  icon: 'up' as const }
     return { ...rec.ok, icon: 'check' as const }

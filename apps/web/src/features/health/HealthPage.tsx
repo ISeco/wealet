@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useActivateFramework, useHealthAssessment, useHealthProfile } from './hooks'
 import type { HealthFramework } from './types'
-import { FRAMEWORK_DESCRIPTIONS, computeScore, getRecommendations } from './utils'
+import { FRAMEWORK_DESCRIPTIONS, computeScore } from './utils'
 import { AdherenceChart } from './components/AdherenceChart'
 import { FrameworkTabs } from './components/FrameworkTabs'
-import { RecommendationCards } from './components/RecommendationCards'
 import { ScoreCard } from './components/ScoreCard'
 
 export function HealthPage() {
@@ -19,11 +18,6 @@ export function HealthPage() {
 
   const score = useMemo(
     () => computeScore(assessment?.funds ?? []),
-    [assessment],
-  )
-
-  const recommendations = useMemo(
-    () => getRecommendations(assessment?.funds ?? []),
     [assessment],
   )
 
@@ -62,11 +56,6 @@ export function HealthPage() {
               framework={framework}
             />
           </div>
-
-          <div style={{ marginTop: 20 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 14 }}>Recomendaciones</div>
-            <RecommendationCards recommendations={recommendations} />
-          </div>
         </>
       )}
     </div>
@@ -75,16 +64,9 @@ export function HealthPage() {
 
 function HealthSkeleton() {
   return (
-    <>
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16 }}>
-        <div style={{ background: '#0F2240', borderRadius: 14, minHeight: 220, opacity: 0.6 }} />
-        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, minHeight: 220 }} />
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginTop: 20 }}>
-        {[0, 1, 2].map((i) => (
-          <div key={i} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, height: 110 }} />
-        ))}
-      </div>
-    </>
+    <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16 }}>
+      <div style={{ background: '#0F2240', borderRadius: 14, minHeight: 220, opacity: 0.6 }} />
+      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, minHeight: 220 }} />
+    </div>
   )
 }
