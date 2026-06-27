@@ -79,13 +79,15 @@ Categories
   DELETE /categories/:id
 
 Reports (read-only, aggregated in SQL)
-  GET  /reports/summary?from=&to=         → balance, income, expenses
-  GET  /reports/by-category?from=&to=     → breakdown for chart
-  GET  /reports/net-worth                 → available / reserve / committed
+  GET  /reports/months                    → meses con datos en los últimos 12 meses (YYYY-MM[], DESC), para selector del dashboard
+  GET  /reports/summary?from=&to=         → balance (puntual al `to`), income, expenses del período
+         ?month=YYYY-MM                   → alternativa a from/to; balance e income/expense puntuales al mes
+  GET  /reports/by-category?from=&to=    → breakdown for chart
+         ?month=YYYY-MM                   → alternativa a from/to
+  GET  /reports/net-worth                 → available / reserve / committed (balances acumulados todo el tiempo)
+         ?month=YYYY-MM                   → punto en el tiempo: balances hasta el último día del mes
   GET  /reports/runway                    → months of runway (cushion ÷ burn)
   GET  /reports/cash-flow?months=12       → monthly net flow (dashboard bars), excludes transfers
-  [pendiente] GET  /reports/months        → meses con datos (primer mes con tx → actual), para selector de mes del dashboard
-  [pendiente] param ?month=YYYY-MM        → en summary / by-category / net-worth / health-assessment; net-worth y assessment también
 
 Import / Export
   POST /import/preview    (multipart) → parsed rows, errors, duplicates flagged
@@ -140,7 +142,7 @@ Design reference per screen lives in `docs/design/screens/` (one isolated `.html
 |---|---|
 | auth | `POST /auth/login`, `/auth/register`, `/auth/refresh`, `/auth/logout` |
 | onboarding | `POST /funds/preset`; (Excel path) `POST /import/preview`, `/import/commit`; `PATCH /users/me`; `PUT /health/profile` |
-| dashboard | `GET /reports/summary`, `/reports/net-worth`, `/reports/runway`, `/reports/cash-flow`, `/reports/by-category`, `/health/assessment`, `/transactions?limit=`, `/funds` |
+| dashboard | `GET /reports/months`, `/reports/summary`, `/reports/net-worth`, `/reports/runway`, `/reports/cash-flow`, `/reports/by-category`, `/health/assessment`, `/transactions?limit=`, `/funds` |
 | funds | `GET /funds`, `/funds/:id`, `/funds/:id/history`, `/transactions?fundId=`, `POST /funds` (drawer "Nuevo fondo"), `PATCH /funds/:id`, `DELETE /funds/:id` |
 | transactions | `GET /activity` (+filters, `?type=transaction\|transfer` para filtrar por tab; `?subtype=income\|expense` para tabs de tipo), `POST/GET/PATCH/DELETE /transactions/:id` (`PATCH` también reasigna fondo desde la fila), `GET /funds` (opciones del reassign por fila) |
 | categories | `GET /categories` (devuelve todas; filtro mine/system/all es client-side vía `isSystem`), `POST /categories` (drawer Nueva), `PATCH /categories/:id` (drawer Editar), `DELETE /categories/:id` (solo propias), `GET /reports/by-category` |

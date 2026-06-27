@@ -1,9 +1,12 @@
-import { IsDateString } from 'class-validator';
+import { IsDateString, IsOptional } from 'class-validator';
+import { MonthQueryDto } from './month-query.dto';
 
-export class ReportQueryDto {
+export class ReportQueryDto extends MonthQueryDto {
+  @IsOptional()
   @IsDateString()
-  from: string;
+  from?: string;
 
+  @IsOptional()
   @IsDateString()
-  to: string;
+  to?: string;
 }

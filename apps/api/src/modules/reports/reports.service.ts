@@ -22,6 +22,18 @@ const CLASSIFICATIONS: Array<'available' | 'reserve' | 'committed'> = [
 export class ReportsService {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
+  async getAvailableMonths(userId: string): Promise<string[]> {
+    const rows: Array<{ month: string }> = await this.dataSource.query(
+      `SELECT DISTINCT to_char(date_trunc('month', occurred_on), 'YYYY-MM') AS month
+       FROM transactions
+       WHERE user_id = $1
+         AND occurred_on >= date_trunc('month', CURRENT_DATE) - INTERVAL '12 months'
+       ORDER BY month DESC`,
+      [userId],
+    );
+    return rows.map((r) => r.month);
+  }
+
   async getSummary(
     userId: string,
     from: string,
@@ -32,13 +44,13 @@ export class ReportsService {
         `SELECT COALESCE(SUM(m.amount), 0)::text AS balance
          FROM (
            SELECT CASE WHEN type = 'income' THEN amount ELSE -amount END AS amount
-           FROM transactions WHERE user_id = $1
+           FROM transactions WHERE user_id = $1 AND occurred_on <= $3
            UNION ALL
-           SELECT amount FROM transfers WHERE user_id = $1
+           SELECT amount FROM transfers WHERE user_id = $1 AND occurred_on <= $3
            UNION ALL
-           SELECT -amount FROM transfers WHERE user_id = $1
+           SELECT -amount FROM transfers WHERE user_id = $1 AND occurred_on <= $3
          ) m`,
-        [userId],
+        [userId, from, to],
       );
 
     const [{ income, expense }]: Array<{ income: string; expense: string }> =
@@ -82,22 +94,28 @@ export class ReportsService {
     }));
   }
 
-  async getNetWorth(userId: string): Promise<NetWorthResponseDto> {
+  async getNetWorth(
+    userId: string,
+    asOf?: string,
+  ): Promise<NetWorthResponseDto> {
+    const dateClause = asOf ? ' AND occurred_on <= $2' : '';
+    const params: unknown[] = asOf ? [userId, asOf] : [userId];
+
     const rows: ClassificationBalanceRow[] = await this.dataSource.query(
-      `SELECT f.classification AS classification,
+      `SELECT f.classification,
          COALESCE(SUM(m.amount), 0)::text AS balance
        FROM funds f
        LEFT JOIN (
          SELECT fund_id, CASE WHEN type = 'income' THEN amount ELSE -amount END AS amount
-         FROM transactions WHERE user_id = $1
+         FROM transactions WHERE user_id = $1${dateClause}
          UNION ALL
-         SELECT to_fund_id AS fund_id, amount FROM transfers WHERE user_id = $1
+         SELECT to_fund_id AS fund_id, amount FROM transfers WHERE user_id = $1${dateClause}
          UNION ALL
-         SELECT from_fund_id AS fund_id, -amount FROM transfers WHERE user_id = $1
+         SELECT from_fund_id AS fund_id, -amount FROM transfers WHERE user_id = $1${dateClause}
        ) m ON m.fund_id = f.id
        WHERE f.user_id = $1
        GROUP BY f.classification`,
-      [userId],
+      params,
     );
 
     const balanceByClassification = new Map(
