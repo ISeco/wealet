@@ -19,10 +19,14 @@ function statusTag(diff: number): { label: string; color: string } {
   return { label: 'En meta', color: STATUS_TEAL }
 }
 
-export function HealthCard() {
+interface Props {
+  month?: string
+}
+
+export function HealthCard({ month }: Props) {
   const navigate = useNavigate()
   const { data: profile } = useHealthProfile()
-  const { data: assessment, isLoading } = useHealthAssessment()
+  const { data: assessment, isLoading } = useHealthAssessment(month)
 
   const framework = profile?.framework ?? 'fondos'
   const funds = assessment?.funds ?? []
