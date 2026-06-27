@@ -1,11 +1,24 @@
 import { useState } from 'react'
 import { useFunds } from '../../funds/hooks'
+import { useHealthProfile } from '../../health/hooks'
+import type { HealthFramework } from '../../health/types'
 import { useToggleFundRunway } from '../hooks'
 import { card } from '../styles'
 
+function matchesFramework(slot: string | null, framework: HealthFramework): boolean {
+  if (framework === 'fondos') return slot === null
+  if (framework === 'jars_eker') return slot?.startsWith('jars_') ?? false
+  if (framework === '50_30_20') return slot?.startsWith('50_30_20_') ?? false
+  return false
+}
+
 export function RunwayCard() {
   const { data: funds = [] } = useFunds()
+  const { data: profile } = useHealthProfile()
   const { mutate: toggleRunway } = useToggleFundRunway()
+
+  const activeFramework = profile?.framework ?? 'fondos'
+  const visibleFunds = funds.filter((f) => matchesFramework(f.frameworkSlot, activeFramework))
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
 
   function handleToggle(fundId: string, current: boolean) {
@@ -29,7 +42,7 @@ export function RunwayCard() {
       <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 4, marginBottom: 14 }}>
         Tu colchón = suma de estos fondos ÷ gasto mensual promedio.
       </div>
-      {funds.map((fund) => {
+      {visibleFunds.map((fund) => {
         const pending = pendingIds.has(fund.id)
         const active = fund.countsForRunway
         return (
@@ -82,7 +95,7 @@ export function RunwayCard() {
           </div>
         )
       })}
-      {funds.length === 0 && (
+      {visibleFunds.length === 0 && (
         <div style={{ fontSize: 13.5, color: 'var(--muted)', paddingTop: 12, borderTop: '1px solid var(--border)' }}>
           No hay fondos activos.
         </div>

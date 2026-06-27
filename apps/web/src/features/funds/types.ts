@@ -7,6 +7,7 @@ export interface Fund {
   color: string | null
   isOperative: boolean
   countsForRunway: boolean
+  frameworkSlot: string | null
   targetPercentage: number | null
   archivedAt: string | null
   balance: string
