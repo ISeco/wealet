@@ -26,6 +26,9 @@ export function FundFormDrawer({ fund, onClose, onDelete }: FundFormDrawerProps)
   const [classification, setClassification] = useState<FundClassification>(fund?.classification ?? 'available')
   const [color, setColor] = useState<string | null>(fund?.color ?? null)
   const [countsForRunway, setCountsForRunway] = useState(fund?.countsForRunway ?? false)
+  const [targetPercentage, setTargetPercentage] = useState<string>(
+    fund?.targetPercentage != null ? String(fund.targetPercentage) : ''
+  )
   const [error, setError] = useState<string | null>(null)
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
 
@@ -40,12 +43,17 @@ export function FundFormDrawer({ fund, onClose, onDelete }: FundFormDrawerProps)
       setError('El nombre del fondo es requerido.')
       return
     }
+    const pct = targetPercentage.trim() === '' ? undefined : Number(targetPercentage)
+    if (pct !== undefined && (isNaN(pct) || pct < 1 || pct > 100 || !Number.isInteger(pct))) {
+      setError('La meta debe ser un número entero entre 1 y 100.')
+      return
+    }
     setError(null)
     try {
       if (isEditing) {
-        await updateMutation.mutateAsync({ id: fund.id, payload: { name: name.trim(), classification, color: color ?? undefined, countsForRunway } })
+        await updateMutation.mutateAsync({ id: fund.id, payload: { name: name.trim(), classification, color: color ?? undefined, countsForRunway, targetPercentage: pct } })
       } else {
-        await createMutation.mutateAsync({ name: name.trim(), classification, color: color ?? undefined, countsForRunway })
+        await createMutation.mutateAsync({ name: name.trim(), classification, color: color ?? undefined, countsForRunway, targetPercentage: pct })
       }
       onClose()
     } catch {
@@ -152,6 +160,25 @@ export function FundFormDrawer({ fund, onClose, onDelete }: FundFormDrawerProps)
                 }}
               />
             ))}
+          </div>
+        </div>
+
+        <div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Meta de asignación <span style={{ fontWeight: 400 }}>(opcional)</span></div>
+          <div style={{ display: 'flex', alignItems: 'center', height: 44, border: '1px solid var(--border-strong)', borderRadius: 10, background: 'var(--field)', padding: '0 14px', gap: 8 }}>
+            <input
+              type="number"
+              min={1}
+              max={100}
+              placeholder="Ej. 30"
+              value={targetPercentage}
+              onChange={(e) => setTargetPercentage(e.target.value)}
+              style={{ flex: 1, border: 'none', background: 'none', outline: 'none', fontFamily: 'inherit', fontSize: 14, color: 'var(--text)' }}
+            />
+            <span style={{ fontSize: 14, color: 'var(--muted)', flexShrink: 0 }}>%</span>
+          </div>
+          <div style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 6 }}>
+            Porcentaje de ingresos que quieres destinar a este fondo. Usado en Salud financiera.
           </div>
         </div>
 

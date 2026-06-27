@@ -7,6 +7,7 @@ export interface Fund {
   color: string | null
   isOperative: boolean
   countsForRunway: boolean
+  targetPercentage: number | null
   archivedAt: string | null
   balance: string
   balanceFormatted: string
@@ -24,6 +25,7 @@ export interface CreateFundPayload {
   classification: FundClassification
   color?: string
   countsForRunway?: boolean
+  targetPercentage?: number
 }
 
 export type UpdateFundPayload = Partial<CreateFundPayload>
