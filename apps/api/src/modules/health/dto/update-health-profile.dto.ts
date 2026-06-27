@@ -1,12 +1,5 @@
-import { Type } from 'class-transformer';
-import {
-  IsEnum,
-  IsNumberString,
-  IsOptional,
-  ValidateNested,
-} from 'class-validator';
+import { IsEnum, IsNumberString, IsOptional } from 'class-validator';
 import { HealthFramework } from '../entities/health-profile.entity';
-import { ClassificationTargetsDto } from './classification-targets.dto';
 
 export class UpdateHealthProfileDto {
   @IsOptional()
@@ -16,9 +9,4 @@ export class UpdateHealthProfileDto {
   @IsOptional()
   @IsNumberString()
   monthlyIncome?: string;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => ClassificationTargetsDto)
-  config?: ClassificationTargetsDto;
 }

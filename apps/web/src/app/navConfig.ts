@@ -24,7 +24,7 @@ export const navMain: NavItem[] = [
   { key: 'funds', label: 'Fondos', path: '/fondos', icon: FundsIcon },
   { key: 'transactions', label: 'Transacciones', path: '/transacciones', icon: TransactionsIcon},
   { key: 'transfers', label: 'Transferencias', path: '/transferencias', icon: TransfersIcon },
-  { key: 'health', label: 'Salud financiera', path: '/salud', icon: HealthIcon, disabled: true },
+  { key: 'health', label: 'Salud financiera', path: '/salud', icon: HealthIcon },
   { key: 'categories', label: 'Categorías', path: '/categorias', icon: CategoriesIcon },
 ]
 
@@ -39,4 +39,5 @@ export const pageTitles: Record<string, { crumb: string; title: string }> = {
   '/transacciones': { crumb: 'General', title: 'Transacciones' },
   '/categorias': { crumb: 'General', title: 'Categorías' },
   '/transferencias': { crumb: 'General', title: 'Transferencias' },
+  '/salud': { crumb: 'General', title: 'Salud financiera' },
 }

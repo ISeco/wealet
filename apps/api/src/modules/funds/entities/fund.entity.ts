@@ -49,6 +49,12 @@ export class Fund {
   @Column({ name: 'counts_for_runway', type: 'boolean', default: false })
   countsForRunway: boolean;
 
+  @Column({ name: 'framework_slot', type: 'text', nullable: true })
+  frameworkSlot: string | null;
+
+  @Column({ name: 'target_percentage', type: 'integer', nullable: true })
+  targetPercentage: number | null;
+
   @Column({ name: 'archived_at', type: 'timestamptz', nullable: true })
   archivedAt: Date | null;
 
