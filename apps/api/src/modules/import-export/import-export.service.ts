@@ -107,8 +107,8 @@ export class ImportExportService {
 
   async exportToXlsx(
     userId: string,
-    from: string,
-    to: string,
+    from?: string,
+    to?: string,
   ): Promise<Buffer> {
     const transactions = await this.transactionsRepository.find({
       where: { userId },
@@ -116,10 +116,10 @@ export class ImportExportService {
       order: { occurredOn: 'ASC' },
     });
 
-    const filtered = transactions.filter(
-      (transaction) =>
-        transaction.occurredOn >= from && transaction.occurredOn <= to,
-    );
+    const filtered =
+      from && to
+        ? transactions.filter((t) => t.occurredOn >= from && t.occurredOn <= to)
+        : transactions;
 
     const sheetRows = filtered.map((transaction) => ({
       Fecha: transaction.occurredOn,

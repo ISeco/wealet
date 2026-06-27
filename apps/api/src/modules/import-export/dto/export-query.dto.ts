@@ -1,9 +1,11 @@
-import { IsDateString } from 'class-validator';
+import { IsDateString, IsOptional } from 'class-validator';
 
 export class ExportQueryDto {
+  @IsOptional()
   @IsDateString()
-  from: string;
+  from?: string;
 
+  @IsOptional()
   @IsDateString()
-  to: string;
+  to?: string;
 }

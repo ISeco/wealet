@@ -72,10 +72,14 @@ export class ImportExportController {
       query.from,
       query.to,
     );
+    const filename =
+      query.from && query.to
+        ? `transacciones-${query.from}-${query.to}.xlsx`
+        : 'transacciones.xlsx';
     res.set({
       'Content-Type':
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Content-Disposition': `attachment; filename="transacciones-${query.from}-${query.to}.xlsx"`,
+      'Content-Disposition': `attachment; filename="${filename}"`,
     });
     return new StreamableFile(buffer);
   }
