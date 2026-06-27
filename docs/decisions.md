@@ -112,7 +112,7 @@ La vista Transacciones muestra transacciones y transferencias mezcladas en un ti
 
 ### SOLID applied to this project
 - **S**: one service per domain; `reports/` (read) is separate from `transactions/` (write). A service owns one aggregate's read+write logic rather than being split further.
-- **O**: financial frameworks (50/30/20, Jars, Fondos) behind a `FinancialFrameworkStrategy` interface. Adding a new one = new class only. This is the one place in the codebase where the extra interface earns its cost — frameworks really do get added.
+- **O**: financial frameworks (50/30/20, Jars, Fondos) are open for extension via `FRAMEWORK_FUND_TEMPLATES` in `health/framework-funds.ts` — adding a new framework = new entry in the templates map. The `FinancialFrameworkStrategy` class hierarchy was removed; targets live as `frameworkSlot` + `targetPercentage` on each `Fund` row, which is more granular and needs no extra abstraction layer.
 - **L**: all strategies honor the same contract; interchangeable without breaking consumers.
 - **I**: small, focused interfaces where they exist — specific DTOs per endpoint; `FinancialFrameworkStrategy` is intentionally narrow (one method).
 - **D**: services depend on NestJS DI to receive their `Repository<Entity>` and collaborator services — concrete TypeORM types, not hand-rolled abstractions over them.

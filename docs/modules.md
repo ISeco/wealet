@@ -114,15 +114,15 @@ lib/
   money.ts        format amounts by currency
 features/
   auth/           login, register, route guard
-  onboarding/     preset / import-Excel wizard
-  dashboard/      summary cards + Recharts charts
+  dashboard/      summary cards + Recharts charts  ← cards en placeholder "Próximamente"; solo HealthCard activa
   funds/          fund list + detail (balance history)
   transactions/   list, filters, create/edit form
   transfers/      move money between funds (A→B)
   categories/     CRUD + color
-  health/         framework adherence visual
-  import-export/  file uploader + preview table
-  settings/       profile, prefs, theme
+  health/         framework adherence visual; selector de mes convierte YYYY-MM → from/to en cliente
+  [pendiente] onboarding/     preset / import-Excel wizard
+  [pendiente] import-export/  file uploader + preview table
+  [pendiente] settings/       profile, prefs, theme
 components/ui/    reusable UI components
 ```
 

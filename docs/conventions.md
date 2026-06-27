@@ -18,7 +18,7 @@ Apply naturally when the use case fits. Never force them.
 | Pattern | Where it applies |
 |---|---|
 | **Repository** (TypeORM `Repository<Entity>` via `@InjectRepository()`) | Services depend on it directly — no extra interface/DI-token layer; NestJS DI already lets tests mock it |
-| **Strategy** | `FinancialFrameworkStrategy` — adding a new framework = new class only, existing code untouched |
+| **Strategy** | `FinancialFrameworkStrategy` pattern was evaluated but removed — framework targets now live as `frameworkSlot` + `targetPercentage` on each `Fund` row, which is more granular and needs no extra abstraction |
 | **DTO + Mapper** | No entity leaks through the API surface |
 | **Money helper** | `formatMoney`/`parseMoney` in `common/money/` format `bigint` for presentation — not a `Money(amount, currency)` Value Object, since nothing yet needs Money instances to carry behavior beyond formatting |
 | **Unit of Work** | `DataSource.transaction()` for atomic transfers |
