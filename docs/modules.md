@@ -1,5 +1,15 @@
 # Modules & API
 
+## Estado actual
+
+- **API completa**: todos los endpoints documentados están implementados. Incluye `/reports/months` y `?month=YYYY-MM` en summary / by-category / net-worth para el selector de mes del dashboard.
+- **Frontend funcional end-to-end**: auth, funds, transactions, transfers, categories, health. El dashboard solo tiene la HealthCard activa; el resto de las cards son placeholder "Próximamente".
+- **Frontend pendiente**: onboarding, import-export y settings no están construidos. Los endpoints de API que necesitan ya existen y están testeados.
+- **Health — cambio de modelo**: el campo `config` jsonb fue eliminado de `HealthProfile`. Los targets del framework viven como `frameworkSlot` + `targetPercentage` en cada `Fund`, sembrados automáticamente al cambiar de framework. El patrón Strategy fue evaluado y eliminado; la lógica es inline en `health.service.ts`.
+- **Import/Export**: API completa (preview → commit con dedupe → export .xlsx); pantalla frontend sin construir.
+
+---
+
 ## Backend module map (`apps/api/src/`)
 
 ```

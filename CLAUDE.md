@@ -32,6 +32,10 @@ Personal finance app built on an envelope/fund system. Full-stack portfolio proj
 - Transfers between funds are atomic — single DB transaction, both sides or neither.
 - Use 2-space indentation. Prefer named exports.
 
+## After every implementation
+
+After completing any feature, endpoint, or significant refactor, update the **Estado actual** section at the top of `docs/modules.md` to reflect the new state: what was added, what changed behavior, and what remains pending. Keep it to concise bullets — it's a snapshot for the next session, not a changelog.
+
 ## Reference Docs
 
 - Data model → `docs/data-model.md`
