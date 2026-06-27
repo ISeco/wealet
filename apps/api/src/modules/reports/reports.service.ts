@@ -103,7 +103,7 @@ export class ReportsService {
        WHERE t.user_id = $1 AND t.type = 'expense'
          AND t.occurred_on BETWEEN $2 AND $3
        GROUP BY c.id, c.name, c.color
-       ORDER BY amount DESC`,
+       ORDER BY SUM(t.amount) DESC`,
       [userId, from, to],
     );
 
