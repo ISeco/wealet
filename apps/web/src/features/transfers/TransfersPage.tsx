@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DateInput } from '../../components/ui/DateInput'
-import { useFunds } from '../funds'
+import { useFunds, useFundsAll } from '../funds'
 import { FundPicker } from './components/FundPicker'
 import { useCreateTransfer, useTransfers } from './hooks'
 import type { Transfer } from './types'
@@ -27,6 +27,7 @@ function formatDateLabel(iso: string): string {
 export function TransfersPage() {
   const navigate = useNavigate()
   const { data: funds = [] } = useFunds()
+  const { data: allFunds = [] } = useFundsAll()
   const { data: recentData } = useTransfers({ limit: 10 })
   const { mutate: doTransfer, isPending } = useCreateTransfer()
 
@@ -112,7 +113,7 @@ export function TransfersPage() {
     setStep('form')
   }
 
-  const fundMap = Object.fromEntries(funds.map((f) => [f.id, f.name]))
+  const fundMap = Object.fromEntries(allFunds.map((f) => [f.id, f.name]))
   const recentTransfers = recentData?.data ?? []
 
   // ─── Success state ───────────────────────────────────────────────────────────
@@ -338,9 +339,9 @@ export function TransfersPage() {
                   {formatDateLabel(t.occurredOn)}
                 </span>
                 <span style={{ fontSize: 13.5, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {fundMap[t.fromFundId] ?? t.fromFundId}{' '}
+                  {fundMap[t.fromFundId] ?? <span style={{ color: 'var(--muted)', fontStyle: 'italic' }}>Fondo eliminado</span>}{' '}
                   <span style={{ color: 'var(--muted)' }}>→</span>{' '}
-                  {fundMap[t.toFundId] ?? t.toFundId}
+                  {fundMap[t.toFundId] ?? <span style={{ color: 'var(--muted)', fontStyle: 'italic' }}>Fondo eliminado</span>}
                 </span>
                 <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--info)', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
                   {t.amountFormatted}
