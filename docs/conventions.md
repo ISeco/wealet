@@ -24,6 +24,19 @@ Apply naturally when the use case fits. Never force them.
 | **Unit of Work** | `DataSource.transaction()` for atomic transfers |
 | **Factory / Seed** | Jars of Eker preset = factory that creates 6 Fund rows |
 | **Component extraction** (frontend) | When two or more forms/screens in a feature repeat the same markup (a field, a button, an icon), pull it into a small component under `features/<feature>/components/` instead of duplicating it. See `features/auth/components/` |
+| **Section colocation** (frontend) | When a page grows into a "god component" — concentrating state, hooks and markup for multiple independent sections — extract each section into its own component. A section qualifies for extraction when it has its own local state and/or its own data hooks and does not share mutable state with sibling sections. The page component becomes pure composition. Shared style tokens (`card`, `settingsRow`) live in a `styles.ts` alongside the page. See `features/settings/`. |
+
+#### Section extraction criteria
+
+Extract a section into its own component when **all three** are true:
+1. It has local state (`useState`) or data hooks (`useQuery` / `useMutation`) of its own
+2. That state is not read or mutated by any sibling section
+3. The section is large enough that its presence in the page file obscures the overall structure (~40+ lines of JSX)
+
+**Do not extract** when:
+- The section is a few lines with no state — inline is cleaner
+- Two sections share mutable state (e.g., one section opens a modal that another section triggers) — keep them together or lift state to the page
+- Extraction would require passing props back down just to reconnect what was co-located — prop drilling as a result of extraction is a signal the boundary is wrong
 
 ### What we deliberately do NOT do
 - No microservices, CQRS/event-sourcing, or hexagonal ports-and-adapters
