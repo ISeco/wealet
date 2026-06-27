@@ -46,7 +46,7 @@ Users
   PATCH  /users/me             → update displayName / theme / onboardingCompleted
 
 Transactions
-  GET    /transactions?from=&to=&type=&categoryId=&fundId=&q=&page=&limit=   (q ← nuevo: búsqueda)
+  GET    /transactions?from=&to=&type=&categoryId=&fundId=&q=&page=&limit=
   POST   /transactions
   GET    /transactions/:id
   PATCH  /transactions/:id
@@ -84,8 +84,8 @@ Reports (read-only, aggregated in SQL)
   GET  /reports/net-worth                 → available / reserve / committed
   GET  /reports/runway                    → months of runway (cushion ÷ burn)
   GET  /reports/cash-flow?months=12       → monthly net flow (dashboard bars), excludes transfers
-  GET  /reports/months                    ← nuevo: meses con datos (primer mes con tx → actual), para el selector de mes del dashboard
-  · param ?month=YYYY-MM en summary / by-category / net-worth / health-assessment ← nuevo: el dashboard tiene selector de mes; net-worth y assessment deben aceptarlo además de from/to
+  [pendiente] GET  /reports/months        → meses con datos (primer mes con tx → actual), para selector de mes del dashboard
+  [pendiente] param ?month=YYYY-MM        → en summary / by-category / net-worth / health-assessment; net-worth y assessment también
 
 Import / Export
   POST /import/preview    (multipart) → parsed rows, errors, duplicates flagged
@@ -95,7 +95,7 @@ Import / Export
 Health
   GET  /health/profile
   PUT  /health/profile
-  GET  /health/assessment?from=&to=   → adherence to selected framework
+  GET  /health/assessment?[from=&to=] → adherence to selected framework; from/to requeridos solo para 50/30/20 y jars_eker (miden flujo); fondos usa balances acumulados e ignora el rango
 ```
 
 ### API conventions
@@ -140,14 +140,13 @@ Design reference per screen lives in `docs/design/screens/` (one isolated `.html
 |---|---|
 | auth | `POST /auth/login`, `/auth/register`, `/auth/refresh`, `/auth/logout` |
 | onboarding | `POST /funds/preset`; (Excel path) `POST /import/preview`, `/import/commit`; `PATCH /users/me`; `PUT /health/profile` |
-| dashboard | `GET /reports/summary`, `/reports/net-worth`, `/reports/runway`, `/reports/cash-flow`, `/reports/by-category`, `/health/assessment`, `/transactions?limit=`, `/funds`, `/reports/months` (selector de mes; reports aceptan `?month=`) |
+| dashboard | `GET /reports/summary`, `/reports/net-worth`, `/reports/runway`, `/reports/cash-flow`, `/reports/by-category`, `/health/assessment`, `/transactions?limit=`, `/funds` |
 | funds | `GET /funds`, `/funds/:id`, `/funds/:id/history`, `/transactions?fundId=`, `POST /funds` (drawer "Nuevo fondo"), `PATCH /funds/:id`, `DELETE /funds/:id` |
 | transactions | `GET /activity` (+filters, `?type=transaction\|transfer` para filtrar por tab; `?subtype=income\|expense` para tabs de tipo), `POST/GET/PATCH/DELETE /transactions/:id` (`PATCH` también reasigna fondo desde la fila), `GET /funds` (opciones del reassign por fila) |
-| categories | `GET /categories` (`?scope=mine\|system\|all`; campo `isSystem`), `POST` (drawer Nueva), `PATCH /:id` (drawer Editar — mismo drawer), `DELETE /:id` (confirm centrado; solo categorías propias), `GET /reports/by-category` |
+| categories | `GET /categories` (devuelve todas; filtro mine/system/all es client-side vía `isSystem`), `POST /categories` (drawer Nueva), `PATCH /categories/:id` (drawer Editar), `DELETE /categories/:id` (solo propias), `GET /reports/by-category` |
 | transfers | `POST /transfers`, `GET /funds` |
 | health | `GET /health/assessment`, `GET/PUT /health/profile` |
-| categories | `GET/POST/PATCH/DELETE /categories`, `GET /reports/by-category` |
 | import-export | `POST /import/preview`, `/import/commit`, `GET /export` |
 | settings | `GET/PATCH /users/me`, `POST /auth/change-password`, `PATCH /funds/:id` (countsForRunway), `PUT /health/profile`, `GET /export` |
 
-Endpoints marked `← nuevo` were added after the design review — gaps the screens revealed. Rationale in the Notion architecture doc, §5.
+Endpoints marcados `[pendiente]` están planificados pero aún no implementados en la API.

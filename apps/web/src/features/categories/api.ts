@@ -1,9 +1,8 @@
 import { apiFetch } from '../../lib/api/client'
 import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from './types'
 
-export function listCategories(scope?: 'mine' | 'system' | 'all'): Promise<Category[]> {
-  const qs = scope ? `?scope=${scope}` : ''
-  return apiFetch<Category[]>(`/categories${qs}`)
+export function listCategories(): Promise<Category[]> {
+  return apiFetch<Category[]>('/categories')
 }
 
 export function createCategory(payload: CreateCategoryPayload): Promise<Category> {
