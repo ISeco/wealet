@@ -81,16 +81,8 @@ export class FundsService {
     return { fund: saved, balance };
   }
 
-  /** Returns null when the fund was hard-deleted; otherwise the archived fund. */
-  async remove(userId: string, id: string): Promise<FundWithBalance | null> {
+  async remove(userId: string, id: string): Promise<FundWithBalance> {
     const fund = await this.findOneOrThrow(userId, id);
-    const hasMovements = await this.hasMovements(id);
-
-    if (!hasMovements) {
-      await this.fundsRepository.delete({ id, userId });
-      return null;
-    }
-
     fund.archivedAt = new Date();
     fund.isOperative = false;
     const saved = await this.save(fund);
@@ -200,18 +192,6 @@ export class FundsService {
       }
       throw error;
     }
-  }
-
-  private async hasMovements(fundId: string): Promise<boolean> {
-    const rows: Array<{ count: string }> = await this.dataSource.query(
-      `SELECT COUNT(*) AS count FROM (
-         SELECT 1 FROM transactions WHERE fund_id = $1
-         UNION ALL
-         SELECT 1 FROM transfers WHERE from_fund_id = $1 OR to_fund_id = $1
-       ) movements`,
-      [fundId],
-    );
-    return Number(rows[0].count) > 0;
   }
 
   private async getBalancesByFundId(

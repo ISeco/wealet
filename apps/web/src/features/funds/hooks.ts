@@ -5,7 +5,14 @@ import type { CreateFundPayload, UpdateFundPayload } from './types'
 export function useFunds() {
   return useQuery({
     queryKey: ['funds'],
-    queryFn: listFunds,
+    queryFn: () => listFunds(),
+  })
+}
+
+export function useFundsAll() {
+  return useQuery({
+    queryKey: ['funds', 'all'],
+    queryFn: () => listFunds(true),
   })
 }
 

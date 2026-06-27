@@ -7,7 +7,6 @@ import {
   Patch,
   Post,
   Query,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -16,7 +15,6 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateFundDto } from './dto/create-fund.dto';
@@ -114,20 +112,15 @@ export class FundsController {
   }
 
   @ApiOperation({
-    summary: 'Archive a fund with movements, or hard-delete it if it has none',
+    summary: 'Archive a fund (always soft-delete for traceability)',
   })
   @ApiOkResponse({ type: FundResponseDto })
   @Delete(':id')
   async remove(
     @CurrentUser() userId: string,
     @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<FundResponseDto | undefined> {
-    const result = await this.fundsService.remove(userId, id);
-    if (!result) {
-      res.status(204);
-      return undefined;
-    }
-    return toFundResponseDto(result.fund, result.balance);
+  ): Promise<FundResponseDto> {
+    const { fund, balance } = await this.fundsService.remove(userId, id);
+    return toFundResponseDto(fund, balance);
   }
 }

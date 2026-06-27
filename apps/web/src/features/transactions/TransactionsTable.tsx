@@ -12,6 +12,7 @@ export type TableRow =
 interface TransactionsTableProps {
   rows: TableRow[]
   funds: Fund[]
+  allFunds: Fund[]
   categories: Category[]
   onRowClick: (transaction: Transaction) => void
   onReassign: (transactionId: string, newFundId: string) => void
@@ -26,10 +27,10 @@ function formatDate(isoDate: string): string {
   return `${parseInt(day)} ${MONTH_ABBR[parseInt(month) - 1]}`
 }
 
-export function TransactionsTable({ rows, funds, categories, onRowClick, onReassign }: TransactionsTableProps) {
+export function TransactionsTable({ rows, funds, allFunds, categories, onRowClick, onReassign }: TransactionsTableProps) {
   const [reassignOpenId, setReassignOpenId] = useState<string | null>(null)
 
-  const fundsById = new Map(funds.map((f) => [f.id, f]))
+  const fundsById = new Map(allFunds.map((f) => [f.id, f]))
   const categoriesById = new Map(categories.map((c) => [c.id, c]))
 
   return (

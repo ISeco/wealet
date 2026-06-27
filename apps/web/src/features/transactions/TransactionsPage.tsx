@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useFunds } from '../funds'
+import { useFunds, useFundsAll } from '../funds'
 import { useCategories } from '../categories'
 import { Pagination } from '../../components/ui/Pagination'
 import { useActivity, useUpdateTransaction } from './hooks'
@@ -68,6 +68,7 @@ export function TransactionsPage() {
   const [modalTransaction, setModalTransaction] = useState<Transaction | 'new' | null>(null)
 
   const { data: funds = [] } = useFunds()
+  const { data: allFunds = [] } = useFundsAll()
   const { data: categories = [] } = useCategories()
   const { mutate: updateTransaction } = useUpdateTransaction()
 
@@ -176,6 +177,7 @@ export function TransactionsPage() {
         <TransactionsTable
           rows={rows}
           funds={funds}
+          allFunds={allFunds}
           categories={categories}
           onRowClick={(transaction) => setModalTransaction(transaction)}
           onReassign={handleReassign}
