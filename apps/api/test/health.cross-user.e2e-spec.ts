@@ -24,10 +24,7 @@ describe('Health profile cross-user isolation (e2e)', () => {
     await request(app.getHttpServer())
       .put(`/${GLOBAL_PREFIX}/health/profile`)
       .set('Authorization', `Bearer ${userA.accessToken}`)
-      .send({
-        monthlyIncome: '500000',
-        config: { available: 10, reserve: 10, committed: 80 },
-      })
+      .send({ monthlyIncome: '500000' })
       .expect(200);
   });
 
@@ -44,11 +41,7 @@ describe('Health profile cross-user isolation (e2e)', () => {
 
     expect(res.body.userId).toBe(userB.userId);
     expect(res.body.monthlyIncome).not.toBe('500000');
-    expect(res.body.config).toEqual({
-      available: 30,
-      reserve: 30,
-      committed: 40,
-    });
+    expect(res.body.framework).toBe('fondos');
   });
 
   it('user A profile keeps its own customization', async () => {
@@ -58,11 +51,6 @@ describe('Health profile cross-user isolation (e2e)', () => {
       .expect(200);
 
     expect(res.body.monthlyIncome).toBe('500000');
-    expect(res.body.config).toEqual({
-      available: 10,
-      reserve: 10,
-      committed: 80,
-    });
   });
 
   it("user B updating their profile does not affect user A's profile", async () => {
