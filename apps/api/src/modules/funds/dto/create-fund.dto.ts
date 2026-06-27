@@ -25,10 +25,6 @@ export class CreateFundDto {
 
   @IsOptional()
   @IsBoolean()
-  isOperative?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
   countsForRunway?: boolean;
 
   @IsOptional()

@@ -53,7 +53,11 @@ export class FundsService {
   }
 
   async create(userId: string, dto: CreateFundDto): Promise<FundWithBalance> {
-    const fund = this.fundsRepository.create({ ...dto, userId });
+    const fund = this.fundsRepository.create({
+      ...dto,
+      userId,
+      isOperative: true,
+    });
     const saved = await this.save(fund);
     return { fund: saved, balance: '0' };
   }

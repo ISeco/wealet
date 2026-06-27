@@ -7,6 +7,8 @@ export class FundResponseDto {
   color: string | null;
   isOperative: boolean;
   countsForRunway: boolean;
+  frameworkSlot: string | null;
+  targetPercentage: number | null;
   archivedAt: Date | null;
   balance: string;
   balanceFormatted: string;

@@ -15,6 +15,8 @@ export function toFundResponseDto(
     color: fund.color,
     isOperative: fund.isOperative,
     countsForRunway: fund.countsForRunway,
+    frameworkSlot: fund.frameworkSlot,
+    targetPercentage: fund.targetPercentage,
     archivedAt: fund.archivedAt,
     balance,
     balanceFormatted: formatMoney(balance, FUND_CURRENCY),

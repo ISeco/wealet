@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DateInput } from '../../components/ui/DateInput'
-import { useFunds, useFundsAll } from '../funds'
+import { useFundsAll } from '../funds'
 import { FundPicker } from './components/FundPicker'
 import { useCreateTransfer, useTransfers } from './hooks'
 import type { Transfer } from './types'
@@ -26,8 +26,8 @@ function formatDateLabel(iso: string): string {
 
 export function TransfersPage() {
   const navigate = useNavigate()
-  const { data: funds = [] } = useFunds()
   const { data: allFunds = [] } = useFundsAll()
+  const funds = allFunds.filter((f) => !f.archivedAt)
   const { data: recentData } = useTransfers({ limit: 10 })
   const { mutate: doTransfer, isPending } = useCreateTransfer()
 
@@ -40,7 +40,7 @@ export function TransfersPage() {
   const [step, setStep] = useState<'form' | 'success'>('form')
   const [lastTransfer, setLastTransfer] = useState<Transfer | null>(null)
   // Captured at submit time so the success state shows correct values
-  // even after useFunds() refetches with updated server balances.
+  // even after useFundsAll() refetches with updated server balances.
   const [successFromBalance, setSuccessFromBalance] = useState(0)
   const [successToBalance, setSuccessToBalance] = useState(0)
 

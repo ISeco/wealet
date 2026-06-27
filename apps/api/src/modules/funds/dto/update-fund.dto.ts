@@ -27,10 +27,6 @@ export class UpdateFundDto {
 
   @IsOptional()
   @IsBoolean()
-  isOperative?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
   countsForRunway?: boolean;
 
   @IsOptional()

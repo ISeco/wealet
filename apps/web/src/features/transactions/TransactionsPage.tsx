@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useFunds, useFundsAll } from '../funds'
+import { useFundsAll } from '../funds'
 import { useCategories } from '../categories'
 import { Pagination } from '../../components/ui/Pagination'
 import { useActivity, useUpdateTransaction } from './hooks'
@@ -67,8 +67,8 @@ export function TransactionsPage() {
   const [page, setPage] = useState(1)
   const [modalTransaction, setModalTransaction] = useState<Transaction | 'new' | null>(null)
 
-  const { data: funds = [] } = useFunds()
   const { data: allFunds = [] } = useFundsAll()
+  const funds = allFunds.filter((f) => !f.archivedAt)
   const { data: categories = [] } = useCategories()
   const { mutate: updateTransaction } = useUpdateTransaction()
 
