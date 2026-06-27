@@ -1,32 +1,83 @@
+import { useState } from 'react'
+import { useAuth } from '../auth/useAuth'
+import { CategoryChart } from './components/CategoryChart'
 import { HealthCard } from './components/HealthCard'
+import { MonthSelector } from './components/MonthSelector'
+import { NetFlowChart } from './components/NetFlowChart'
+import { PatrimonioCard } from './components/PatrimonioCard'
+import { RecentActivity } from './components/RecentActivity'
+import { RunwayCard } from './components/RunwayCard'
+import { StatRow } from './components/StatRow'
+import { useReportMonths } from './hooks'
 
-export function DashboardPage() {
+function Greeting({ name, month }: { name: string; month: string }) {
+  const [, m] = month.split('-')
+  const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+  const monthName = MONTH_NAMES[Number(m) - 1]
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 16 }}>
-        <PlaceholderCard label="Balance total" />
-        <PlaceholderCard label="Ingresos del mes" />
-        <PlaceholderCard label="Gastos del mes" />
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-        <HealthCard />
-        <PlaceholderCard label="Patrimonio neto" tall />
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <PlaceholderCard label="Flujo mensual" tall />
-        <PlaceholderCard label="Por categoría" tall />
+      <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em' }}>Hola, {name}</div>
+      <div style={{ fontSize: 14, color: 'var(--muted)', marginTop: 3 }}>
+        Esto es lo que pasó con tu dinero en <b style={{ color: 'var(--text)', fontWeight: 600 }}>{monthName.toLowerCase()}</b>.
       </div>
     </div>
   )
 }
 
-function PlaceholderCard({ label, tall }: { label: string; tall?: boolean }) {
+export function DashboardPage() {
+  const { user } = useAuth()
+  const { data: months = [] } = useReportMonths()
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
+
+  // Derive active month: use explicit selection or fall back to most recent
+  const activeMonth = selectedMonth ?? months[0] ?? null
+
+  if (!activeMonth) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <SkeletonRow cols={2} heights={[160, 160]} />
+        <SkeletonRow cols={3} heights={[100, 100, 100]} />
+        <SkeletonRow cols={2} heights={[300, 300]} />
+      </div>
+    )
+  }
+
   return (
-    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', padding: '20px 24px', minHeight: tall ? 200 : 96, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-      <div style={{ fontSize: 14.5, fontWeight: 600 }}>{label}</div>
-      <div style={{ fontSize: 12, color: 'var(--muted)' }}>Próximamente</div>
+    <div>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 22, flexWrap: 'wrap' }}>
+        <Greeting name={user?.displayName ?? user?.email ?? ''} month={activeMonth} />
+        <MonthSelector months={months} value={activeMonth} onChange={setSelectedMonth} />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 16, marginBottom: 16 }}>
+        <PatrimonioCard month={activeMonth} />
+        <RunwayCard />
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <StatRow month={activeMonth} />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <NetFlowChart />
+          <RecentActivity />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <HealthCard month={activeMonth} />
+          <CategoryChart month={activeMonth} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SkeletonRow({ cols, heights }: { cols: number; heights: number[] }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16 }}>
+      {heights.map((h, i) => (
+        <div key={i} style={{ height: h, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }} />
+      ))}
     </div>
   )
 }
