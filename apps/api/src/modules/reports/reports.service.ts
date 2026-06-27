@@ -38,9 +38,10 @@ export class ReportsService {
     userId: string,
     from: string,
     to: string,
+    month?: string,
   ): Promise<SummaryResponseDto> {
-    const [{ balance }]: Array<{ balance: string }> =
-      await this.dataSource.query(
+    const [[balanceRow], [flowRow]] = await Promise.all([
+      this.dataSource.query<Array<{ balance: string }>>(
         `SELECT COALESCE(SUM(m.amount), 0)::text AS balance
          FROM (
            SELECT CASE WHEN type = 'income' THEN amount ELSE -amount END AS amount
@@ -51,19 +52,37 @@ export class ReportsService {
            SELECT -amount FROM transfers WHERE user_id = $1 AND occurred_on <= $2
          ) m`,
         [userId, to],
-      );
-
-    const [{ income, expense }]: Array<{ income: string; expense: string }> =
-      await this.dataSource.query(
+      ),
+      this.dataSource.query<Array<{ income: string; expense: string }>>(
         `SELECT
            COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0)::text AS income,
            COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0)::text AS expense
          FROM transactions
          WHERE user_id = $1 AND occurred_on BETWEEN $2 AND $3`,
         [userId, from, to],
-      );
+      ),
+    ]);
 
-    return { balance, income, expense };
+    const { balance } = balanceRow;
+    const { income, expense } = flowRow;
+
+    if (!month) return { balance, income, expense };
+
+    const prevFrom = this.prevMonthFirstDay(month);
+    const prevTo = this.prevMonthLastDay(month);
+    const [{ expense: previousExpense }] = await this.dataSource.query<
+      Array<{ expense: string }>
+    >(
+      `SELECT COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0)::text AS expense
+       FROM transactions WHERE user_id = $1 AND occurred_on BETWEEN $2 AND $3`,
+      [userId, prevFrom, prevTo],
+    );
+
+    const prevNum = Number(previousExpense);
+    const expenseChangePercent =
+      prevNum !== 0 ? ((Number(expense) - prevNum) / prevNum) * 100 : null;
+
+    return { balance, income, expense, previousExpense, expenseChangePercent };
   }
 
   async getByCategory(
@@ -74,15 +93,16 @@ export class ReportsService {
     const rows: Array<{
       category_id: string;
       category_name: string;
+      color: string | null;
       amount: string;
     }> = await this.dataSource.query(
-      `SELECT c.id AS category_id, c.name AS category_name,
+      `SELECT c.id AS category_id, c.name AS category_name, c.color,
          COALESCE(SUM(t.amount), 0)::text AS amount
        FROM categories c
        JOIN transactions t ON t.category_id = c.id
        WHERE t.user_id = $1 AND t.type = 'expense'
          AND t.occurred_on BETWEEN $2 AND $3
-       GROUP BY c.id, c.name
+       GROUP BY c.id, c.name, c.color
        ORDER BY amount DESC`,
       [userId, from, to],
     );
@@ -90,43 +110,34 @@ export class ReportsService {
     return rows.map((row) => ({
       categoryId: row.category_id,
       categoryName: row.category_name,
+      color: row.color,
       amount: row.amount,
     }));
   }
 
   async getNetWorth(
     userId: string,
-    asOf?: string,
+    month?: string,
   ): Promise<NetWorthResponseDto> {
-    const dateClause = asOf ? ' AND occurred_on <= $2' : '';
-    const params: unknown[] = asOf ? [userId, asOf] : [userId];
+    const asOf = month ? this.monthLastDay(month) : undefined;
+    const current = await this.getNetWorthAsOf(userId, asOf);
 
-    const rows: ClassificationBalanceRow[] = await this.dataSource.query(
-      `SELECT f.classification,
-         COALESCE(SUM(m.amount), 0)::text AS balance
-       FROM funds f
-       LEFT JOIN (
-         SELECT fund_id, CASE WHEN type = 'income' THEN amount ELSE -amount END AS amount
-         FROM transactions WHERE user_id = $1${dateClause}
-         UNION ALL
-         SELECT to_fund_id AS fund_id, amount FROM transfers WHERE user_id = $1${dateClause}
-         UNION ALL
-         SELECT from_fund_id AS fund_id, -amount FROM transfers WHERE user_id = $1${dateClause}
-       ) m ON m.fund_id = f.id
-       WHERE f.user_id = $1
-       GROUP BY f.classification`,
-      params,
-    );
+    if (!month) return current;
 
-    const balanceByClassification = new Map(
-      rows.map((row) => [row.classification, row.balance]),
-    );
+    const prevAsOf = this.prevMonthLastDay(month);
+    const previous = await this.getNetWorthAsOf(userId, prevAsOf);
 
-    const [available, reserve, committed] = CLASSIFICATIONS.map(
-      (classification) => balanceByClassification.get(classification) ?? '0',
-    );
+    const prevNum = Number(previous.total);
+    const changePercent =
+      prevNum !== 0
+        ? ((Number(current.total) - prevNum) / prevNum) * 100
+        : null;
 
-    return { available, reserve, committed };
+    return {
+      ...current,
+      previousTotal: previous.total,
+      changePercent,
+    };
   }
 
   async getRunway(userId: string): Promise<RunwayResponseDto> {
@@ -192,5 +203,74 @@ export class ReportsService {
        ORDER BY w.month`,
       [userId, months],
     );
+  }
+
+  private async getNetWorthAsOf(
+    userId: string,
+    asOf?: string,
+  ): Promise<{
+    available: string;
+    reserve: string;
+    committed: string;
+    total: string;
+  }> {
+    const dateClause = asOf ? ' AND occurred_on <= $2' : '';
+    const params: unknown[] = asOf ? [userId, asOf] : [userId];
+
+    const rows: ClassificationBalanceRow[] = await this.dataSource.query(
+      `SELECT f.classification,
+         COALESCE(SUM(m.amount), 0)::text AS balance
+       FROM funds f
+       LEFT JOIN (
+         SELECT fund_id, CASE WHEN type = 'income' THEN amount ELSE -amount END AS amount
+         FROM transactions WHERE user_id = $1${dateClause}
+         UNION ALL
+         SELECT to_fund_id AS fund_id, amount FROM transfers WHERE user_id = $1${dateClause}
+         UNION ALL
+         SELECT from_fund_id AS fund_id, -amount FROM transfers WHERE user_id = $1${dateClause}
+       ) m ON m.fund_id = f.id
+       WHERE f.user_id = $1
+       GROUP BY f.classification`,
+      params,
+    );
+
+    const balanceByClassification = new Map(
+      rows.map((row) => [row.classification, row.balance]),
+    );
+
+    const [available, reserve, committed] = CLASSIFICATIONS.map(
+      (c) => balanceByClassification.get(c) ?? '0',
+    );
+
+    const total = (
+      BigInt(available) +
+      BigInt(reserve) +
+      BigInt(committed)
+    ).toString();
+
+    return { available, reserve, committed, total };
+  }
+
+  private monthLastDay(month: string): string {
+    const [year, m] = month.split('-').map(Number);
+    const lastDay = new Date(year, m, 0).getDate();
+    return `${month}-${String(lastDay).padStart(2, '0')}`;
+  }
+
+  private prevMonthLastDay(month: string): string {
+    const [year, m] = month.split('-').map(Number);
+    const prevDate = new Date(year, m - 1, 0);
+    const y = prevDate.getFullYear();
+    const mo = String(prevDate.getMonth() + 1).padStart(2, '0');
+    const d = String(prevDate.getDate()).padStart(2, '0');
+    return `${y}-${mo}-${d}`;
+  }
+
+  private prevMonthFirstDay(month: string): string {
+    const [year, m] = month.split('-').map(Number);
+    const prevDate = new Date(year, m - 1, 0);
+    const y = prevDate.getFullYear();
+    const mo = String(prevDate.getMonth() + 1).padStart(2, '0');
+    return `${y}-${mo}-01`;
   }
 }

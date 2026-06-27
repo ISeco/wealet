@@ -43,7 +43,7 @@ export class ReportsController {
     @Query() query: ReportQueryDto,
   ): Promise<SummaryResponseDto> {
     const { from, to } = this.resolveRange(query);
-    return this.reportsService.getSummary(userId, from, to);
+    return this.reportsService.getSummary(userId, from, to, query.month);
   }
 
   @ApiOperation({
@@ -69,8 +69,7 @@ export class ReportsController {
     @CurrentUser() userId: string,
     @Query() query: MonthQueryDto,
   ): Promise<NetWorthResponseDto> {
-    const asOf = query.month ? this.monthLastDay(query.month) : undefined;
-    return this.reportsService.getNetWorth(userId, asOf);
+    return this.reportsService.getNetWorth(userId, query.month);
   }
 
   @ApiOperation({
