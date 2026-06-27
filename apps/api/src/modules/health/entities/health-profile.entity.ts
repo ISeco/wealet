@@ -36,9 +36,6 @@ export class HealthProfile {
   @Column({ name: 'monthly_income', type: 'bigint', nullable: true })
   monthlyIncome: string | null;
 
-  @Column({ type: 'jsonb', nullable: true })
-  config: Record<string, unknown> | null;
-
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
 }
