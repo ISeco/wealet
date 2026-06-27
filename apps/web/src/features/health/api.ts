@@ -6,8 +6,11 @@ export function getHealthProfile(): Promise<HealthProfile> {
 }
 
 export function getHealthAssessment(month?: string): Promise<AssessmentResponse> {
-  const qs = month ? `?month=${month}` : ''
-  return apiFetch<AssessmentResponse>(`/health/assessment${qs}`)
+  if (!month) return apiFetch<AssessmentResponse>('/health/assessment')
+  const [y, m] = month.split('-')
+  const from = `${y}-${m}-01`
+  const to = `${y}-${m}-${String(new Date(+y, +m, 0).getDate()).padStart(2, '0')}`
+  return apiFetch<AssessmentResponse>(`/health/assessment?from=${from}&to=${to}`)
 }
 
 export function updateHealthProfile(framework: HealthFramework): Promise<HealthProfile> {

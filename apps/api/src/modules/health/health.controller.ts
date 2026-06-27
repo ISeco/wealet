@@ -48,6 +48,11 @@ export class HealthController {
     @CurrentUser() userId: string,
     @Query() query: AssessmentQueryDto,
   ): Promise<AssessmentResponseDto> {
-    return this.healthService.getAssessment(userId, query.from, query.to);
+    const today = new Date();
+    const from =
+      query.from ??
+      `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
+    const to = query.to ?? today.toISOString().slice(0, 10);
+    return this.healthService.getAssessment(userId, from, to);
   }
 }
