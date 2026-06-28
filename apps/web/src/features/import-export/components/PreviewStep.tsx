@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { formatMoney } from '../../../lib/money'
 import type { ImportPreviewResponseDto, ImportRowDto } from '../types'
 import { UnknownFundsSection } from './UnknownFundsSection'
+
+const PAGE_SIZE = 25
 
 interface Props {
   previewData: ImportPreviewResponseDto
@@ -32,6 +35,10 @@ function rowOpacity(row: ImportRowDto, unknownFunds: string[], approvedFunds: Se
 
 export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, onConfirm, isPending, error }: Props) {
   const { rows, unknownFunds, errors } = previewData
+  const [page, setPage] = useState(0)
+  const sortedRows = [...rows].sort((a, b) => b.occurredOn.localeCompare(a.occurredOn))
+  const totalPages = Math.ceil(sortedRows.length / PAGE_SIZE)
+  const visibleRows = sortedRows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   const validCount = rows.filter((r) => !r.duplicate).length
   const duplicateCount = rows.filter((r) => r.duplicate).length
@@ -99,7 +106,7 @@ export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, 
           <div>Fondo</div>
           <div>Estado</div>
         </div>
-        {rows.map((row) => {
+        {visibleRows.map((row) => {
           const badge = rowBadge(row, unknownFunds, approvedFunds)
           const opacity = rowOpacity(row, unknownFunds, approvedFunds)
           const amtColor = row.type === 'income' ? 'var(--pos)' : 'var(--neg)'
@@ -148,6 +155,53 @@ export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, 
           )
         })}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
+          <button
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page === 0}
+            style={{
+              height: 34,
+              padding: '0 14px',
+              border: '1px solid var(--border)',
+              borderRadius: 8,
+              background: 'var(--card)',
+              color: page === 0 ? 'var(--muted)' : 'var(--text)',
+              fontFamily: 'inherit',
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: page === 0 ? 'default' : 'pointer',
+              opacity: page === 0 ? 0.5 : 1,
+            }}
+          >
+            ← Anterior
+          </button>
+          <span style={{ fontSize: 13, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>
+            Página {page + 1} de {totalPages} · {rows.length} filas
+          </span>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page >= totalPages - 1}
+            style={{
+              height: 34,
+              padding: '0 14px',
+              border: '1px solid var(--border)',
+              borderRadius: 8,
+              background: 'var(--card)',
+              color: page >= totalPages - 1 ? 'var(--muted)' : 'var(--text)',
+              fontFamily: 'inherit',
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: page >= totalPages - 1 ? 'default' : 'pointer',
+              opacity: page >= totalPages - 1 ? 0.5 : 1,
+            }}
+          >
+            Siguiente →
+          </button>
+        </div>
+      )}
 
       {/* Unknown funds section */}
       {unknownFunds.length > 0 && (
