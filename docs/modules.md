@@ -9,7 +9,7 @@
 - **Settings implementado**: pantalla `/ajustes` completa — perfil (displayName editable, cambiar contraseña con logout automático), framework por defecto, runway fund toggles, tema claro/oscuro, exportar .xlsx. Botones Importar y Reconfigurar fondos deshabilitados hasta que esas pantallas existan. Se agregó `refetchUser()` al `AuthContext` para que el sidebar refleje el nombre actualizado sin recargar.
 - **Health — cambio de modelo**: el campo `config` jsonb fue eliminado de `HealthProfile`. Los targets del framework viven como `frameworkSlot` + `targetPercentage` en cada `Fund`, sembrados automáticamente al cambiar de framework. El patrón Strategy fue evaluado y eliminado; la lógica es inline en `health.service.ts`.
 - **Health — recomendaciones (pendiente IA)**: la sección "Recomendaciones" de la pantalla `salud` está temporalmente oculta. La lógica estática (`getRecommendations`, `RecommendationCards`, `RECS` en `utils.ts`) existe pero no se renderiza. La intención es reemplazarla con recomendaciones personalizadas generadas por un LLM a partir del comportamiento financiero real del usuario (assessment + historial de transacciones). No eliminar los archivos existentes — son la base de la futura integración.
-- **Import/Export**: API completa (preview → commit con dedupe → export .xlsx); pantalla frontend sin construir.
+- **Import/Export**: pantalla `/import` implementada. Wizard 3 pasos: upload → preview (stats + tabla de filas + sección fondos desconocidos colapsable con checkboxes) → éxito. El usuario controla qué fondos desconocidos aprobar; filas de fondos no aprobados se excluyen del commit. Export .xlsx sigue en Ajustes.
 
 ---
 
