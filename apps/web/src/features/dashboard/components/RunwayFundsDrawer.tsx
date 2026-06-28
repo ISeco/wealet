@@ -25,7 +25,7 @@ export function RunwayFundsDrawer({ onClose }: RunwayFundsDrawerProps) {
 
   const cushionTotal = funds
     .filter((f) => f.countsForRunway)
-    .reduce((sum, f) => sum + Number(f.balance), 0)
+    .reduce((sum, f) => sum + BigInt(f.balance), 0n)
 
   function handleToggle(fund: Fund) {
     if (update.isPending) return
