@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PlusIcon, SearchIcon } from '../../app/icons'
+import { DateInput } from '../../components/ui/DateInput'
 import type { Fund } from '../funds'
 import type { Category } from '../categories'
 import type { TransactionFilters } from './types'
@@ -138,41 +139,23 @@ export function TransactionsToolbar({
               {/* date range */}
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Rango de fechas</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                <input
-                  type="date"
-                  value={draft.from ?? ''}
-                  onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value || undefined }))}
-                  style={{
-                    flex: 1,
-                    height: 36,
-                    padding: '0 10px',
-                    border: '1px solid var(--border-strong)',
-                    borderRadius: 8,
-                    background: 'var(--field)',
-                    fontFamily: 'inherit',
-                    fontSize: 12.5,
-                    color: 'var(--text)',
-                    outline: 'none',
-                  }}
-                />
+                <div style={{ flex: 1 }}>
+                  <DateInput
+                    value={draft.from ?? ''}
+                    placeholder="Desde"
+                    onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value || undefined }))}
+                    style={{ height: 36, borderRadius: 8 }}
+                  />
+                </div>
                 <span style={{ color: 'var(--muted)', fontSize: 12 }}>→</span>
-                <input
-                  type="date"
-                  value={draft.to ?? ''}
-                  onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value || undefined }))}
-                  style={{
-                    flex: 1,
-                    height: 36,
-                    padding: '0 10px',
-                    border: '1px solid var(--border-strong)',
-                    borderRadius: 8,
-                    background: 'var(--field)',
-                    fontFamily: 'inherit',
-                    fontSize: 12.5,
-                    color: 'var(--text)',
-                    outline: 'none',
-                  }}
-                />
+                <div style={{ flex: 1 }}>
+                  <DateInput
+                    value={draft.to ?? ''}
+                    placeholder="Hasta"
+                    onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value || undefined }))}
+                    style={{ height: 36, borderRadius: 8 }}
+                  />
+                </div>
               </div>
 
               {/* fondos chips */}

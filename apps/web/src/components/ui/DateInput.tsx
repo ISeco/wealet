@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 
 interface DateInputProps {
   label?: string
+  placeholder?: string
   value: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   required?: boolean
@@ -45,7 +46,7 @@ function buildGrid(y: number, m: number) {
 }
 
 export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
-  function DateInput({ label, value, onChange, required, error, style }, ref) {
+  function DateInput({ label, placeholder = 'Selecciona una fecha', value, onChange, required, error, style }, ref) {
     const hiddenRef = useRef<HTMLInputElement>(null)
     const triggerRef = useRef<HTMLDivElement>(null)
     useImperativeHandle(ref, () => hiddenRef.current!)
@@ -60,11 +61,12 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
     const openCalendar = useCallback(() => {
       if (!triggerRef.current) return
       const r = triggerRef.current.getBoundingClientRect()
-      // Prefer below; if not enough space open above
       const spaceBelow = window.innerHeight - r.bottom
       const calHeight = 300
       const top = spaceBelow >= calHeight ? r.bottom + 6 : r.top - calHeight - 6
-      setPos({ top, left: r.left, width: r.width })
+      const calWidth = Math.max(r.width, 260)
+      const left = r.left + calWidth > window.innerWidth - 8 ? r.right - calWidth : r.left
+      setPos({ top, left, width: r.width })
       setOpen(true)
     }, [])
 
@@ -191,7 +193,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
           }}
         >
           <span style={{ flex: 1, fontSize: 14, fontVariantNumeric: 'tabular-nums', color: value ? 'var(--text)' : 'var(--muted)' }}>
-            {value ? formatDisplay(value) : 'Selecciona una fecha'}
+            {value ? formatDisplay(value) : placeholder}
           </span>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="4" width="18" height="18" rx="2" />
