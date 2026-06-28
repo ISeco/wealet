@@ -16,13 +16,13 @@ export function useCompleteOnboarding() {
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function complete(preset: PresetOption): Promise<boolean> {
+  async function complete(preset: PresetOption, monthlyIncome?: string): Promise<boolean> {
     setIsPending(true)
     setError(null)
     try {
       if (preset === 'jars_eker' || preset === '50_30_20' || preset === 'profit_first') {
         await createPresetFunds(preset)
-        await setHealthFramework(PRESET_TO_FRAMEWORK[preset])
+        await setHealthFramework(PRESET_TO_FRAMEWORK[preset], monthlyIncome)
       } else {
         await setHealthFramework('fondos')
       }

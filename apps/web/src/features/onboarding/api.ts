@@ -7,8 +7,11 @@ export function createPresetFunds(preset: 'jars_eker' | '50_30_20' | 'profit_fir
   return apiFetch<void>('/funds/preset', { method: 'POST', body: { preset } })
 }
 
-export function setHealthFramework(framework: Framework) {
-  return apiFetch<void>('/health/profile', { method: 'PUT', body: { framework } })
+export function setHealthFramework(framework: Framework, monthlyIncome?: string) {
+  return apiFetch<void>('/health/profile', {
+    method: 'PUT',
+    body: monthlyIncome ? { framework, monthlyIncome } : { framework },
+  })
 }
 
 export function completeOnboarding() {

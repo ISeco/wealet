@@ -4,17 +4,32 @@ import { createFund } from './api'
 import { useCompleteOnboarding } from './hooks/useCompleteOnboarding'
 import { Step1Preset, type PresetOption } from './steps/Step1Preset'
 import { Step2Funds } from './steps/Step2Funds'
+import { Step3Income } from './steps/Step3Income'
 import { Step3Success } from './steps/Step3Success'
 import type { CreateFundPayload } from '../funds/types'
 
+const SLOT_PRESETS: PresetOption[] = ['jars_eker', '50_30_20', 'profit_first']
+
 export function OnboardingPage() {
   const { user } = useAuth()
-  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
   const [selected, setSelected] = useState<PresetOption | null>(null)
   const [customFunds, setCustomFunds] = useState<CreateFundPayload[]>([])
   const [addFundError, setAddFundError] = useState<string | null>(null)
+  const [incomeAmount, setIncomeAmount] = useState('')
 
   const { complete, isPending, error } = useCompleteOnboarding()
+
+  const isSlotPreset = selected ? SLOT_PRESETS.includes(selected) : false
+  const totalSteps = isSlotPreset ? 4 : 3
+
+  // Map internal step (1-4) to dot position (1-totalSteps)
+  const dotStep = isSlotPreset ? step : step === 4 ? 3 : step
+
+  const dots = Array.from({ length: totalSteps }, (_, i) => ({
+    active: i + 1 === dotStep,
+    width: i + 1 === dotStep ? 24 : 8,
+  }))
 
   async function handleAddFund(fund: CreateFundPayload) {
     setAddFundError(null)
@@ -32,22 +47,27 @@ export function OnboardingPage() {
 
   async function handleConfirmStep2() {
     if (!selected) return
-    const ok = await complete(selected)
-    if (ok) setStep(3)
+    if (isSlotPreset) {
+      setStep(3)
+    } else {
+      const ok = await complete(selected)
+      if (ok) setStep(4)
+    }
+  }
+
+  async function handleConfirmIncome(income?: string) {
+    if (!selected) return
+    const ok = await complete(selected, income)
+    if (ok) setStep(4)
   }
 
   async function handleExcelComplete() {
     if (!selected) return
     const ok = await complete(selected)
-    if (ok) setStep(3)
+    if (ok) setStep(4)
   }
 
-  const dots = [1, 2, 3].map((n) => ({
-    width: n === step ? 24 : 8,
-    active: n === step,
-  }))
-
-  const showNavFooter = step !== 3
+  const showNavFooter = step !== 4
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
@@ -88,22 +108,35 @@ export function OnboardingPage() {
               error={error ?? addFundError}
             />
           )}
-          {step === 3 && selected && (
+          {step === 3 && (
+            <Step3Income
+              rawAmount={incomeAmount}
+              onChange={setIncomeAmount}
+            />
+          )}
+          {step === 4 && selected && (
             <Step3Success preset={selected} displayName={user?.displayName ?? null} />
           )}
 
           {/* Nav footer */}
           {showNavFooter && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 36 }}>
-              {step === 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 36 }}>
+              {error && step === 3 && (
+                <div style={{ fontSize: 13, color: 'var(--neg)', fontWeight: 500 }}>{error}</div>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {/* Atrás */}
+              {(step === 2 || step === 3) && (
                 <button
-                  onClick={() => setStep(1)}
+                  onClick={() => setStep(step === 3 ? 2 : 1)}
                   style={{ display: 'flex', alignItems: 'center', gap: 7, height: 46, padding: '0 22px', border: '1px solid var(--border)', borderRadius: 9, background: 'var(--card)', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
                   Atrás
                 </button>
               )}
+
+              {/* Siguiente (step 1) */}
               {step === 1 && (
                 <button
                   onClick={() => selected && setStep(2)}
@@ -113,6 +146,8 @@ export function OnboardingPage() {
                   Siguiente
                 </button>
               )}
+
+              {/* Confirmar (step 2, no excel) */}
               {step === 2 && selected !== 'excel' && (
                 <button
                   onClick={handleConfirmStep2}
@@ -122,6 +157,28 @@ export function OnboardingPage() {
                   {isPending ? 'Configurando…' : 'Confirmar'}
                 </button>
               )}
+
+              {/* Step 3: Saltar + Continuar */}
+              {step === 3 && (
+                <>
+                  <button
+                    onClick={() => handleConfirmIncome(undefined)}
+                    disabled={isPending}
+                    style={{ height: 46, padding: '0 20px', border: '1px solid var(--border)', borderRadius: 9, background: 'var(--card)', color: 'var(--muted)', fontFamily: 'inherit', fontSize: 14, fontWeight: 500, cursor: isPending ? 'not-allowed' : 'pointer', opacity: isPending ? 0.7 : 1 }}
+                  >
+                    Saltar por ahora
+                  </button>
+                  <button
+                    onClick={() => handleConfirmIncome(incomeAmount || undefined)}
+                    disabled={!incomeAmount || isPending}
+                    style={{ height: 46, padding: '0 30px', border: 'none', borderRadius: 9, background: incomeAmount ? 'var(--grad)' : 'var(--border)', color: incomeAmount ? '#fff' : 'var(--muted)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: (!incomeAmount || isPending) ? 'not-allowed' : 'pointer', opacity: isPending ? 0.7 : 1, boxShadow: incomeAmount ? 'var(--shadow)' : 'none', transition: 'all .15s' }}
+                  >
+                    {isPending ? 'Configurando…' : 'Continuar'}
+                  </button>
+                </>
+              )}
+
+              </div>
             </div>
           )}
         </div>
