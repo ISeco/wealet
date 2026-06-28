@@ -14,6 +14,8 @@ interface TransactionsToolbarProps {
   categories: Category[]
   onFiltersChange: (filters: TransactionFilters) => void
   onNew: () => void
+  onExport: () => void
+  isExporting?: boolean
 }
 
 export function TransactionsToolbar({
@@ -25,6 +27,8 @@ export function TransactionsToolbar({
   categories,
   onFiltersChange,
   onNew,
+  onExport,
+  isExporting = false,
 }: TransactionsToolbarProps) {
   const [searchInput, setSearchInput] = useState(search)
   const [popoverOpen, setPopoverOpen] = useState(false)
@@ -256,8 +260,8 @@ export function TransactionsToolbar({
       {/* exportar */}
       <button
         type="button"
-        disabled
-        title="Próximamente"
+        onClick={isExporting ? undefined : onExport}
+        disabled={isExporting}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -267,19 +271,19 @@ export function TransactionsToolbar({
           border: '1px solid var(--border)',
           borderRadius: 9,
           background: 'var(--card)',
-          color: 'var(--muted)',
+          color: isExporting ? 'var(--muted)' : 'var(--text)',
           fontFamily: 'inherit',
           fontSize: 13,
           fontWeight: 500,
-          cursor: 'not-allowed',
-          opacity: 0.6,
+          cursor: isExporting ? 'not-allowed' : 'pointer',
+          opacity: isExporting ? 0.7 : 1,
         }}
       >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 14V3M12 14l4-4M12 14l-4-4" />
           <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
         </svg>
-        Exportar
+        {isExporting ? 'Exportando…' : 'Exportar'}
       </button>
 
       {/* nueva */}

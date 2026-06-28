@@ -4,6 +4,7 @@ import { useFundsAll } from '../funds'
 import { useCategories } from '../categories'
 import { Pagination } from '../../components/ui/Pagination'
 import { useActivity, useUpdateTransaction } from './hooks'
+import { exportTransactions } from './api'
 import { TransactionsToolbar } from './TransactionsToolbar'
 import { TransactionsTabs, type TabValue } from './TransactionsTabs'
 import { TransactionsTable, type TableRow } from './TransactionsTable'
@@ -64,6 +65,7 @@ function toTableRow(item: ActivityItem): TableRow {
 export function TransactionsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [modalTransaction, setModalTransaction] = useState<Transaction | 'new' | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
 
   const tab = (searchParams.get('tab') as TabValue) ?? 'all'
   const search = searchParams.get('q') ?? ''
@@ -158,6 +160,15 @@ export function TransactionsPage() {
     })
   }
 
+  async function handleExport() {
+    setIsExporting(true)
+    try {
+      await exportTransactions(filters.from, filters.to)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   function handleReassign(transactionId: string, newFundId: string) {
     updateTransaction({ id: transactionId, payload: { fundId: newFundId } })
   }
@@ -178,6 +189,8 @@ export function TransactionsPage() {
         categories={categories}
         onFiltersChange={handleFiltersChange}
         onNew={() => setModalTransaction('new')}
+        onExport={handleExport}
+        isExporting={isExporting}
       />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
