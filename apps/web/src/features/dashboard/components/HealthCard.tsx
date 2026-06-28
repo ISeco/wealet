@@ -29,7 +29,11 @@ export function HealthCard({ month }: Props) {
   const { data: assessment, isLoading } = useHealthAssessment(month)
 
   const framework = profile?.framework ?? 'fondos'
-  const funds = assessment?.funds ?? []
+  const allFunds = assessment?.funds ?? []
+  const funds = framework === 'fondos' && allFunds.length > 3
+    ? [...allFunds].sort((a, b) => (BigInt(b.actualAmount) > BigInt(a.actualAmount) ? 1 : -1)).slice(0, 3)
+    : allFunds
+  const hiddenCount = allFunds.length - funds.length
 
   return (
     <div
@@ -94,6 +98,12 @@ export function HealthCard({ month }: Props) {
               </div>
             )
           })}
+          {hiddenCount > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 6, borderTop: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 12, color: 'var(--muted)' }}>+{hiddenCount} fondos más</span>
+              <span style={{ fontSize: 12, color: 'var(--info)', fontWeight: 600 }}>Ver todos</span>
+            </div>
+          )}
         </div>
       )}
     </div>
