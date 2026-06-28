@@ -56,7 +56,7 @@ export function UploadStep({ onFileReady, isPending, error }: Props) {
         onDrop={handleDrop}
         style={{
           background: 'var(--card)',
-          border: `2px dashed ${dragOver ? 'var(--info)' : 'var(--border-strong)'}`,
+          border: `2px ${dragOver ? 'solid' : 'dashed'} ${dragOver ? 'var(--info)' : 'var(--border-strong)'}`,
           borderRadius: 16,
           padding: '56px 24px',
           textAlign: 'center',
