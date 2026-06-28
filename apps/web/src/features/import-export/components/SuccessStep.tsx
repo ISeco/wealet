@@ -50,7 +50,7 @@ export function SuccessStep({ result, displayName, onImportAnother, onGoToTransa
         Se importaron <strong style={{ color: 'var(--text)' }}>{result.imported} transacciones</strong> y se distribuyeron en tus fondos.
         {result.createdFunds.length > 0 && (
           <> Se crearon <strong style={{ color: 'var(--text)' }}>{result.createdFunds.length} fondos nuevos</strong>.</>
-        )}
+        )} Tu patrimonio está al día.
       </div>
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 24 }}>
         <button
