@@ -118,6 +118,41 @@ export function Step1Preset({ selected, onSelect }: Props) {
           )
         })}
       </div>
+
+      {/* Excel secondary option */}
+      <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+        <span style={{ fontSize: 12, color: 'var(--muted)', whiteSpace: 'nowrap' }}>¿Ya tienes datos?</span>
+        <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+      </div>
+      <div
+        onClick={() => onSelect('excel')}
+        style={{
+          marginTop: 12,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 9,
+          padding: '13px 20px',
+          border: `1px solid ${selected === 'excel' ? 'var(--disp)' : 'var(--border)'}`,
+          borderRadius: 12,
+          background: selected === 'excel' ? 'var(--tint)' : 'var(--card)',
+          cursor: 'pointer',
+          transition: 'all .15s',
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>Importar desde Excel</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 2 }}>
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </div>
     </div>
   )
 }
