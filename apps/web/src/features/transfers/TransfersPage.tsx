@@ -116,6 +116,31 @@ export function TransfersPage() {
   const fundMap = Object.fromEntries(allFunds.map((f) => [f.id, f.name]))
   const recentTransfers = recentData?.data ?? []
 
+  // ─── Empty state ─────────────────────────────────────────────────────────────
+  if (funds.length < 2) {
+    return (
+      <div style={{ maxWidth: 660, margin: '0 auto' }}>
+        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, boxShadow: 'var(--shadow)', padding: 40, textAlign: 'center' }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--card-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-.01em' }}>Necesitas al menos dos fondos</div>
+          <div style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 8, maxWidth: 340, margin: '8px auto 0', lineHeight: 1.55 }}>
+            Las transferencias mueven saldo entre fondos. Crea al menos dos fondos para empezar.
+          </div>
+          <button
+            onClick={() => navigate('/fondos')}
+            style={{ marginTop: 22, height: 42, padding: '0 22px', border: 'none', borderRadius: 9, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow)' }}
+          >
+            Ir a Fondos
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   // ─── Success state ───────────────────────────────────────────────────────────
   if (step === 'success' && lastTransfer && toFund && fromFund) {
     return (
