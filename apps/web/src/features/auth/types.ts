@@ -2,6 +2,7 @@ export interface User {
   id: string
   email: string
   displayName: string | null
+  onboardingCompleted: boolean
 }
 
 export interface AuthResponse {
