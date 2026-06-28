@@ -17,6 +17,8 @@
 - **Dashboard — RecentActivity filtra por mes**: el componente `RecentActivity` acepta el mes activo y pasa `from`/`to` al endpoint `/activity`. Antes era independiente del selector de mes.
 - **Dashboard — HealthCard top-3 para Fondos**: cuando el framework activo es `fondos` y el usuario tiene más de 3 fondos, el card muestra los 3 con mayor saldo (`actualAmount` DESC) y un pie con "+N fondos más / Ver todos" que lleva a `/salud`. Para `50/30/20` y `jars_eker` sigue mostrando todos los slots.
 - **Dashboard — RunwayCard con gestión de fondos colchón**: el `RunwayCard` muestra un link "Ver fondos colchón (N)" al pie que abre un drawer lateral (`RunwayFundsDrawer`). El drawer lista todos los fondos activos — primero los que tienen `countsForRunway: true` — con toggle por fila para activar/desactivar su participación en el runway. El footer del drawer muestra el colchón total en tiempo real. Cambios se guardan vía `PATCH /funds/:id` inmediatamente; invalida `['funds']` y `['reports', 'runway']` para mantener el card sincronizado. Sin cambios en la API.
+- **Dashboard — CategoryChart con drawer de desglose completo**: el `CategoryChart` muestra el top 6 de categorías por gasto. Cuando hay más de 6, aparece "+N categorías más / Ver todas" al pie. "Ver todas" abre `CategoryChartDrawer` — drawer de solo lectura con todas las categorías del mes ordenadas por monto, mismas barras proporcionales, y footer con el gasto total del mes en BigInt. Sin fetch adicional (datos ya en cache de `useByCategory`).
+- **Transacciones — ConfirmDialog en eliminar**: el botón de eliminar en `TransactionFormModal` usaba `window.confirm` nativo. Reemplazado por el componente `ConfirmDialog` estilizado, consistente con el patrón ya usado en `FundFormDrawer`.
 
 ---
 
