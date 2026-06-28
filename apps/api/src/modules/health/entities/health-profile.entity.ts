@@ -12,6 +12,7 @@ export enum HealthFramework {
   FIFTY_THIRTY_TWENTY = '50_30_20',
   JARS_EKER = 'jars_eker',
   FONDOS = 'fondos',
+  PROFIT_FIRST = 'profit_first',
 }
 
 @Entity('health_profiles')

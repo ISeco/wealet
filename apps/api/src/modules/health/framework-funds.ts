@@ -39,8 +39,8 @@ export const FRAMEWORK_FUND_TEMPLATES: Record<HealthFramework, FundTemplate[]> =
       },
       {
         slot: 'jars_ffa',
-        name: 'Libertad Financiera',
-        classification: FundClassification.RESERVE,
+        name: 'Rico',
+        classification: FundClassification.AVAILABLE,
         targetPercentage: 10,
       },
       {
@@ -51,21 +51,47 @@ export const FRAMEWORK_FUND_TEMPLATES: Record<HealthFramework, FundTemplate[]> =
       },
       {
         slot: 'jars_ltss',
-        name: 'Largo Plazo',
+        name: 'Inversión',
         classification: FundClassification.RESERVE,
         targetPercentage: 10,
       },
       {
         slot: 'jars_play',
-        name: 'Juego',
-        classification: FundClassification.AVAILABLE,
+        name: 'Emergencia',
+        classification: FundClassification.RESERVE,
         targetPercentage: 10,
       },
       {
         slot: 'jars_give',
-        name: 'Donaciones',
+        name: 'Dar',
         classification: FundClassification.AVAILABLE,
         targetPercentage: 5,
+      },
+    ],
+    [HealthFramework.PROFIT_FIRST]: [
+      {
+        slot: 'profit_first:estilo_de_vida',
+        name: 'Estilo de Vida',
+        classification: FundClassification.AVAILABLE,
+        targetPercentage: 55,
+      },
+      {
+        slot: 'profit_first:diversion',
+        name: 'Diversión / Experiencias',
+        classification: FundClassification.AVAILABLE,
+        targetPercentage: 10,
+      },
+      {
+        slot: 'profit_first:inversion',
+        name: 'Inversión / Ahorro',
+        classification: FundClassification.RESERVE,
+        targetPercentage: 25,
+      },
+      {
+        slot: 'profit_first:seguridad',
+        name: 'Seguridad / Impuestos',
+        classification: FundClassification.RESERVE,
+        targetPercentage: 10,
       },
     ],
     [HealthFramework.FONDOS]: [],
@@ -75,5 +101,6 @@ export const FRAMEWORK_FUND_TEMPLATES: Record<HealthFramework, FundTemplate[]> =
 export function frameworkSlotPrefix(framework: HealthFramework): string {
   if (framework === HealthFramework.FIFTY_THIRTY_TWENTY) return '50_30_20_';
   if (framework === HealthFramework.JARS_EKER) return 'jars_';
+  if (framework === HealthFramework.PROFIT_FIRST) return 'profit_first:';
   return '';
 }

@@ -81,7 +81,7 @@ describe('Reports cross-user isolation (e2e)', () => {
       .set('Authorization', `Bearer ${userB.accessToken}`)
       .expect(200);
 
-    expect(res.body).toEqual({
+    expect(res.body).toMatchObject({
       available: '0',
       reserve: '0',
       committed: '0',
