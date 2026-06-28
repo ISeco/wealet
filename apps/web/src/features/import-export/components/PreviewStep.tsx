@@ -9,6 +9,7 @@ interface Props {
   onBack: () => void
   onConfirm: () => void
   isPending: boolean
+  error?: string | null
 }
 
 function rowBadge(
@@ -29,7 +30,7 @@ function rowOpacity(row: ImportRowDto, unknownFunds: string[], approvedFunds: Se
   return 1
 }
 
-export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, onConfirm, isPending }: Props) {
+export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, onConfirm, isPending, error }: Props) {
   const { rows, unknownFunds, errors } = previewData
 
   const validCount = rows.filter((r) => !r.duplicate).length
@@ -105,7 +106,7 @@ export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, 
           const prefix = row.type === 'income' ? '+' : '-'
           return (
             <div
-              key={row.dedupeHash}
+              key={`${row.sheet}-${row.cell}`}
               style={{
                 display: 'grid',
                 gridTemplateColumns: '90px 1fr 140px 150px 110px',
@@ -179,6 +180,12 @@ export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, 
           {errorCount > 0 && ` ${errorCount} filas no pudieron parsearse y se excluyen.`}
         </div>
       </div>
+
+      {error && (
+        <div style={{ fontSize: 13, color: 'var(--neg)', marginTop: 12, fontWeight: 500, textAlign: 'center' }}>
+          {error}
+        </div>
+      )}
 
       {/* Actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>

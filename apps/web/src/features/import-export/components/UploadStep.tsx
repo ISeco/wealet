@@ -83,7 +83,7 @@ export function UploadStep({ onFileReady, isPending, error }: Props) {
           </svg>
         </div>
         <div style={{ fontSize: 16, fontWeight: 600 }}>
-          {isPending ? 'Analizando archivo…' : 'Arrastra tu cartola o Excel aquí'}
+          {isPending ? 'Analizando archivo…' : 'Arrastra tu extracto bancario o Excel aquí'}
         </div>
         <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 6 }}>
           Formatos .xlsx, .csv · columnas fecha, descripción, monto, fondo

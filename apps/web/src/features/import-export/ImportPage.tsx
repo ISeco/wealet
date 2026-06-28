@@ -94,6 +94,7 @@ export function ImportPage() {
           onBack={handleBack}
           onConfirm={handleConfirm}
           isPending={commitMutation.isPending}
+          error={commitMutation.error?.message ?? null}
         />
       )}
 
