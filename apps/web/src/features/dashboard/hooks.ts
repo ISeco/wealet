@@ -45,9 +45,11 @@ export function useRunway() {
   })
 }
 
-export function useRecentActivity() {
+export function useRecentActivity(month?: string) {
+  const from = month ? `${month}-01` : undefined
+  const to = month ? `${month}-${String(new Date(+month.split('-')[0], +month.split('-')[1], 0).getDate()).padStart(2, '0')}` : undefined
   return useQuery({
-    queryKey: ['activity', { limit: 6, page: 1 }],
-    queryFn: api.getRecentActivity,
+    queryKey: ['activity', { limit: 6, page: 1, month: month ?? 'all' }],
+    queryFn: () => api.getRecentActivity(from, to),
   })
 }

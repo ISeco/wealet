@@ -54,9 +54,9 @@ function itemAmountPrefix(item: ActivityItem): string {
   return item.subtype === 'income' ? '+' : '−'
 }
 
-export function RecentActivity() {
+export function RecentActivity({ month }: { month: string }) {
   const navigate = useNavigate()
-  const { data } = useRecentActivity()
+  const { data } = useRecentActivity(month)
   const items = data?.data ?? []
 
   return (

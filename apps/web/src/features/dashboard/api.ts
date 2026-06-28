@@ -27,6 +27,7 @@ export function getRunway(): Promise<RunwayResponse> {
   return apiFetch<RunwayResponse>('/reports/runway')
 }
 
-export function getRecentActivity(): Promise<PaginatedActivity> {
-  return apiFetch<PaginatedActivity>('/activity?limit=6&page=1')
+export function getRecentActivity(from?: string, to?: string): Promise<PaginatedActivity> {
+  const qs = from && to ? `&from=${from}&to=${to}` : ''
+  return apiFetch<PaginatedActivity>(`/activity?limit=6&page=1${qs}`)
 }
