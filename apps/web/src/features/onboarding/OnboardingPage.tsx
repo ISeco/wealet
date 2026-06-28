@@ -47,7 +47,7 @@ export function OnboardingPage() {
     active: n === step,
   }))
 
-  const showNavFooter = step !== 3 && !(step === 2 && selected === 'excel')
+  const showNavFooter = step !== 3
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
