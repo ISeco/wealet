@@ -16,6 +16,7 @@
 - **Transacciones — exportar**: botón Exportar habilitado en la toolbar. Llama `GET /export?from=&to=` con los filtros de fecha activos y descarga el `.xlsx`. Sin fechas filtradas exporta todo. El nombre del archivo incluye el rango si hay filtro activo (`wealet-export-YYYY-MM-DD-YYYY-MM-DD.xlsx`).
 - **Dashboard — RecentActivity filtra por mes**: el componente `RecentActivity` acepta el mes activo y pasa `from`/`to` al endpoint `/activity`. Antes era independiente del selector de mes.
 - **Dashboard — HealthCard top-3 para Fondos**: cuando el framework activo es `fondos` y el usuario tiene más de 3 fondos, el card muestra los 3 con mayor saldo (`actualAmount` DESC) y un pie con "+N fondos más / Ver todos" que lleva a `/salud`. Para `50/30/20` y `jars_eker` sigue mostrando todos los slots.
+- **Dashboard — RunwayCard con gestión de fondos colchón**: el `RunwayCard` muestra un link "Ver fondos colchón (N)" al pie que abre un drawer lateral (`RunwayFundsDrawer`). El drawer lista todos los fondos activos — primero los que tienen `countsForRunway: true` — con toggle por fila para activar/desactivar su participación en el runway. El footer del drawer muestra el colchón total en tiempo real. Cambios se guardan vía `PATCH /funds/:id` inmediatamente; invalida `['funds']` y `['reports', 'runway']` para mantener el card sincronizado. Sin cambios en la API.
 
 ---
 
