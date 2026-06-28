@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useFundsAll } from '../funds'
 import { useCategories } from '../categories'
 import { Pagination } from '../../components/ui/Pagination'
@@ -61,11 +62,22 @@ function toTableRow(item: ActivityItem): TableRow {
 }
 
 export function TransactionsPage() {
-  const [tab, setTab] = useState<TabValue>('all')
-  const [filters, setFilters] = useState<TransactionFilters>({})
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
+  const [searchParams, setSearchParams] = useSearchParams()
   const [modalTransaction, setModalTransaction] = useState<Transaction | 'new' | null>(null)
+
+  const tab = (searchParams.get('tab') as TabValue) ?? 'all'
+  const search = searchParams.get('q') ?? ''
+  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1)
+  const filters: TransactionFilters = {
+    from: searchParams.get('from') ?? undefined,
+    to: searchParams.get('to') ?? undefined,
+    fundId: searchParams.get('fundId') ?? undefined,
+    categoryId: searchParams.get('categoryId') ?? undefined,
+  }
+
+  useEffect(() => {
+    sessionStorage.setItem('tx:params', searchParams.toString())
+  }, [searchParams])
 
   const { data: allFunds = [] } = useFundsAll()
   const funds = allFunds.filter((f) => !f.archivedAt)
@@ -94,7 +106,7 @@ export function TransactionsPage() {
       page,
       limit: LIMIT,
     }
-  }, [tab, filters, search, page])
+  }, [tab, filters.from, filters.to, filters.fundId, filters.categoryId, search, page])
 
   const { data: activityData, isLoading } = useActivity(activityQuery)
 
@@ -109,18 +121,41 @@ export function TransactionsPage() {
   const filtersActive = [filters.fundId, filters.categoryId, filters.from, filters.to].filter(Boolean).length
 
   function handleTabChange(value: TabValue) {
-    setTab(value)
-    setPage(1)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (value === 'all') { next.delete('tab') } else { next.set('tab', value) }
+      next.delete('page')
+      return next
+    })
   }
 
   function handleFiltersChange(next: TransactionFilters) {
-    setFilters(next)
-    setPage(1)
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev)
+      if (next.from) { params.set('from', next.from) } else { params.delete('from') }
+      if (next.to) { params.set('to', next.to) } else { params.delete('to') }
+      if (next.fundId) { params.set('fundId', next.fundId) } else { params.delete('fundId') }
+      if (next.categoryId) { params.set('categoryId', next.categoryId) } else { params.delete('categoryId') }
+      params.delete('page')
+      return params
+    })
   }
 
   function handleSearchChange(value: string) {
-    setSearch(value)
-    setPage(1)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (value) { next.set('q', value) } else { next.delete('q') }
+      next.delete('page')
+      return next
+    })
+  }
+
+  function handlePageChange(newPage: number) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (newPage === 1) { next.delete('page') } else { next.set('page', String(newPage)) }
+      return next
+    })
   }
 
   function handleReassign(transactionId: string, newFundId: string) {
@@ -189,7 +224,7 @@ export function TransactionsPage() {
           <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>
             Mostrando <b style={{ color: 'var(--text)' }}>{rows.length}</b> de {total} {itemLabel}
           </div>
-          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+          <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
         </div>
       )}
 

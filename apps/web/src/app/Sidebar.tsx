@@ -8,9 +8,18 @@ function NavRow({ item, active }: { item: NavItem; active: boolean }) {
   const navigate = useNavigate()
   const Icon = item.icon
 
+  function handleNavigate() {
+    if (item.key === 'transactions') {
+      const saved = sessionStorage.getItem('tx:params')
+      navigate(saved ? `${item.path}?${saved}` : item.path)
+    } else {
+      navigate(item.path)
+    }
+  }
+
   return (
     <div
-      onClick={item.disabled ? undefined : () => navigate(item.path)}
+      onClick={item.disabled ? undefined : handleNavigate}
       className={`nav-row${item.disabled ? ' nav-row--disabled' : ''}`}
       style={{
         display: 'flex',
