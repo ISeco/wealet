@@ -35,18 +35,17 @@ export class HealthService {
   ) {}
 
   async getOrCreateProfile(userId: string): Promise<HealthProfile> {
-    const existing = await this.healthProfileRepository.findOne({
-      where: { userId },
-    });
-    if (existing) {
-      return existing;
-    }
+    await this.healthProfileRepository
+      .createQueryBuilder()
+      .insert()
+      .into(HealthProfile)
+      .values({ userId, framework: HealthFramework.FONDOS })
+      .orIgnore()
+      .execute();
 
-    const profile = this.healthProfileRepository.create({
-      userId,
-      framework: HealthFramework.FONDOS,
-    });
-    return this.healthProfileRepository.save(profile);
+    return this.healthProfileRepository.findOne({
+      where: { userId },
+    }) as Promise<HealthProfile>;
   }
 
   async updateProfile(
