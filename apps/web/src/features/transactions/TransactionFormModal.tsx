@@ -1,5 +1,6 @@
 import { useState, type SubmitEvent } from 'react'
 import { Modal } from '../../components/ui/Modal'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { Select } from '../../components/ui/Select'
 import { DateInput } from '../../components/ui/DateInput'
 import { TrashIcon } from '../../app/icons'
@@ -37,6 +38,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
     transaction?.occurredOn ? transaction.occurredOn.slice(0, 10) : new Date().toISOString().slice(0, 10),
   )
   const [error, setError] = useState<string | null>(null)
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   const { fieldErrors, register, clearFieldError, validate } = useFormFieldErrors(REQUIRED_FIELDS)
 
   const createMutation = useCreateTransaction()
@@ -95,11 +97,11 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
 
   async function handleDelete() {
     if (!transaction) return
-    if (!window.confirm('¿Eliminar esta transacción?')) return
     try {
       await deleteMutation.mutateAsync(transaction.id)
       onClose()
     } catch (err) {
+      setShowConfirmDelete(false)
       setError(err instanceof ApiError ? err.message : 'No se pudo eliminar la transacción.')
     }
   }
@@ -119,6 +121,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   }
 
   return (
+    <>
     <Modal
       title={isEditing ? 'Editar transacción' : 'Nueva transacción'}
       onClose={onClose}
@@ -129,8 +132,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
           {isEditing && (
             <button
               type="button"
-              onClick={handleDelete}
-              disabled={deleteMutation.isPending}
+              onClick={() => setShowConfirmDelete(true)}
               aria-label="Eliminar"
               style={{
                 display: 'flex',
@@ -322,5 +324,16 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
         {error && <div style={{ fontSize: 12.5, color: 'var(--neg)' }}>{error}</div>}
       </form>
     </Modal>
+
+    {showConfirmDelete && transaction && (
+      <ConfirmDialog
+        title="Eliminar transacción"
+        description="Esta acción no se puede deshacer. La transacción se eliminará permanentemente."
+        isPending={deleteMutation.isPending}
+        onConfirm={handleDelete}
+        onClose={() => setShowConfirmDelete(false)}
+      />
+    )}
+  </>
   )
 }
