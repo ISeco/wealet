@@ -19,6 +19,8 @@
 - **Dashboard — RunwayCard con gestión de fondos colchón**: el `RunwayCard` muestra un link "Ver fondos colchón (N)" al pie que abre un drawer lateral (`RunwayFundsDrawer`). El drawer lista todos los fondos activos — primero los que tienen `countsForRunway: true` — con toggle por fila para activar/desactivar su participación en el runway. El footer del drawer muestra el colchón total en tiempo real. Cambios se guardan vía `PATCH /funds/:id` inmediatamente; invalida `['funds']` y `['reports', 'runway']` para mantener el card sincronizado. Sin cambios en la API.
 - **Dashboard — CategoryChart con drawer de desglose completo**: el `CategoryChart` muestra el top 6 de categorías por gasto. Cuando hay más de 6, aparece "+N categorías más / Ver todas" al pie. "Ver todas" abre `CategoryChartDrawer` — drawer de solo lectura con todas las categorías del mes ordenadas por monto, mismas barras proporcionales, y footer con el gasto total del mes en BigInt. Sin fetch adicional (datos ya en cache de `useByCategory`).
 - **Transacciones — ConfirmDialog en eliminar**: el botón de eliminar en `TransactionFormModal` usaba `window.confirm` nativo. Reemplazado por el componente `ConfirmDialog` estilizado, consistente con el patrón ya usado en `FundFormDrawer`.
+- **Onboarding implementado**: wizard full-screen de 3 pasos — selección de preset (jars_eker, 50/30/20, profit_first, fondos propios, Excel), preview de fondos, pantalla de éxito. `ProtectedRoute` redirige a `/onboarding` si `onboardingCompleted = false`. El preset `sobres` fue renombrado a `profit_first` (Profit First, basado en Mike Michalowicz) con fondos Estilo de Vida / Diversión / Inversión / Seguridad, slots predefinidos y framework de salud propio. jars_eker nombres sincronizados entre `fund-presets.ts` y `framework-funds.ts`. El camino Excel embebe `UploadStep` + `PreviewStep` del feature de import sin redirigir fuera del wizard. Empty states pendientes de mejorar en `/transferencias` (formulario sin fondos) y `/salud` (sin datos de assessment).
+- **POST /funds/preset**: acepta `profit_first` como valor de preset. El valor `sobres` fue eliminado del enum.
 
 ---
 
@@ -45,7 +47,7 @@ modules/
   activity/         unified paginated timeline: transactions + transfers via SQL UNION
   reports/          read-only aggregations: summary, by-category, net-worth, runway
   import-export/    SheetJS parse → preview → commit (with dedupe); export
-  health/           framework adherence (50/30/20, Jars of Eker, fondos)
+  health/           framework adherence (50/30/20, Jars of Eker, Profit First, fondos)
 test/               e2e tests (supertest)
 ```
 
@@ -79,7 +81,7 @@ Funds
   GET    /funds/:id               → single fund detail
   GET    /funds/:id/history?months=12   → balance evolution (detail chart)
   POST   /funds
-  POST   /funds/preset            → create preset (sobres/Jars/50-30-20) atomically (onboarding)
+  POST   /funds/preset            → create preset (jars_eker / 50_30_20 / profit_first) atomically (onboarding)
   PATCH  /funds/:id
   DELETE /funds/:id               → soft archive if fund has movements
 
@@ -144,8 +146,8 @@ features/
   transfers/      move money between funds (A→B)
   categories/     CRUD + color
   health/         framework adherence visual; selector de mes convierte YYYY-MM → from/to en cliente
-  [pendiente] onboarding/     preset / import-Excel wizard
-  [pendiente] import-export/  file uploader + preview table
+  onboarding/      wizard 3 pasos: preset → fondos → éxito (Excel path embebe import)
+  import-export/   file uploader + preview table
   settings/                   profile, prefs, theme, runway toggles, export
 components/ui/    reusable UI components
 ```
