@@ -21,6 +21,7 @@ export function useCreateTransaction() {
   return useMutation({
     mutationFn: (payload: CreateTransactionPayload) => api.createTransaction(payload),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activity'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['funds'] })
     },
@@ -33,6 +34,7 @@ export function useUpdateTransaction() {
     mutationFn: ({ id, payload }: { id: string; payload: UpdateTransactionPayload }) =>
       api.updateTransaction(id, payload),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activity'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['funds'] })
     },
@@ -44,6 +46,7 @@ export function useDeleteTransaction() {
   return useMutation({
     mutationFn: (id: string) => api.deleteTransaction(id),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activity'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['funds'] })
     },

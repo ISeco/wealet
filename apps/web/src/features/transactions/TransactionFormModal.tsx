@@ -33,7 +33,9 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   const [categoryId, setCategoryId] = useState(transaction?.categoryId ?? '')
   const [amount, setAmount] = useState(transaction ? minorUnitsToInput(transaction.amount) : '')
   const [description, setDescription] = useState(transaction?.description ?? '')
-  const [occurredOn, setOccurredOn] = useState(transaction?.occurredOn ?? new Date().toISOString().slice(0, 10))
+  const [occurredOn, setOccurredOn] = useState(
+    transaction?.occurredOn ? transaction.occurredOn.slice(0, 10) : new Date().toISOString().slice(0, 10),
+  )
   const [error, setError] = useState<string | null>(null)
   const { fieldErrors, register, clearFieldError, validate } = useFormFieldErrors(REQUIRED_FIELDS)
 
