@@ -193,6 +193,46 @@ export function parseLedgerWorkbook(buffer: Buffer): ParsedWorkbook {
     }
   }
 
+  // Fold opening balances into rows as 'Saldo inicial' income transactions.
+  // Only the earliest month per fund is used — subsequent months' opening
+  // balances are already captured by the imported transaction rows.
+  const earliestPerFund = new Map<
+    string,
+    { year: number; month: number; amount: number }
+  >();
+  for (const ob of openingBalances) {
+    const period = parseSheetMonth(ob.sheet);
+    if (!period) continue;
+    const existing = earliestPerFund.get(ob.fundName);
+    if (
+      !existing ||
+      period.year < existing.year ||
+      (period.year === existing.year && period.month < existing.month)
+    ) {
+      earliestPerFund.set(ob.fundName, {
+        ...period,
+        amount: Number(ob.amount),
+      });
+    }
+  }
+  for (const [fundName, { year, month, amount }] of earliestPerFund) {
+    rows.push({
+      sheet: 'opening_balance',
+      cell: `${fundName}|${year}-${String(month).padStart(2, '0')}`,
+      fundName,
+      amount: String(Math.abs(amount)),
+      type: amount >= 0 ? TransactionType.INCOME : TransactionType.EXPENSE,
+      description: 'Saldo inicial',
+      occurredOn: toIsoDate(year, month, 1),
+      dedupeHash: computeDedupeHash(
+        'opening_balance',
+        fundName,
+        `${year}-${String(month).padStart(2, '0')}`,
+        amount,
+      ),
+    });
+  }
+
   return {
     rows,
     openingBalances,

@@ -39,7 +39,14 @@ describe('parseLedgerWorkbook', () => {
       { sheet: 'Enero 2026', fundName: 'Fondo Libre', amount: '182362' },
     ]);
 
-    expect(result.rows).toHaveLength(2);
+    expect(result.rows).toHaveLength(3);
+
+    const opening = result.rows.find((row) => row.sheet === 'opening_balance')!;
+    expect(opening.fundName).toBe('Fondo Libre');
+    expect(opening.amount).toBe('182362');
+    expect(opening.type).toBe(TransactionType.INCOME);
+    expect(opening.description).toBe('Saldo inicial');
+    expect(opening.occurredOn).toBe('2026-01-01');
 
     const expense = result.rows.find((row) => row.cell === 'E4')!;
     expect(expense.type).toBe(TransactionType.EXPENSE);
