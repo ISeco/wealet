@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from './useAuth'
 
 export function ProtectedRoute() {
-  const { status } = useAuth()
+  const { status, user } = useAuth()
 
   if (status === 'idle' || status === 'loading') {
     return (
@@ -14,6 +14,10 @@ export function ProtectedRoute() {
 
   if (status === 'unauthenticated') {
     return <Navigate to="/login" replace />
+  }
+
+  if (user && !user.onboardingCompleted) {
+    return <Navigate to="/onboarding" replace />
   }
 
   return <Outlet />

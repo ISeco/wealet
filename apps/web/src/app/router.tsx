@@ -2,6 +2,7 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthPage, ProtectedRoute } from '../features/auth'
+import { OnboardingPage } from '../features/onboarding'
 import { CategoriesPage } from '../features/categories'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { FundsPage, FundDetailPage } from '../features/funds'
@@ -21,6 +22,7 @@ export function AppRouter() {
       <Routes>
         <Route path="/login" element={<AuthPage mode="login" />} />
         <Route path="/register" element={<AuthPage mode="register" />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
