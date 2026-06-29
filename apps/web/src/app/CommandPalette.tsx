@@ -156,7 +156,7 @@ export function CommandPalette() {
             onKeyDown={(event) => {
               if (event.key === 'ArrowDown') {
                 event.preventDefault()
-                setActiveIndex((i) => Math.min(i + 1, filtered.length - 1))
+                setActiveIndex((i) => Math.min(i + 1, Math.max(filtered.length - 1, 0)))
               } else if (event.key === 'ArrowUp') {
                 event.preventDefault()
                 setActiveIndex((i) => Math.max(i - 1, 0))
