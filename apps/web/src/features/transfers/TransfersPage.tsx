@@ -54,29 +54,30 @@ export function TransfersPage() {
   const [lastTransfer, setLastTransfer] = useState<Transfer | null>(null)
   // Captured at submit time so the success state shows correct values
   // even after useFundsAll() refetches with updated server balances.
-  const [successFromBalance, setSuccessFromBalance] = useState(0)
-  const [successToBalance, setSuccessToBalance] = useState(0)
+  const [successFromBalance, setSuccessFromBalance] = useState(0n)
+  const [successToBalance, setSuccessToBalance] = useState(0n)
 
   const fromFund = funds.find((f) => f.id === fromFundId) ?? null
   const toFund = funds.find((f) => f.id === toFundId) ?? null
-  const parsedAmount = parseInt(rawAmount || '0', 10)
-  const fromBalance = fromFund ? Number(fromFund.balance) : 0
-  const toBalance = toFund ? Number(toFund.balance) : 0
+  const parsedAmount = BigInt(rawAmount || '0')
+  const fromBalance = fromFund ? BigInt(fromFund.balance) : 0n
+  const toBalance = toFund ? BigInt(toFund.balance) : 0n
 
-  const fromProjected = parsedAmount > 0 && fromFund ? fromBalance - parsedAmount : null
-  const toProjected = parsedAmount > 0 && toFund ? toBalance + parsedAmount : null
+  // Number() here is acceptable — projected values are display-only in FundPicker
+  const fromProjected = parsedAmount > 0n && fromFund ? Number(fromBalance - parsedAmount) : null
+  const toProjected = parsedAmount > 0n && toFund ? Number(toBalance + parsedAmount) : null
 
   const quickAmounts = fromFund
     ? [
-        { label: '25%', value: Math.floor(fromBalance / 4) },
-        { label: '50%', value: Math.floor(fromBalance / 2) },
-        { label: '75%', value: Math.floor(fromBalance * 3 / 4) },
+        { label: '25%', value: fromBalance / 4n },
+        { label: '50%', value: fromBalance / 2n },
+        { label: '75%', value: fromBalance * 3n / 4n },
         { label: 'Todo', value: fromBalance },
       ]
     : []
 
-  const totalNetWorth = funds.reduce((sum, f) => sum + Number(f.balance), 0)
-  const canSubmit = !!fromFundId && !!toFundId && parsedAmount > 0 && parsedAmount <= fromBalance && !isPending
+  const totalNetWorth = funds.reduce((sum, f) => sum + BigInt(f.balance), 0n)
+  const canSubmit = !!fromFundId && !!toFundId && parsedAmount > 0n && parsedAmount <= fromBalance && !isPending
 
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     const digits = e.target.value.replace(/\D/g, '')
@@ -84,14 +85,14 @@ export function TransfersPage() {
     setAmountError(null)
   }
 
-  function setQuick(value: number) {
-    setRawAmount(String(value))
+  function setQuick(value: bigint) {
+    setRawAmount(value.toString())
     setAmountError(null)
   }
 
   function handleSubmit() {
     if (!fromFundId || !toFundId) return
-    if (parsedAmount <= 0) {
+    if (parsedAmount <= 0n) {
       setAmountError('El monto debe ser mayor a cero')
       return
     }
@@ -100,11 +101,12 @@ export function TransfersPage() {
       return
     }
     doTransfer(
-      { fromFundId, toFundId, amount: String(parsedAmount), occurredOn, note: note || undefined },
+      { fromFundId, toFundId, amount: parsedAmount.toString(), occurredOn, note: note || undefined },
       {
         onSuccess: (transfer) => {
           setSuccessFromBalance(fromBalance - parsedAmount)
           setSuccessToBalance(toBalance + parsedAmount)
+
           setLastTransfer(transfer)
           setStep('success')
         },
@@ -174,7 +176,7 @@ export function TransfersPage() {
               <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: 14, background: 'var(--card-2)', textAlign: 'left' }}>
                 <div style={{ fontSize: 11.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.04em', fontWeight: 600 }}>Desde</div>
                 <div style={{ fontSize: 14, fontWeight: 600, marginTop: 6 }}>{fromFund.name}</div>
-                <div style={{ fontSize: 13, color: 'var(--neg)', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{fmt.format(successFromBalance)}</div>
+                <div style={{ fontSize: 13, color: 'var(--neg)', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{fmt.format(Number(successFromBalance))}</div>
               </div>
               <span style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--grad)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
@@ -184,12 +186,12 @@ export function TransfersPage() {
               <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: 14, background: 'var(--card-2)', textAlign: 'left' }}>
                 <div style={{ fontSize: 11.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.04em', fontWeight: 600 }}>Hacia</div>
                 <div style={{ fontSize: 14, fontWeight: 600, marginTop: 6 }}>{toFund.name}</div>
-                <div style={{ fontSize: 13, color: 'var(--pos)', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{fmt.format(successToBalance)}</div>
+                <div style={{ fontSize: 13, color: 'var(--pos)', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{fmt.format(Number(successToBalance))}</div>
               </div>
             </div>
 
             <div style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-.02em', fontVariantNumeric: 'tabular-nums', marginTop: 20 }}>
-              {fmt.format(parsedAmount)}
+              {fmt.format(Number(parsedAmount))}
             </div>
             <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 2 }}>
               {formatDateLabel(lastTransfer.occurredOn)}{lastTransfer.note ? ` · ${lastTransfer.note}` : ''}
@@ -281,7 +283,7 @@ export function TransfersPage() {
           {quickAmounts.length > 0 && (
             <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
               {quickAmounts.map(({ label, value }) => {
-                const isActive = value === parsedAmount && parsedAmount > 0
+                const isActive = value === parsedAmount && parsedAmount > 0n
                 return (
                   <span
                     key={label}
@@ -297,7 +299,7 @@ export function TransfersPage() {
                       cursor: 'pointer',
                     }}
                   >
-                    {label === 'Todo' ? 'Todo' : `${fmt.format(value)}`}
+                    {label === 'Todo' ? 'Todo' : `${fmt.format(Number(value))}`}
                   </span>
                 )
               })}
@@ -333,7 +335,7 @@ export function TransfersPage() {
               <path d="M20 6L9 17l-5-5" />
             </svg>
             <div style={{ fontSize: 12.5, color: 'var(--text)' }}>
-              Patrimonio total intacto: <b>{fmt.format(totalNetWorth)}</b>. Solo cambia cómo está repartido.
+              Patrimonio total intacto: <b>{fmt.format(Number(totalNetWorth))}</b>. Solo cambia cómo está repartido.
             </div>
           </div>
         )}
@@ -354,7 +356,7 @@ export function TransfersPage() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>
-            {isPending ? 'Transfiriendo…' : parsedAmount > 0 ? `Transferir ${fmt.format(parsedAmount)}` : 'Transferir'}
+            {isPending ? 'Transfiriendo…' : parsedAmount > 0n ? `Transferir ${fmt.format(Number(parsedAmount))}` : 'Transferir'}
           </button>
         </div>
       </div>
