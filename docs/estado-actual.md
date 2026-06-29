@@ -45,6 +45,16 @@ Registro cronológico de cambios significativos, bugs corregidos y pendientes. C
   - `transfers/`: test de fondo destino no autorizado agregado.
   - `monthly-allocation/`: **bug corregido** — `fundsRepo.find` no filtraba `archivedAt IS NULL`; añadido para evitar distribuciones a fondos archivados. Test correspondiente agregado.
 
+- **Frontend auditado** (2026-06-29): revisión feature por feature — calidad de código, ADR-03, tests para lógica pura. Resultados:
+  - **Vitest configurado**: testing infrastructure instalada (`vitest`, `@testing-library/react`, `jsdom`). 48 tests en 7 archivos.
+  - **Bugs corregidos**: (1) `minorUnitsToInput` en `TransactionFormModal` usaba `Number(BigInt())` — reemplazado por `BigInt.toString()`. (2) `useCreateTransfer` no invalidaba `['activity']` — actividad quedaba desactualizada tras una transferencia.
+  - **ADR-03**: `Number(f.balance)` para aritmética financiera reemplazado por BigInt en `TransfersPage` (aritmética + comparaciones + quickAmounts) y `FundsPage` (totales por clasificación). `Number()` se usa únicamente en puntos de display con comentario.
+  - `formatMoney` de `lib/money.ts` reemplaza `new Intl.NumberFormat(...)` inline en `FundsPage`.
+  - **MONTH_NAMES deduplicado**: definición única en `dashboard/utils.ts` (exportada como `MONTH_NAMES` + `monthName()`); `Greeting` y `TransactionsPage` actualizados para importar de ahí.
+  - `formatChipDate` y `toTableRow` extraídas de `TransactionsPage` a `transactions/utils.ts`.
+  - **CommandPalette**: ArrowDown/Up navegan la lista; hover sincroniza el ítem activo; Enter selecciona el activo (no siempre el primero).
+  - **Tests nuevos**: `lib/money.spec.ts` (12), `funds/utils.spec.ts` (8), `dashboard/utils.spec.ts` (4), `transactions/utils.spec.ts` (7), `health/utils.spec.ts` (9), `auth/passwordRules.spec.ts` (7).
+
 ---
 
 ## Pendientes documentados
