@@ -1,8 +1,10 @@
+import { NotFoundException } from '@nestjs/common';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { Test } from '@nestjs/testing';
 import { DataSource, Repository } from 'typeorm';
 import { FundsService } from './funds.service';
 import { Fund, FundClassification } from './entities/fund.entity';
+import { FundPresetType } from './enums/fund-preset.enum';
 
 describe('FundsService', () => {
   let fundsService: FundsService;
@@ -42,6 +44,7 @@ describe('FundsService', () => {
           provide: getDataSourceToken(),
           useValue: {
             query: jest.fn(),
+            transaction: jest.fn(),
           },
         },
       ],
@@ -80,6 +83,76 @@ describe('FundsService', () => {
         { fund: fundWithMovements, balance: '15000' },
         { fund: fundWithoutMovements, balance: '0' },
       ]);
+    });
+  });
+
+  describe('getBalanceForFund', () => {
+    it('calculates derived balance: income - expense + incoming - outgoing', async () => {
+      // income: 100000, expense: 30000, incoming: 20000, outgoing: 10000 → 80000
+      dataSource.query.mockResolvedValue([{ balance: '80000' }]);
+
+      const result = await fundsService.getBalanceForFund('user-1', 'fund-1');
+
+      expect(result).toBe('80000');
+    });
+
+    it('returns 0 for a fund with no movements', async () => {
+      dataSource.query.mockResolvedValue([{ balance: '0' }]);
+
+      const result = await fundsService.getBalanceForFund('user-1', 'fund-1');
+
+      expect(result).toBe('0');
+    });
+  });
+
+  describe('remove', () => {
+    it('archives the fund by setting archivedAt and isOperative=false', async () => {
+      const fund = buildFund({ archivedAt: null, isOperative: true });
+      fundsRepository.findOne.mockResolvedValue(fund);
+      fundsRepository.save.mockImplementation((f) =>
+        Promise.resolve(f as Fund),
+      );
+      dataSource.query.mockResolvedValue([{ fund_id: 'fund-1', balance: '0' }]);
+
+      const result = await fundsService.remove('user-1', 'fund-1');
+
+      expect(result.fund.archivedAt).toBeInstanceOf(Date);
+      expect(result.fund.isOperative).toBe(false);
+      expect(fundsRepository.save).toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException when fund does not belong to the user', async () => {
+      fundsRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        fundsService.remove('user-1', 'nonexistent'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('createPreset', () => {
+    it('creates all preset funds inside a single transaction', async () => {
+      const createdFunds = [buildFund({ name: 'Necesidades' })];
+      type TransactionCallback = (manager: {
+        create: jest.Mock;
+        save: jest.Mock;
+      }) => Promise<unknown>;
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        (cb: TransactionCallback) => {
+          const manager = {
+            create: jest.fn((_entity: unknown, data: unknown) => data),
+            save: jest.fn().mockResolvedValue(createdFunds),
+          };
+          return cb(manager);
+        },
+      );
+
+      const result = await fundsService.createPreset('user-1', {
+        preset: FundPresetType.RULE_50_30_20,
+      });
+
+      expect(dataSource.transaction).toHaveBeenCalled();
+      expect(result).toEqual(createdFunds);
     });
   });
 });
