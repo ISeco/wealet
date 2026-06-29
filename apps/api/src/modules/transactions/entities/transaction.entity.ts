@@ -77,6 +77,9 @@ export class Transaction {
   })
   source: TransactionSource;
 
+  @Column({ name: 'monthly_allocation_id', type: 'uuid', nullable: true })
+  monthlyAllocationId: string | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
