@@ -92,3 +92,7 @@ body {
   --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.34), 0 3px 10px rgba(0, 0, 0, 0.24);
   --field: #16294a;
 }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .35; transform: scale(.65); }
+}

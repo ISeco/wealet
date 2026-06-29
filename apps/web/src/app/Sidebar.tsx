@@ -3,8 +3,17 @@ import { useAuth } from '../features/auth'
 import { WealetIcon } from '../components/ui/WealetIcon'
 import { navMain, navSys, type NavItem } from './navConfig'
 import { ChevronRightIcon } from './icons'
+import { useAllocation } from '../features/health/hooks'
 
-function NavRow({ item, active }: { item: NavItem; active: boolean }) {
+function NavRow({
+  item,
+  active,
+  showDot = false,
+}: {
+  item: NavItem
+  active: boolean
+  showDot?: boolean
+}) {
   const navigate = useNavigate()
   const Icon = item.icon
 
@@ -53,6 +62,19 @@ function NavRow({ item, active }: { item: NavItem; active: boolean }) {
         <Icon color={active ? 'var(--text)' : 'var(--muted)'} />
       </span>
       <span>{item.label}</span>
+      {showDot && (
+        <span
+          style={{
+            marginLeft: 'auto',
+            width: 7,
+            height: 7,
+            borderRadius: '50%',
+            background: 'var(--res)',
+            flexShrink: 0,
+            animation: 'pulse-dot 1.8s ease-in-out infinite',
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -68,6 +90,9 @@ export function Sidebar() {
     .slice(0, 2)
     .join('')
     .toUpperCase()
+
+  const { data: allocation } = useAllocation()
+  const allocationPending = allocation === null
 
   return (
     <aside
@@ -95,7 +120,12 @@ export function Sidebar() {
           General
         </div>
         {navMain.map((item) => (
-          <NavRow key={item.key} item={item} active={location.pathname === item.path} />
+          <NavRow
+            key={item.key}
+            item={item}
+            active={location.pathname === item.path}
+            showDot={item.key === 'health' && allocationPending}
+          />
         ))}
         <div style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: 'var(--muted)', padding: '16px 12px 6px', opacity: 0.8 }}>
           Sistema

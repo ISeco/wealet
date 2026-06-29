@@ -11,7 +11,7 @@ interface Props {
 
 export function FrameworkTabs({ active, activeFramework, onChange }: Props) {
   return (
-    <div style={{ display: 'inline-flex', padding: 3, background: 'var(--card-2)', border: '1px solid var(--border)', borderRadius: 10, gap: 3, marginBottom: 20 }}>
+    <div style={{ display: 'inline-flex', padding: 3, background: 'var(--card-2)', border: '1px solid var(--border)', borderRadius: 10, gap: 3 }}>
       {FRAMEWORKS.map((fw) => {
         const isSelected = fw === active
         const isLive = fw === activeFramework
