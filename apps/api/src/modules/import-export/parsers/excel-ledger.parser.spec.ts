@@ -71,4 +71,51 @@ describe('parseLedgerWorkbook', () => {
 
     expect(first.rows[0].dedupeHash).toBe(second.rows[0].dedupeHash);
   });
+
+  it('records an error for a sheet whose name cannot be parsed as a month', () => {
+    const data: unknown[][] = [
+      [],
+      [null, 'Fondo Libre'],
+      [null, 0],
+      [null, 10000],
+    ];
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    worksheet['!ref'] = 'A1:B4';
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Invalid Sheet Name');
+    const buffer = XLSX.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx',
+    }) as Buffer;
+
+    const result = parseLedgerWorkbook(buffer);
+
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0].sheet).toBe('Invalid Sheet Name');
+    expect(result.rows).toHaveLength(0);
+  });
+
+  it('records an error for a non-numeric cell value', () => {
+    const data: unknown[][] = [
+      [],
+      [null, null, null, null, 'Fondo Libre'],
+      [null, null, null, null, 0],
+      [null, null, null, null, 'texto-no-numerico'],
+      [],
+      [null, null, null, null, 0],
+    ];
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    worksheet['!ref'] = 'A1:E6';
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Febrero 2026');
+    const buffer = XLSX.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx',
+    }) as Buffer;
+
+    const result = parseLedgerWorkbook(buffer);
+
+    expect(result.errors.length).toBeGreaterThan(0);
+    expect(result.errors[0].message).toContain('Expected a numeric amount');
+  });
 });
