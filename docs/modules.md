@@ -23,8 +23,13 @@
 - **POST /funds/preset**: acepta `profit_first` como valor de preset. El valor `sobres` fue eliminado del enum.
 - **Monthly Allocation implementado**: POST/GET `/monthly-allocation/current` crea distribución del ingreso mensual como N transacciones de ingreso (una por fondo activo)
 - `getFondosAssessment` eliminado — todos los frameworks (incluido `fondos`) usan `getFlowAssessment` para medir adherencia por flujo del período
-- **Frontend**: AllocationChip (teal, junto a FrameworkTabs), AllocationDrawer (lateral 460px), dot pulsante en sidebar nav "Salud financiera"
+- **Frontend**: AllocationChip (teal, junto a FrameworkTabs), AllocationDrawer (lateral 460px), dot en sidebar nav "Salud financiera" (color `--disp`, sin animación, se muestra cuando no hay distribución del mes)
 - **Re-distribución del mes**: reemplaza transacciones anteriores del mismo `MonthlyAllocation` sin crear duplicados
+- **AllocationDrawer — inputs con separador de miles**: inputs de ingreso y distribución cambiados de `type="number"` a `type="text" inputMode="numeric"`. Usan `formatThousands` de `money.ts` para display; almacenan solo dígitos. `formatCLP` interno usa `formatThousands` en lugar de `Number().toLocaleString`.
+- **GET /monthly-allocation/current — fix null response**: NestJS/Express omitía el body cuando el controller retornaba `null` (llamaba `res.send()` sin cuerpo). Corregido usando `@Res()` y `res.json(allocation)` explícito para enviar JSON `null` literal. Sin este fix React Query recibía body vacío, fallaba el parse y `data` quedaba `undefined` (dot nunca aparecía).
+- **AdherenceChart — unificación de semántica**: eliminado el branch `isFondos` que mostraba "saldo como % del total" para fondos propios. Todos los frameworks usan flujo del período. Subtítulo y empty label unificados.
+- **AdherenceChart — visualización de flujo negativo**: barras con `actualPercentage < 0` se clampeaban a `width: "-X%"` (CSS inválido, se veía como track lleno). Corregido con `Math.max(0, ...)`. Fondos con flujo negativo muestran barra ámbar + monto ámbar. Marcador y etiqueta "Meta" se ocultan cuando `targetPercentage === 0`.
+- **GET /health/assessment — fix porcentajes inflados**: el SQL incluía transferencias entre fondos en el flujo por fondo pero no en el `totalIncome` base. Esto provocaba porcentajes > 100% en fondos que recibían transferencias. Corregido eliminando los dos `UNION ALL` de transferencias — el assessment ahora solo cuenta transacciones (income/expense), coherente con el denominador.
 
 ---
 
