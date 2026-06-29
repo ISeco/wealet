@@ -21,7 +21,7 @@ interface TransactionFormModalProps {
 }
 
 function minorUnitsToInput(amount: string): string {
-  return String(Number(BigInt(amount)))
+  return BigInt(amount).toString()
 }
 
 export function TransactionFormModal({ transaction, onClose }: TransactionFormModalProps) {
