@@ -100,7 +100,7 @@ const UNION_CTE = `
       AND ($4::text IS NULL OR note ILIKE '%' || $4 || '%')
       AND ($5::text IS NULL OR $5 = 'transfer')
       AND $6::text IS NULL
-      AND $7::uuid IS NULL
+      AND ($7::uuid IS NULL OR from_fund_id = $7::uuid OR to_fund_id = $7::uuid)
       AND $8::uuid IS NULL
   ),
   combined AS (SELECT * FROM tx UNION ALL SELECT * FROM tr)
