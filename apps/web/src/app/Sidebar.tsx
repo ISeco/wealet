@@ -65,13 +65,11 @@ function NavRow({
       {showDot && (
         <span
           style={{
-            marginLeft: 'auto',
             width: 7,
             height: 7,
             borderRadius: '50%',
-            background: 'var(--res)',
+            background: 'var(--disp)',
             flexShrink: 0,
-            animation: 'pulse-dot 1.8s ease-in-out infinite',
           }}
         />
       )}
