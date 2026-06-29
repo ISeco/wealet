@@ -31,7 +31,7 @@ export function DataAccountGrid() {
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
       <div style={{ ...card, marginBottom: 0 }}>
         <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 14 }}>Datos</div>
-        <button disabled style={{ ...actionBtn, opacity: 0.5, cursor: 'not-allowed' }}>
+        <button onClick={() => navigate('/import')} style={actionBtn}>
           <UploadIcon />
           Importar desde Excel
         </button>

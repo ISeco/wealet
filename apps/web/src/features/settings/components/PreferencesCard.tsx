@@ -6,6 +6,7 @@ import type { HealthFramework } from '../../health/types'
 const FRAMEWORKS = [
   { value: '50_30_20', label: 'Regla 50 / 30 / 20' },
   { value: 'jars_eker', label: 'Jars of Eker' },
+  { value: 'profit_first', label: 'Profit First' },
   { value: 'fondos', label: 'Fondos' },
 ]
 

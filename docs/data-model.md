@@ -78,7 +78,7 @@ Transfer                           ← reallocation between Funds, net worth unc
 HealthProfile
   id              uuid pk
   userId          uuid fk unique
-  framework       enum(50_30_20 | jars_eker | fondos) default 'fondos'
+  framework       enum(50_30_20 | jars_eker | profit_first | fondos) default 'fondos'
   monthlyIncome   bigint null
   updatedAt
 ```
