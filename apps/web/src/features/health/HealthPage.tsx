@@ -10,6 +10,7 @@ import type { HealthFramework } from './types'
 import { FRAMEWORK_DESCRIPTIONS, computeScore } from './utils'
 import { AdherenceChart } from './components/AdherenceChart'
 import { AllocationChip } from './components/AllocationChip'
+import { HealthEmptyState } from './components/HealthEmptyState'
 import { AllocationDrawer } from './components/AllocationDrawer'
 import { FrameworkTabs } from './components/FrameworkTabs'
 import { ScoreCard } from './components/ScoreCard'
@@ -77,10 +78,24 @@ export function HealthPage() {
               onActivate={handleActivate}
               onUpdateIncome={handleUpdateIncome}
             />
-            <AdherenceChart
-              funds={assessment?.funds ?? []}
-              totalBase={assessment?.totalBase ?? '0'}
-            />
+            {assessment && assessment.funds.length === 0 && (
+              <HealthEmptyState variant="no-funds" />
+            )}
+            {assessment && assessment.funds.length > 0 && assessment.totalBase === '0' && (
+              <HealthEmptyState variant="no-income" />
+            )}
+            {assessment && assessment.funds.length > 0 && assessment.totalBase !== '0' && (
+              <AdherenceChart
+                funds={assessment.funds}
+                totalBase={assessment.totalBase}
+              />
+            )}
+            {!assessment && (
+              <AdherenceChart
+                funds={[]}
+                totalBase="0"
+              />
+            )}
           </div>
         </>
       )}
