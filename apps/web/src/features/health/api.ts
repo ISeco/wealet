@@ -19,3 +19,10 @@ export function updateHealthProfile(framework: HealthFramework): Promise<HealthP
     body: { framework },
   })
 }
+
+export function updateMonthlyIncome(monthlyIncome: string): Promise<HealthProfile> {
+  return apiFetch<HealthProfile>('/health/profile', {
+    method: 'PUT',
+    body: { monthlyIncome },
+  })
+}

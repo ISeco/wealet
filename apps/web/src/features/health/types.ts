@@ -1,4 +1,4 @@
-export type HealthFramework = '50_30_20' | 'jars_eker' | 'fondos'
+export type HealthFramework = '50_30_20' | 'jars_eker' | 'profit_first' | 'fondos'
 export type FundClassification = 'available' | 'reserve' | 'committed'
 
 export interface HealthProfile {

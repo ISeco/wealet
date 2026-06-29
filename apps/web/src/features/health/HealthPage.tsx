@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useActivateFramework, useHealthAssessment, useHealthProfile } from './hooks'
+import { useActivateFramework, useHealthAssessment, useHealthProfile, useUpdateMonthlyIncome } from './hooks'
 import type { HealthFramework } from './types'
 import { FRAMEWORK_DESCRIPTIONS, computeScore } from './utils'
 import { AdherenceChart } from './components/AdherenceChart'
@@ -10,6 +10,7 @@ export function HealthPage() {
   const { data: profile, isLoading: profileLoading } = useHealthProfile()
   const { data: assessment, isLoading: assessmentLoading } = useHealthAssessment()
   const activateMutation = useActivateFramework()
+  const updateIncomeMutation = useUpdateMonthlyIncome()
 
   const activeFramework = profile?.framework ?? 'fondos'
   const [selectedFramework, setSelectedFramework] = useState<HealthFramework | null>(null)
@@ -24,6 +25,10 @@ export function HealthPage() {
   async function handleActivate() {
     await activateMutation.mutateAsync(framework)
     setSelectedFramework(null)
+  }
+
+  async function handleUpdateIncome(value: string) {
+    await updateIncomeMutation.mutateAsync(value)
   }
 
   const isLoading = profileLoading || assessmentLoading
@@ -48,7 +53,9 @@ export function HealthPage() {
               description={FRAMEWORK_DESCRIPTIONS[framework]}
               selectedFramework={framework}
               activeFramework={activeFramework}
+              monthlyIncome={profile?.monthlyIncome ?? null}
               onActivate={handleActivate}
+              onUpdateIncome={handleUpdateIncome}
             />
             <AdherenceChart
               funds={assessment?.funds ?? []}

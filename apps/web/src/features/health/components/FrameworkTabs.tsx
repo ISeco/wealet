@@ -1,7 +1,7 @@
 import type { HealthFramework } from '../types'
 import { FRAMEWORK_LABELS } from '../utils'
 
-const FRAMEWORKS: HealthFramework[] = ['50_30_20', 'jars_eker', 'fondos']
+const FRAMEWORKS: HealthFramework[] = ['50_30_20', 'jars_eker', 'profit_first', 'fondos']
 
 interface Props {
   active: HealthFramework

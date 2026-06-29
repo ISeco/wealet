@@ -1,27 +1,31 @@
 import type { FundAssessment, FundClassification, HealthFramework } from './types'
 
 export const FRAMEWORK_LABELS: Record<HealthFramework, string> = {
-  '50_30_20': 'Regla 50 / 30 / 20',
-  'jars_eker': 'Jars de Eker',
-  'fondos':    'Fondos con propósito',
+  '50_30_20':    'Regla 50 / 30 / 20',
+  'jars_eker':   'Jars de Eker',
+  'profit_first': 'Profit First',
+  'fondos':      'Fondos con propósito',
 }
 
 export const FRAMEWORK_FUND_COUNT: Record<HealthFramework, number> = {
-  '50_30_20': 3,
-  'jars_eker': 6,
-  'fondos':    0,
+  '50_30_20':    3,
+  'jars_eker':   6,
+  'profit_first': 4,
+  'fondos':      0,
 }
 
 export const FRAMEWORK_ACTIVATE_WARNING: Record<HealthFramework, string> = {
-  '50_30_20': 'Se crearán 3 fondos: Necesidades, Deseos y Ahorro. Tus fondos actuales se mantienen pero no serán evaluados en este framework.',
-  'jars_eker': 'Se crearán 6 fondos basados en el sistema de T. Harv Eker. Tus fondos actuales se mantienen pero no serán evaluados en este framework.',
-  'fondos':    'Pasarás al modo flexible. Tus fondos personalizados (sin asignación a otro framework) serán evaluados.',
+  '50_30_20':    'Se crearán 3 fondos: Necesidades, Deseos y Ahorro. Tus fondos actuales se mantienen pero no serán evaluados en este framework.',
+  'jars_eker':   'Se crearán 6 fondos basados en el sistema de T. Harv Eker. Tus fondos actuales se mantienen pero no serán evaluados en este framework.',
+  'profit_first': 'Se crearán 4 fondos: Estilo de Vida, Diversión, Inversión y Seguridad. Tus fondos actuales se mantienen pero no serán evaluados en este framework.',
+  'fondos':      'Pasarás al modo flexible. Tus fondos personalizados (sin asignación a otro framework) serán evaluados.',
 }
 
 export const FRAMEWORK_DESCRIPTIONS: Record<HealthFramework, string> = {
-  'fondos':    'Cada peso vive en un fondo con un propósito. Mide si tus saldos siguen el plan.',
-  '50_30_20':  '50% necesidades · 30% deseos · 20% ahorro, sobre tus ingresos del mes.',
-  'jars_eker': 'Reparte cada ingreso en 6 frascos con porcentajes fijos.',
+  'fondos':      'Cada peso vive en un fondo con un propósito. Mide si tus saldos siguen el plan.',
+  '50_30_20':    '50% necesidades · 30% deseos · 20% ahorro, sobre tus ingresos del mes.',
+  'jars_eker':   'Reparte cada ingreso en 6 frascos con porcentajes fijos.',
+  'profit_first': 'Distribuye por propósito antes de cubrir gastos. Inspirado en el libro de Mike Michalowicz.',
 }
 
 export function computeScore(funds: FundAssessment[]): number {

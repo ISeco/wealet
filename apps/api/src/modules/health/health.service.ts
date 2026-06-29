@@ -73,7 +73,7 @@ export class HealthService {
     if (profile.framework === HealthFramework.FONDOS) {
       return this.getFondosAssessment(userId, profile.framework);
     }
-    return this.getFlowAssessment(userId, profile.framework, from, to);
+    return this.getFlowAssessment(userId, profile, from, to);
   }
 
   private async getFondosAssessment(
@@ -125,10 +125,12 @@ export class HealthService {
 
   private async getFlowAssessment(
     userId: string,
-    framework: HealthFramework,
+    profile: HealthProfile,
     from: string,
     to: string,
   ): Promise<AssessmentResponseDto> {
+    const framework = profile.framework;
+
     const [{ total_income: totalIncome }]: Array<{ total_income: string }> =
       await this.dataSource.query(
         `SELECT COALESCE(SUM(amount), 0)::text AS total_income
@@ -136,6 +138,11 @@ export class HealthService {
          WHERE user_id = $1 AND type = 'income' AND occurred_on BETWEEN $2 AND $3`,
         [userId, from, to],
       );
+
+    const effectiveIncome =
+      Number(totalIncome) === 0 && profile.monthlyIncome
+        ? profile.monthlyIncome
+        : totalIncome;
 
     const rows: FundFlowRow[] = await this.dataSource.query(
       `SELECT f.id AS fund_id, f.name AS fund_name,
@@ -162,7 +169,7 @@ export class HealthService {
       [userId, from, to],
     );
 
-    const income = Number(totalIncome);
+    const income = Number(effectiveIncome);
     const funds: FundAssessmentDto[] = rows.map((row) => {
       const actualAmount = row.amount;
       const actualPercentage =
@@ -180,7 +187,7 @@ export class HealthService {
       };
     });
 
-    return { framework, totalBase: totalIncome, funds };
+    return { framework, totalBase: effectiveIncome, funds };
   }
 
   private fundSlotFilter(framework: HealthFramework): string {

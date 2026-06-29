@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getHealthAssessment, getHealthProfile, updateHealthProfile } from './api'
+import { getHealthAssessment, getHealthProfile, updateHealthProfile, updateMonthlyIncome } from './api'
 import type { HealthFramework } from './types'
 
 export function useHealthProfile() {
@@ -24,6 +24,17 @@ export function useActivateFramework() {
       queryClient.setQueryData(['health', 'profile'], updatedProfile)
       queryClient.invalidateQueries({ queryKey: ['health', 'assessment'] })
       queryClient.invalidateQueries({ queryKey: ['funds'] })
+    },
+  })
+}
+
+export function useUpdateMonthlyIncome() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (monthlyIncome: string) => updateMonthlyIncome(monthlyIncome),
+    onSuccess: (updatedProfile) => {
+      queryClient.setQueryData(['health', 'profile'], updatedProfile)
+      queryClient.invalidateQueries({ queryKey: ['health', 'assessment'] })
     },
   })
 }
