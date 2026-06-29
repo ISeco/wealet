@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { AuthConfig } from './config/auth.config';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 const GLOBAL_PREFIX = 'api/v1';
 
@@ -22,6 +23,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.useGlobalFilters(new HttpExceptionFilter());
   app.enableCors({
     origin: authConfig.corsOrigin,
     credentials: true,
