@@ -78,6 +78,16 @@ export function TransactionsPage() {
   }
 
   useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setModalTransaction('new') // eslint-disable-line react-hooks/set-state-in-effect
+      setSearchParams(  
+        prev => { const n = new URLSearchParams(prev); n.delete('action'); return n },
+        { replace: true },
+      )
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
     sessionStorage.setItem('tx:params', searchParams.toString())
   }, [searchParams])
 

@@ -1,6 +1,6 @@
 // apps/web/src/features/funds/FundsPage.tsx
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { FundFormDrawer } from './components/FundFormDrawer'
 import { useFunds } from './hooks'
 import type { Fund, FundClassification } from './types'
@@ -17,6 +17,17 @@ const CLASS_DESC: Record<FundClassification, string> = {
 export function FundsPage() {
   const navigate = useNavigate()
   const [showForm, setShowForm] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setShowForm(true) // eslint-disable-line react-hooks/set-state-in-effect
+      setSearchParams(  
+        prev => { const n = new URLSearchParams(prev); n.delete('action'); return n },
+        { replace: true },
+      )
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: funds = [], isLoading } = useFunds()
 

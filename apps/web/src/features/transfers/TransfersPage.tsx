@@ -1,6 +1,6 @@
 // apps/web/src/features/transfers/TransfersPage.tsx
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { DateInput } from '../../components/ui/DateInput'
 import { useFundsAll } from '../funds'
 import { FundPicker } from './components/FundPicker'
@@ -26,6 +26,19 @@ function formatDateLabel(iso: string): string {
 
 export function TransfersPage() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      // The transfer form is always visible by default (step === 'form').
+      // Just remove the param so reloading doesn't re-trigger anything.
+      setSearchParams(  
+        prev => { const n = new URLSearchParams(prev); n.delete('action'); return n },
+        { replace: true },
+      )
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const { data: allFunds = [] } = useFundsAll()
   const funds = allFunds.filter((f) => !f.archivedAt)
   const { data: recentData } = useTransfers({ limit: 10 })

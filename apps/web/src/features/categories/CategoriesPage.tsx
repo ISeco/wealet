@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { EditIcon, LockIcon, PlusIcon, TrashIcon } from '../../app/icons'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { CategoryFormDrawer } from './components/CategoryFormDrawer'
@@ -20,6 +21,17 @@ export function CategoriesPage() {
   const [scope, setScope] = useState<Scope>('all')
   // null = closed, 'new' = create, Category = edit
   const [editing, setEditing] = useState<Category | 'new' | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setEditing('new') // eslint-disable-line react-hooks/set-state-in-effect
+      setSearchParams(  
+        prev => { const n = new URLSearchParams(prev); n.delete('action'); return n },
+        { replace: true },
+      )
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const [deleteTarget, setDeleteTarget] = useState<Category | undefined>()
   const [deleteError, setDeleteError] = useState(false)
 
