@@ -85,7 +85,7 @@ export class MonthlyAllocationService {
 
     const fundIds = dto.distributions.map((d) => d.fundId);
     const ownedFunds = await this.fundsRepo.find({
-      where: { id: In(fundIds), userId },
+      where: { id: In(fundIds), userId, archivedAt: IsNull() },
     });
     if (ownedFunds.length !== fundIds.length) {
       throw new ForbiddenException(

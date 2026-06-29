@@ -177,6 +177,23 @@ describe('MonthlyAllocationService', () => {
       expect(dataSource.transaction).not.toHaveBeenCalled();
     });
 
+    it('throws ForbiddenException when a fund is archived', async () => {
+      // Archived fund is excluded by the archivedAt: IsNull() filter → not in ownedFunds
+      fundsRepo.find.mockResolvedValue([twoFunds[0]]); // only active fund returned
+
+      await expect(
+        service.upsert('user-1', {
+          totalAmount: '1000000',
+          distributions: [
+            { fundId: 'fund-1', amount: '500000' },
+            { fundId: 'fund-archived', amount: '500000' },
+          ],
+        }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+
+      expect(dataSource.transaction).not.toHaveBeenCalled();
+    });
+
     it('creates a new allocation and N transactions when none exists for the month', async () => {
       fundsRepo.find.mockResolvedValue(twoFunds);
       allocationRepoInTx.findOne.mockResolvedValue(null);
