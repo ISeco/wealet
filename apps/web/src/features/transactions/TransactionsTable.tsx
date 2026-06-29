@@ -223,7 +223,7 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
                     </svg>
                     Mover a otro fondo
                   </div>
-                  {funds.map((f) => {
+                  {funds.filter((f) => !f.archivedAt).map((f) => {
                     const isCurrent = f.id === t.fundId
                     return (
                       <div

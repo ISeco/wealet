@@ -263,7 +263,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
             setFundId(event.target.value)
             clearFieldError('fundId')
           }}
-          options={(funds ?? []).map((fund) => ({ value: fund.id, label: fund.name }))}
+          options={(funds ?? []).filter((fund) => !fund.archivedAt).map((fund) => ({ value: fund.id, label: fund.name }))}
           required
           error={fieldErrors.fundId}
           style={{ height: 44, borderRadius: 10 }}

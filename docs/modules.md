@@ -30,6 +30,10 @@
 - **AdherenceChart — unificación de semántica**: eliminado el branch `isFondos` que mostraba "saldo como % del total" para fondos propios. Todos los frameworks usan flujo del período. Subtítulo y empty label unificados.
 - **AdherenceChart — visualización de flujo negativo**: barras con `actualPercentage < 0` se clampeaban a `width: "-X%"` (CSS inválido, se veía como track lleno). Corregido con `Math.max(0, ...)`. Fondos con flujo negativo muestran barra ámbar + monto ámbar. Marcador y etiqueta "Meta" se ocultan cuando `targetPercentage === 0`.
 - **GET /health/assessment — fix porcentajes inflados**: el SQL incluía transferencias entre fondos en el flujo por fondo pero no en el `totalIncome` base. Esto provocaba porcentajes > 100% en fondos que recibían transferencias. Corregido eliminando los dos `UNION ALL` de transferencias — el assessment ahora solo cuenta transacciones (income/expense), coherente con el denominador.
+- **Transacciones — fix fondos archivados**: el selector de fondo en `TransactionFormModal` y el dropdown de reasignación en `TransactionsTable` mostraban fondos archivados. Corregido filtrando `fund.archivedAt === null` en ambos lugares.
+- **Pre-auditoría — pendientes documentados**:
+  - *Autenticación con Google (pendiente)*: el botón "Continuar con Google" en la pantalla de auth está presente pero no implementado. Requiere: (1) agregar `googleId text null` al modelo `User` + migración, (2) módulo `auth/google` en NestJS con `passport-google-oauth20`, (3) callback route `GET /auth/google/callback`, (4) flujo en el frontend con redirect/popup. Evaluar si usar Firebase Auth o Passport directamente.
+  - *Recuperación de contraseña (pendiente)*: no existe flujo "olvidé mi contraseña". Requiere: (1) agregar `passwordResetToken text null` + `passwordResetExpiresAt timestamptz null` al modelo `User` + migración, (2) endpoints `POST /auth/forgot-password` y `POST /auth/reset-password` en NestJS, (3) servicio de email con Brevo (API gratuita) + plantillas HTML acordes a la estética de la app, (4) pantalla `/reset-password?token=` en el frontend.
 
 ---
 
