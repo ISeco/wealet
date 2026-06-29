@@ -151,8 +151,8 @@ export function AllocationDrawer({ open, onClose, profile, funds, currentAllocat
   }
 
   const total = BigInt(rawIncome || '0')
-  const sumAmounts = Object.values(amounts).reduce(
-    (acc, v) => acc + BigInt(v || '0'),
+  const sumAmounts = activeFunds.reduce(
+    (acc, f) => acc + BigInt(amounts[f.id] || '0'),
     0n,
   )
   const isValid = activeFunds.length > 0 && sumAmounts === total && total > 0n
