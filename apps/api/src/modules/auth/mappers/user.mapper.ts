@@ -6,5 +6,6 @@ export function toUserResponseDto(user: User): UserResponseDto {
     id: user.id,
     email: user.email,
     displayName: user.displayName,
+    onboardingCompleted: user.onboardingCompleted,
   };
 }
