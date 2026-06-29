@@ -1,4 +1,8 @@
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -48,6 +52,7 @@ describe('AuthService', () => {
             findByEmail: jest.fn(),
             findById: jest.fn(),
             create: jest.fn(),
+            updatePasswordHash: jest.fn(),
           },
         },
         {
@@ -129,6 +134,23 @@ describe('AuthService', () => {
         authService.login({ email: 'test@test.com', password: 'wrong' }),
       ).rejects.toThrow(UnauthorizedException);
     });
+
+    it('returns the same error message for missing user and wrong password (no email enumeration)', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      const missingUserError = await authService
+        .login({ email: 'missing@test.com', password: 'pw' })
+        .catch((e: Error) => e);
+
+      usersService.findByEmail.mockResolvedValue(buildUser());
+      (argon2.verify as jest.Mock).mockResolvedValue(false);
+      const wrongPasswordError = await authService
+        .login({ email: 'test@test.com', password: 'wrong' })
+        .catch((e: Error) => e);
+
+      expect((missingUserError as { message: string }).message).toBe(
+        (wrongPasswordError as { message: string }).message,
+      );
+    });
   });
 
   describe('refresh', () => {
@@ -195,6 +217,50 @@ describe('AuthService', () => {
         UnauthorizedException,
       );
       expect(refreshTokenRepository.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('changePassword', () => {
+    it('throws UnauthorizedException when current password is incorrect', async () => {
+      usersService.findById.mockResolvedValue(buildUser());
+      (argon2.verify as jest.Mock).mockResolvedValue(false);
+
+      await expect(
+        authService.changePassword('user-1', {
+          currentPassword: 'wrong',
+          newPassword: 'NewPw123!',
+        }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('throws BadRequestException when new password equals current password', async () => {
+      usersService.findById.mockResolvedValue(buildUser());
+      (argon2.verify as jest.Mock).mockResolvedValue(true);
+
+      await expect(
+        authService.changePassword('user-1', {
+          currentPassword: 'SamePw123!',
+          newPassword: 'SamePw123!',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('revokes all refresh tokens on successful password change', async () => {
+      usersService.findById.mockResolvedValue(buildUser());
+      (argon2.verify as jest.Mock)
+        .mockResolvedValueOnce(true) // currentPassword valid
+        .mockResolvedValueOnce(false); // newPassword != currentPassword
+      (argon2.hash as jest.Mock).mockResolvedValue('new-hash');
+
+      await authService.changePassword('user-1', {
+        currentPassword: 'OldPw123!',
+        newPassword: 'NewPw456!',
+      });
+
+      expect(refreshTokenRepository.update).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: 'user-1' }),
+        expect.objectContaining({ revokedAt: expect.any(Date) }),
+      );
     });
   });
 

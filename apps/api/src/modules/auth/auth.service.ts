@@ -1,5 +1,6 @@
 import { randomBytes, createHash } from 'crypto';
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -120,6 +121,16 @@ export class AuthService {
     );
     if (!valid) {
       throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const isSamePassword = await this.verifyPassword(
+      dto.newPassword,
+      user.passwordHash,
+    );
+    if (isSamePassword) {
+      throw new BadRequestException(
+        'New password must be different from current password',
+      );
     }
 
     const passwordHash = await this.hashPassword(dto.newPassword);
