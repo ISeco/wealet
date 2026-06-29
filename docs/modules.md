@@ -31,6 +31,17 @@
 - **AdherenceChart — visualización de flujo negativo**: barras con `actualPercentage < 0` se clampeaban a `width: "-X%"` (CSS inválido, se veía como track lleno). Corregido con `Math.max(0, ...)`. Fondos con flujo negativo muestran barra ámbar + monto ámbar. Marcador y etiqueta "Meta" se ocultan cuando `targetPercentage === 0`.
 - **GET /health/assessment — fix porcentajes inflados**: el SQL incluía transferencias entre fondos en el flujo por fondo pero no en el `totalIncome` base. Esto provocaba porcentajes > 100% en fondos que recibían transferencias. Corregido eliminando los dos `UNION ALL` de transferencias — el assessment ahora solo cuenta transacciones (income/expense), coherente con el denominador.
 - **Transacciones — fix fondos archivados**: el selector de fondo en `TransactionFormModal` y el dropdown de reasignación en `TransactionsTable` mostraban fondos archivados. Corregido filtrando `fund.archivedAt === null` en ambos lugares.
+- **Backend auditado** (rama `dev`, 2026-06-29): revisión módulo por módulo — calidad de código + unit tests. Resultados:
+  - `common/`: `HttpExceptionFilter` global creado → shape de error uniforme `{ statusCode, message, error, timestamp, path }` en toda la API.
+  - `auth/`: rechaza cambio a contraseña igual que la actual (`BadRequestException`); 3 tests nuevos (changePassword, email enumeration).
+  - `funds/`: 5 tests nuevos (balance derivado, soft-delete, createPreset transaccional).
+  - `transactions/`: spec creado desde cero — 9 tests (userId filter, filtros opcionales, paginación, SQL injection).
+  - `health/`: spec creado desde cero — 5 tests (assessment percentages, monthlyIncome fallback, framework seeding).
+  - `reports/`: sin cambios — SQL parametrizado, guard de división por cero, nombres descriptivos ya en orden.
+  - `activity/`: **bug corregido** — `fundId` filter en el UNION excluía todas las transferencias; corregido con `OR from_fund_id = $7 OR to_fund_id = $7`.
+  - `import-export/`: 2 tests nuevos (nombre de hoja inválido, celda no numérica).
+  - `transfers/`: test de fondo destino no autorizado agregado.
+  - `monthly-allocation/`: **bug corregido** — `fundsRepo.find` no filtraba `archivedAt IS NULL`; añadido para evitar distribuciones a fondos archivados. Test correspondiente agregado.
 - **Pre-auditoría — pendientes documentados**:
   - *Autenticación con Google (pendiente)*: el botón "Continuar con Google" en la pantalla de auth está presente pero no implementado. Requiere: (1) agregar `googleId text null` al modelo `User` + migración, (2) módulo `auth/google` en NestJS con `passport-google-oauth20`, (3) callback route `GET /auth/google/callback`, (4) flujo en el frontend con redirect/popup. Evaluar si usar Firebase Auth o Passport directamente.
   - *Recuperación de contraseña (pendiente)*: no existe flujo "olvidé mi contraseña". Requiere: (1) agregar `passwordResetToken text null` + `passwordResetExpiresAt timestamptz null` al modelo `User` + migración, (2) endpoints `POST /auth/forgot-password` y `POST /auth/reset-password` en NestJS, (3) servicio de email con Brevo (API gratuita) + plantillas HTML acordes a la estética de la app, (4) pantalla `/reset-password?token=` en el frontend.
