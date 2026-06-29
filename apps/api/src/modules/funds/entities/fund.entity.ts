@@ -6,7 +6,6 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
@@ -18,7 +17,6 @@ export enum FundClassification {
 }
 
 @Entity('funds')
-@Unique(['userId', 'name'])
 export class Fund {
   @PrimaryGeneratedColumn('uuid')
   id: string;
