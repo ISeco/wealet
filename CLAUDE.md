@@ -34,12 +34,13 @@ Personal finance app built on an envelope/fund system. Full-stack portfolio proj
 
 ## After every implementation
 
-After completing any feature, endpoint, or significant refactor, update the **Estado actual** section at the top of `docs/modules.md` to reflect the new state: what was added, what changed behavior, and what remains pending. Keep it to concise bullets — it's a snapshot for the next session, not a changelog.
+After completing any feature, endpoint, or significant refactor, add a bullet to `docs/estado-actual.md` describing what was added, what changed behavior, and what remains pending. Keep it concise — it's a snapshot for the next session, not a changelog.
 
 ## Reference Docs
 
 - Data model → `docs/data-model.md`
 - Module map, API endpoints & screen→endpoint map → `docs/modules.md`
+- Estado actual, features implementadas y pendientes → `docs/estado-actual.md`
 - Patterns, testing, CI/CD → `docs/conventions.md`
 - Architecture decisions & best practices (the *why*) → `docs/decisions.md`
 - Per-screen design reference → `docs/design/screens/` (one isolated `.html` per screen — see its `README.md`)
