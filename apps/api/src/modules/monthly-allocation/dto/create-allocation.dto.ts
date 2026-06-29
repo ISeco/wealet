@@ -1,21 +1,16 @@
 import { Type } from 'class-transformer';
-import {
-  IsArray,
-  IsNumberString,
-  IsUUID,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsUUID, Matches, ValidateNested } from 'class-validator';
 
 export class DistributionItemDto {
   @IsUUID()
   fundId: string;
 
-  @IsNumberString()
+  @Matches(/^\d+$/)
   amount: string;
 }
 
 export class CreateAllocationDto {
-  @IsNumberString()
+  @Matches(/^\d+$/)
   totalAmount: string;
 
   @IsArray()

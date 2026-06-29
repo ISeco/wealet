@@ -67,6 +67,12 @@ export class MonthlyAllocationService {
     userId: string,
     dto: CreateAllocationDto,
   ): Promise<AllocationResponseDto> {
+    if (BigInt(dto.totalAmount) <= 0n) {
+      throw new UnprocessableEntityException(
+        'El ingreso total debe ser mayor a cero',
+      );
+    }
+
     const sum = dto.distributions.reduce(
       (acc, d) => acc + BigInt(d.amount),
       0n,

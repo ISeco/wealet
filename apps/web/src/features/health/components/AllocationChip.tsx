@@ -6,7 +6,8 @@ interface Props {
 }
 
 function currentMonthName(): string {
-  return new Date().toLocaleString('es', { month: 'long' })
+  const name = new Date().toLocaleString('es', { month: 'long' })
+  return name.charAt(0).toUpperCase() + name.slice(1)
 }
 
 export function AllocationChip({ allocation, onOpen }: Props) {
