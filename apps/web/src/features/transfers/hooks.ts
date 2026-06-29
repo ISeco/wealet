@@ -16,6 +16,7 @@ export function useCreateTransfer() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transfers'] })
       qc.invalidateQueries({ queryKey: ['funds'] })
+      qc.invalidateQueries({ queryKey: ['activity'] })
     },
   })
 }
