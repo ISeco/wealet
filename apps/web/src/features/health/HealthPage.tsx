@@ -67,37 +67,35 @@ export function HealthPage() {
       {isLoading ? (
         <HealthSkeleton />
       ) : (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16 }}>
-            <ScoreCard
-              score={score}
-              description={FRAMEWORK_DESCRIPTIONS[framework]}
-              selectedFramework={framework}
-              activeFramework={activeFramework}
-              monthlyIncome={profile?.monthlyIncome ?? null}
-              onActivate={handleActivate}
-              onUpdateIncome={handleUpdateIncome}
+        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16 }}>
+          <ScoreCard
+            score={score}
+            description={FRAMEWORK_DESCRIPTIONS[framework]}
+            selectedFramework={framework}
+            activeFramework={activeFramework}
+            monthlyIncome={profile?.monthlyIncome ?? null}
+            onActivate={handleActivate}
+            onUpdateIncome={handleUpdateIncome}
+          />
+          {assessment && assessment.funds.length === 0 && (
+            <HealthEmptyState variant="no-funds" />
+          )}
+          {assessment && assessment.funds.length > 0 && assessment.totalBase === '0' && (
+            <HealthEmptyState variant="no-income" />
+          )}
+          {assessment && assessment.funds.length > 0 && assessment.totalBase !== '0' && (
+            <AdherenceChart
+              funds={assessment.funds}
+              totalBase={assessment.totalBase}
             />
-            {assessment && assessment.funds.length === 0 && (
-              <HealthEmptyState variant="no-funds" />
-            )}
-            {assessment && assessment.funds.length > 0 && assessment.totalBase === '0' && (
-              <HealthEmptyState variant="no-income" />
-            )}
-            {assessment && assessment.funds.length > 0 && assessment.totalBase !== '0' && (
-              <AdherenceChart
-                funds={assessment.funds}
-                totalBase={assessment.totalBase}
-              />
-            )}
-            {!assessment && (
-              <AdherenceChart
-                funds={[]}
-                totalBase="0"
-              />
-            )}
-          </div>
-        </>
+          )}
+          {!assessment && (
+            <AdherenceChart
+              funds={[]}
+              totalBase="0"
+            />
+          )}
+        </div>
       )}
 
       {profile && (

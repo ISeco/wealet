@@ -10,16 +10,14 @@ import { RecentActivity } from './components/RecentActivity'
 import { RunwayCard } from './components/RunwayCard'
 import { StatRow } from './components/StatRow'
 import { useReportMonths } from './hooks'
+import { monthName } from './utils'
 
 function Greeting({ name, month }: { name: string; month: string }) {
-  const [, m] = month.split('-')
-  const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-  const monthName = MONTH_NAMES[Number(m) - 1]
   return (
     <div>
       <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em' }}>Hola, {name}</div>
       <div style={{ fontSize: 14, color: 'var(--muted)', marginTop: 3 }}>
-        Esto es lo que pasó con tu dinero en <b style={{ color: 'var(--text)', fontWeight: 600 }}>{monthName.toLowerCase()}</b>.
+        Esto es lo que pasó con tu dinero en <b style={{ color: 'var(--text)', fontWeight: 600 }}>{monthName(month).toLowerCase()}</b>.
       </div>
     </div>
   )

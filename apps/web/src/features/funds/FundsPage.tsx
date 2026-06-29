@@ -1,6 +1,7 @@
 // apps/web/src/features/funds/FundsPage.tsx
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { formatMoney } from '../../lib/money'
 import { FundFormDrawer } from './components/FundFormDrawer'
 import { useFunds } from './hooks'
 import type { Fund, FundClassification } from './types'
@@ -31,11 +32,11 @@ export function FundsPage() {
 
   const { data: funds = [], isLoading } = useFunds()
 
-  const totalBalance = funds.reduce((sum, f) => sum + Number(f.balance), 0)
+  const totalBalance = funds.reduce((sum, f) => sum + BigInt(f.balance), 0n)
 
   const classGroups = CLASS_ORDER.map((cls) => {
     const group = funds.filter((f) => f.classification === cls)
-    const total = group.reduce((sum, f) => sum + Number(f.balance), 0)
+    const total = group.reduce((sum, f) => sum + BigInt(f.balance), 0n)
     return { cls, group, total }
   })
 
@@ -45,7 +46,7 @@ export function FundsPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 22 }}>
         {classGroups.map(({ cls, group, total }) => {
           const cl = classColor(cls)
-          const formatted = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(total)
+          const formatted = formatMoney(total.toString(), 'CLP')
           return (
             <div key={cls} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', padding: '18px 20px', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: cl.color }} />
@@ -103,10 +104,13 @@ export function FundsPage() {
   )
 }
 
-function FundCard({ fund, totalBalance, onClick }: { fund: Fund; totalBalance: number; onClick: () => void }) {
+function FundCard({ fund, totalBalance, onClick }: { fund: Fund; totalBalance: bigint; onClick: () => void }) {
   const chip = getFundChip(fund)
   const cls = classColor(fund.classification)
-  const share = totalBalance > 0 ? ((Number(fund.balance) / totalBalance) * 100).toFixed(0) + '%' : '0%'
+  // display-only percentage — float arithmetic is acceptable here
+  const share = totalBalance > 0n
+    ? ((Number(fund.balance) / Number(totalBalance)) * 100).toFixed(0) + '%'
+    : '0%'
 
   return (
     <div

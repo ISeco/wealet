@@ -1,7 +1,13 @@
-const MONTH_NAMES = [
+export const MONTH_NAMES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ]
+
+/** Returns the full month name for a "YYYY-MM" string, e.g. "2026-06" → "Junio". */
+export function monthName(yyyyMM: string): string {
+  const [, m] = yyyyMM.split('-')
+  return MONTH_NAMES[Number(m) - 1]
+}
 
 const MONTH_ABBR = [
   'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',

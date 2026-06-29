@@ -9,58 +9,10 @@ import { TransactionsToolbar } from './TransactionsToolbar'
 import { TransactionsTabs, type TabValue } from './TransactionsTabs'
 import { TransactionsTable, type TableRow } from './TransactionsTable'
 import { TransactionFormModal } from './TransactionFormModal'
-import type { ActivityItem, ActivitySubtype, ActivityType, Transaction, TransactionFilters } from './types'
+import type { ActivitySubtype, ActivityType, Transaction, TransactionFilters } from './types'
+import { formatChipDate, toTableRow } from './utils'
 
 const LIMIT = 20
-
-const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-
-function formatChipDate(from?: string, to?: string): string | null {
-  if (!from && !to) return null
-  if (from && to) {
-    const [fy, fm] = from.split('-')
-    const [ty, tm] = to.split('-')
-    if (fy === ty && fm === tm) return `${MONTH_NAMES[parseInt(fm) - 1]} ${fy}`
-    return `${from} – ${to}`
-  }
-  return from ?? to ?? null
-}
-
-function toTableRow(item: ActivityItem): TableRow {
-  if (item.type === 'transfer') {
-    return {
-      kind: 'transfer',
-      data: {
-        id: item.id,
-        fromFundId: item.fromFundId!,
-        toFundId: item.toFundId!,
-        amount: item.amount,
-        amountFormatted: item.amountFormatted,
-        currency: item.currency,
-        occurredOn: item.occurredOn,
-        note: item.note ?? null,
-        createdAt: item.createdAt,
-      },
-    }
-  }
-  return {
-    kind: 'transaction',
-    data: {
-      id: item.id,
-      fundId: item.fundId!,
-      categoryId: item.categoryId!,
-      type: item.subtype!,
-      amount: item.amount,
-      amountFormatted: item.amountFormatted,
-      currency: item.currency,
-      description: item.description ?? null,
-      occurredOn: item.occurredOn,
-      source: item.source!,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt ?? item.createdAt,
-    },
-  }
-}
 
 export function TransactionsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
