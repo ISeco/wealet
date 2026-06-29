@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AllocationResponseDto } from './dto/allocation-response.dto';
@@ -21,10 +22,14 @@ export class MonthlyAllocationController {
   @ApiOperation({ summary: 'Get current month allocation or null' })
   @ApiOkResponse({ type: AllocationResponseDto })
   @Get('current')
-  getCurrent(
+  async getCurrent(
     @CurrentUser() userId: string,
-  ): Promise<AllocationResponseDto | null> {
-    return this.service.getCurrent(userId);
+    @Res() res: Response,
+  ): Promise<void> {
+    const allocation = await this.service.getCurrent(userId);
+    // NestJS skips JSON serialization for null returns (sends empty body).
+    // Call res.json() directly so the client receives the literal JSON null.
+    res.json(allocation);
   }
 
   @ApiOperation({ summary: 'Create or replace current month allocation' })

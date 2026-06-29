@@ -80,7 +80,6 @@ export function HealthPage() {
             <AdherenceChart
               funds={assessment?.funds ?? []}
               totalBase={assessment?.totalBase ?? '0'}
-              framework={framework}
             />
           </div>
         </>

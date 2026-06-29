@@ -1,5 +1,5 @@
 import { formatMoney } from '../../../lib/money'
-import type { FundAssessment, FundClassification, HealthFramework } from '../types'
+import type { FundAssessment, FundClassification } from '../types'
 
 const CLS_COLOR: Record<FundClassification, string> = {
   available: 'var(--disp)',
@@ -19,31 +19,24 @@ function statusTag(diff: number): { label: string; color: string } {
 interface Props {
   funds: FundAssessment[]
   totalBase: string
-  framework: HealthFramework
 }
 
-export function AdherenceChart({ funds, totalBase, framework }: Props) {
-  const isFondos = framework === 'fondos'
-  const subtitle = isFondos
-    ? 'La línea marca tu meta; la barra, tu saldo actual como % del total'
-    : 'La línea marca tu meta; la barra, dónde estás hoy'
-  const emptyLabel = isFondos
-    ? 'Sin saldo en fondos'
-    : 'Sin ingresos registrados en el período'
-
+export function AdherenceChart({ funds, totalBase }: Props) {
   return (
     <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', padding: '22px 24px' }}>
       <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 4 }}>Objetivo vs. real</div>
       <div style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 20 }}>
-        {subtitle}
+        Flujo neto de cada fondo en el período. La línea marca tu meta.
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {funds.map((fund) => {
+          const hasTarget = fund.targetPercentage > 0
+          const isNegative = Number(fund.actualAmount) < 0
           const diff = fund.actualPercentage - fund.targetPercentage
-          const tag = statusTag(diff)
+          const tag = hasTarget ? statusTag(diff) : null
           const color = CLS_COLOR[fund.classification]
-          const realW = `${Math.min(fund.actualPercentage, 100).toFixed(1)}%`
+          const realW = `${Math.max(0, Math.min(fund.actualPercentage, 100)).toFixed(1)}%`
           const targetW = `${Math.min(fund.targetPercentage, 100).toFixed(1)}%`
 
           return (
@@ -51,30 +44,36 @@ export function AdherenceChart({ funds, totalBase, framework }: Props) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <span style={{ fontSize: 13.5, fontWeight: 600 }}>{fund.fundName}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 11.5, fontWeight: 600, color: tag.color }}>{tag.label}</span>
-                  <span style={{ fontSize: 13, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>
+                  {tag && (
+                    <span style={{ fontSize: 11.5, fontWeight: 600, color: tag.color }}>{tag.label}</span>
+                  )}
+                  <span style={{ fontSize: 13, color: isNegative ? STATUS_AMBER : 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>
                     {formatMoney(fund.actualAmount, 'CLP')}
                   </span>
                 </div>
               </div>
 
               <div style={{ position: 'relative', height: 10, background: 'var(--card-2)', borderRadius: 6, overflow: 'visible' }}>
-                <div style={{ height: '100%', borderRadius: 6, background: color, width: realW, transition: 'width .4s ease' }} />
-                <div style={{
-                  position: 'absolute',
-                  top: -4,
-                  width: 2,
-                  height: 18,
-                  borderRadius: 2,
-                  background: 'var(--text)',
-                  opacity: 0.6,
-                  left: targetW,
-                }} />
+                <div style={{ height: '100%', borderRadius: 6, background: isNegative ? STATUS_AMBER : color, width: realW, transition: 'width .4s ease' }} />
+                {hasTarget && (
+                  <div style={{
+                    position: 'absolute',
+                    top: -4,
+                    width: 2,
+                    height: 18,
+                    borderRadius: 2,
+                    background: 'var(--text)',
+                    opacity: 0.6,
+                    left: targetW,
+                  }} />
+                )}
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontSize: 11, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>
-                <span>Real {fund.actualPercentage.toFixed(0)}%</span>
-                <span>Meta {fund.targetPercentage.toFixed(0)}%</span>
+                <span style={{ color: isNegative ? STATUS_AMBER : 'var(--muted)' }}>
+                  Real {fund.actualPercentage.toFixed(0)}%
+                </span>
+                {hasTarget && <span>Meta {fund.targetPercentage.toFixed(0)}%</span>}
               </div>
             </div>
           )
@@ -83,7 +82,7 @@ export function AdherenceChart({ funds, totalBase, framework }: Props) {
 
       {Number(totalBase) === 0 && (
         <div style={{ marginTop: 16, fontSize: 12, color: 'var(--muted)', textAlign: 'center' }}>
-          {emptyLabel}
+          Sin ingresos registrados en el período
         </div>
       )}
     </div>

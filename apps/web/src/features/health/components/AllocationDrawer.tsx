@@ -1,4 +1,5 @@
 import { useEffect, useReducer } from 'react'
+import { formatThousands } from '../../../lib/money'
 import { useCreateAllocation } from '../hooks'
 import type { CurrentAllocation, HealthProfile } from '../types'
 import type { Fund } from '../../funds/types'
@@ -53,9 +54,8 @@ function computeProposed(activeFunds: Fund[], totalAmount: bigint): Record<strin
 }
 
 function formatCLP(value: string): string {
-  const n = Number(value)
-  if (isNaN(n)) return value
-  return '$' + n.toLocaleString('es-CL')
+  if (!value) return ''
+  return '$' + formatThousands(value)
 }
 
 type DrawerStep = 'income' | 'distribution'
@@ -214,12 +214,11 @@ export function AllocationDrawer({ open, onClose, profile, funds, currentAllocat
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', background: 'var(--card-2)' }}>
               <span style={{ color: 'var(--muted)', fontWeight: 600 }}>$</span>
               <input
-                type="number"
-                min="1"
-                step="1"
-                value={rawIncome}
-                onChange={(e) => dispatch({ type: 'SET_INCOME', rawIncome: e.target.value })}
-                placeholder="1000000"
+                type="text"
+                inputMode="numeric"
+                value={formatThousands(rawIncome)}
+                onChange={(e) => dispatch({ type: 'SET_INCOME', rawIncome: e.target.value.replace(/\D/g, '') })}
+                placeholder="1.000.000"
                 style={{
                   flex: 1, border: 'none', background: 'none',
                   fontSize: 15, fontWeight: 600, color: 'var(--text)',
@@ -275,10 +274,9 @@ export function AllocationDrawer({ open, onClose, profile, funds, currentAllocat
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid var(--border)', borderRadius: 7, padding: '6px 10px', background: 'var(--card)' }}>
                     <span style={{ color: 'var(--muted)', fontSize: 13 }}>$</span>
                     <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={amounts[fund.id] ?? '0'}
+                      type="text"
+                      inputMode="numeric"
+                      value={formatThousands(amounts[fund.id] ?? '0')}
                       onChange={(e) => handleAmountChange(fund.id, e.target.value)}
                       style={{
                         width: 110, border: 'none', background: 'none',

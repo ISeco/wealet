@@ -103,12 +103,6 @@ export class HealthService {
            CASE WHEN type = 'income' THEN amount ELSE -amount END AS amount,
            occurred_on
          FROM transactions WHERE user_id = $1
-         UNION ALL
-         SELECT to_fund_id AS fund_id, amount, occurred_on
-         FROM transfers WHERE user_id = $1
-         UNION ALL
-         SELECT from_fund_id AS fund_id, -amount, occurred_on
-         FROM transfers WHERE user_id = $1
        ) m ON m.fund_id = f.id AND m.occurred_on BETWEEN $2 AND $3
        WHERE f.user_id = $1
          AND f.archived_at IS NULL
