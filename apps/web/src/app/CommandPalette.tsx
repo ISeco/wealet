@@ -41,6 +41,7 @@ const GROUP_ORDER: PaletteGroup[] = ['Navegar a', 'Crear', 'Fondos recientes', '
 export function CommandPalette() {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const [activeIndex, setActiveIndex] = useState(0)
   const navigate = useNavigate()
 
   const { data: funds = [] } = useFunds()
@@ -48,6 +49,7 @@ export function CommandPalette() {
   function close() {
     setOpen(false)
     setQuery('')
+    setActiveIndex(0)
   }
 
   useEffect(() => {
@@ -60,11 +62,13 @@ export function CommandPalette() {
         event.preventDefault()
         setOpen((current) => !current)
         setQuery('')
+        setActiveIndex(0)
         return
       }
       if (event.key === 'Escape') {
         setOpen(false)
         setQuery('')
+        setActiveIndex(0)
       }
     }
     window.addEventListener(OPEN_COMMAND_PALETTE_EVENT, handleOpenRequest)
@@ -101,7 +105,13 @@ export function CommandPalette() {
     [filtered]
   )
 
-  const firstItem = grouped[0]?.items[0]
+  const indexedGroups = useMemo(() => {
+    let i = 0
+    return grouped.map(({ group, items }) => ({
+      group,
+      items: items.map((item) => ({ item, index: i++ })),
+    }))
+  }, [grouped])
 
   function handleSelect(item: PaletteItem) {
     navigate(item.route)
@@ -142,10 +152,17 @@ export function CommandPalette() {
           <input
             autoFocus
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => { setQuery(event.target.value); setActiveIndex(0) }}
             onKeyDown={(event) => {
-              if (event.key === 'Enter' && firstItem) {
-                handleSelect(firstItem)
+              if (event.key === 'ArrowDown') {
+                event.preventDefault()
+                setActiveIndex((i) => Math.min(i + 1, filtered.length - 1))
+              } else if (event.key === 'ArrowUp') {
+                event.preventDefault()
+                setActiveIndex((i) => Math.max(i - 1, 0))
+              } else if (event.key === 'Enter') {
+                const target = filtered[activeIndex]
+                if (target) handleSelect(target)
               }
             }}
             placeholder="Buscar o escribe un comando…"
@@ -156,10 +173,10 @@ export function CommandPalette() {
           </span>
         </div>
         <div style={{ padding: 8 }}>
-          {grouped.length === 0 ? (
+          {indexedGroups.length === 0 ? (
             <div style={{ padding: 10, fontSize: 13.5, color: 'var(--muted)' }}>Sin resultados</div>
           ) : (
-            grouped.map(({ group, items }) => (
+            indexedGroups.map(({ group, items }) => (
               <div key={group}>
                 <div style={{
                   fontSize: '0.7rem',
@@ -171,11 +188,20 @@ export function CommandPalette() {
                 }}>
                   {group}
                 </div>
-                {items.map((item) => (
+                {items.map(({ item, index }) => (
                   <div
                     key={item.id}
                     onClick={() => handleSelect(item)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, borderRadius: 9, cursor: 'pointer' }}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: 10,
+                      borderRadius: 9,
+                      cursor: 'pointer',
+                      background: index === activeIndex ? 'var(--card-2)' : 'transparent',
+                    }}
                   >
                     <span style={{ flex: 1, fontSize: 13.5, fontWeight: 500, color: 'var(--text)' }}>{item.label}</span>
                   </div>
