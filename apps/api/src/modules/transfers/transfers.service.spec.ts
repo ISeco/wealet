@@ -100,6 +100,16 @@ describe('TransfersService', () => {
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
+  it('rejects when the destination fund is not owned by the user', async () => {
+    fundsRepositoryInTransaction.findOne
+      .mockResolvedValueOnce(buildFund({ id: 'fund-1' }))
+      .mockResolvedValueOnce(null);
+
+    await expect(
+      transfersService.create('user-1', baseDto),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
   it('creates the transfer in a single transaction when both funds are owned', async () => {
     fundsRepositoryInTransaction.findOne
       .mockResolvedValueOnce(buildFund({ id: 'fund-1' }))
