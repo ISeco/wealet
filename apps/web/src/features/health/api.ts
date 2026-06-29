@@ -1,5 +1,5 @@
 import { apiFetch } from '../../lib/api/client'
-import type { AssessmentResponse, HealthFramework, HealthProfile } from './types'
+import type { AssessmentResponse, CurrentAllocation, AllocationResponse, HealthFramework, HealthProfile } from './types'
 
 export function getHealthProfile(): Promise<HealthProfile> {
   return apiFetch<HealthProfile>('/health/profile')
@@ -25,4 +25,15 @@ export function updateMonthlyIncome(monthlyIncome: string): Promise<HealthProfil
     method: 'PUT',
     body: { monthlyIncome },
   })
+}
+
+export function getAllocationCurrent(): Promise<CurrentAllocation> {
+  return apiFetch<CurrentAllocation>('/monthly-allocation/current')
+}
+
+export function createAllocation(body: {
+  totalAmount: string
+  distributions: Array<{ fundId: string; amount: string }>
+}): Promise<AllocationResponse> {
+  return apiFetch<AllocationResponse>('/monthly-allocation', { method: 'POST', body })
 }

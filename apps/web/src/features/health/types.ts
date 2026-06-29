@@ -23,3 +23,18 @@ export interface AssessmentResponse {
   totalBase: string
   funds: FundAssessment[]
 }
+
+export interface AllocationDistribution {
+  fundId: string
+  fundName: string
+  amount: string
+}
+
+export interface AllocationResponse {
+  id: string
+  month: string
+  totalAmount: string
+  distributions: AllocationDistribution[]
+}
+
+export type CurrentAllocation = AllocationResponse | null
