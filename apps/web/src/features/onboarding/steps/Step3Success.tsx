@@ -11,9 +11,10 @@ const PRESET_NAMES: Record<string, string> = {
 interface Props {
   preset: string
   displayName: string | null
+  isReconfigure?: boolean
 }
 
-export function Step3Success({ preset, displayName }: Props) {
+export function Step3Success({ preset, displayName, isReconfigure }: Props) {
   const navigate = useNavigate()
   const name = displayName ?? 'todo'
   const presetName = PRESET_NAMES[preset] ?? preset
@@ -43,10 +44,10 @@ export function Step3Success({ preset, displayName }: Props) {
         </div>
       </div>
       <button
-        onClick={() => navigate('/')}
+        onClick={() => navigate(isReconfigure ? '/ajustes' : '/')}
         style={{ marginTop: 8, height: 46, padding: '0 30px', border: 'none', borderRadius: 9, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow)' }}
       >
-        Ir al dashboard
+        {isReconfigure ? 'Volver a Ajustes' : 'Ir al dashboard'}
       </button>
     </div>
   )

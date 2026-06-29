@@ -16,7 +16,7 @@ export function useCompleteOnboarding() {
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function complete(preset: PresetOption, monthlyIncome?: string): Promise<boolean> {
+  async function complete(preset: PresetOption, monthlyIncome?: string, isReconfigure?: boolean): Promise<boolean> {
     setIsPending(true)
     setError(null)
     try {
@@ -26,7 +26,9 @@ export function useCompleteOnboarding() {
       } else {
         await setHealthFramework('fondos')
       }
-      await completeOnboarding()
+      if (!isReconfigure) {
+        await completeOnboarding()
+      }
       await refetchUser()
       qc.invalidateQueries({ queryKey: ['funds'] })
       return true

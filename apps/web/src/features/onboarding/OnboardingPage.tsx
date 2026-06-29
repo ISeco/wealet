@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { createFund } from './api'
 import { useCompleteOnboarding } from './hooks/useCompleteOnboarding'
@@ -12,6 +13,8 @@ const SLOT_PRESETS: PresetOption[] = ['jars_eker', '50_30_20', 'profit_first']
 
 export function OnboardingPage() {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
+  const isReconfigure = searchParams.get('from') === 'settings'
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
   const [selected, setSelected] = useState<PresetOption | null>(null)
   const [customFunds, setCustomFunds] = useState<CreateFundPayload[]>([])
@@ -50,20 +53,20 @@ export function OnboardingPage() {
     if (isSlotPreset) {
       setStep(3)
     } else {
-      const ok = await complete(selected)
+      const ok = await complete(selected, undefined, isReconfigure)
       if (ok) setStep(4)
     }
   }
 
   async function handleConfirmIncome(income?: string) {
     if (!selected) return
-    const ok = await complete(selected, income)
+    const ok = await complete(selected, income, isReconfigure)
     if (ok) setStep(4)
   }
 
   async function handleExcelComplete() {
     if (!selected) return
-    const ok = await complete(selected)
+    const ok = await complete(selected, undefined, isReconfigure)
     if (ok) setStep(4)
   }
 
@@ -115,7 +118,7 @@ export function OnboardingPage() {
             />
           )}
           {step === 4 && selected && (
-            <Step3Success preset={selected} displayName={user?.displayName ?? null} />
+            <Step3Success preset={selected} displayName={user?.displayName ?? null} isReconfigure={isReconfigure} />
           )}
 
           {/* Nav footer */}

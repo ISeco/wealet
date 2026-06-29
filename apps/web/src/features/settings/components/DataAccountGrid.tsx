@@ -52,7 +52,7 @@ export function DataAccountGrid() {
 
       <div style={{ ...card, marginBottom: 0 }}>
         <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 14 }}>Cuenta</div>
-        <button disabled style={{ ...actionBtn, opacity: 0.5, cursor: 'not-allowed' }}>
+        <button onClick={() => navigate('/onboarding?from=settings')} style={actionBtn}>
           Reconfigurar fondos
         </button>
         <button
