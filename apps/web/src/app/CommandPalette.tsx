@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFunds } from '../features/funds/hooks'
 import type { Fund } from '../features/funds/types'
@@ -77,20 +77,29 @@ export function CommandPalette() {
 
   const q = query.trim().toLowerCase()
 
-  const fundItems: PaletteItem[] = funds.map((f: Fund) => ({
-    id: `fund-${f.id}`,
-    label: f.name,
-    group: q ? 'Fondos' : 'Fondos recientes',
-    route: `/fondos/${f.id}`,
-  }))
+  const fundItems: PaletteItem[] = useMemo(
+    () => funds.map((f: Fund) => ({
+      id: `fund-${f.id}`,
+      label: f.name,
+      group: q ? 'Fondos' : 'Fondos recientes',
+      route: `/fondos/${f.id}`,
+    })),
+    [funds, q]
+  )
 
-  const filtered = q
-    ? [...STATIC_ITEMS, ...fundItems].filter((item) => item.label.toLowerCase().includes(q))
-    : [...STATIC_ITEMS, ...fundItems.slice(0, 3)]
+  const filtered = useMemo(
+    () => q
+      ? [...STATIC_ITEMS, ...fundItems].filter((item) => item.label.toLowerCase().includes(q))
+      : [...STATIC_ITEMS, ...fundItems.slice(0, 3)],
+    [fundItems, q]
+  )
 
-  const grouped = GROUP_ORDER
-    .map((group) => ({ group, items: filtered.filter((item) => item.group === group) }))
-    .filter((g) => g.items.length > 0)
+  const grouped = useMemo(
+    () => GROUP_ORDER
+      .map((group) => ({ group, items: filtered.filter((item) => item.group === group) }))
+      .filter((g) => g.items.length > 0),
+    [filtered]
+  )
 
   const firstItem = grouped[0]?.items[0]
 
