@@ -24,7 +24,8 @@
     "typeorm": "typeorm-ts-node-commonjs -d src/config/typeorm-datasource.ts",
     "migration:generate": "pnpm typeorm migration:generate",
     "migration:run": "pnpm typeorm migration:run",
-    "migration:revert": "pnpm typeorm migration:revert"
+    "migration:revert": "pnpm typeorm migration:revert",
+    "migration:run:prod": "typeorm migration:run -d dist/config/typeorm-datasource.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
