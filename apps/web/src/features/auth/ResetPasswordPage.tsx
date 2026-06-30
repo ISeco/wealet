@@ -65,7 +65,11 @@ export function ResetPasswordPage() {
       navigate('/login?reset=ok', { replace: true })
     } catch (err) {
       if (err instanceof ApiError && err.statusCode === 400) {
-        setTokenInvalid(true)
+        if (err.message.toLowerCase().includes('token')) {
+          setTokenInvalid(true)
+        } else {
+          setError(err.message)
+        }
       } else {
         setError('No pudimos restablecer tu contraseña. Intenta de nuevo.')
       }
