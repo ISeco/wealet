@@ -439,7 +439,7 @@ describe('AuthService', () => {
 
     it('creates a new user when no matching googleId or email', async () => {
       mockGetTokenInfo.mockResolvedValue({
-        user_id: 'g-123',
+        sub: 'g-123',
         email: 'new@test.com',
         aud: 'test-client-id',
       });
@@ -468,7 +468,7 @@ describe('AuthService', () => {
     it('returns tokens for existing user with matching googleId', async () => {
       const existingUser = buildUser({ googleId: 'g-123' });
       mockGetTokenInfo.mockResolvedValue({
-        user_id: 'g-123',
+        sub: 'g-123',
         email: 'test@test.com',
         aud: 'test-client-id',
       });
@@ -485,7 +485,7 @@ describe('AuthService', () => {
     it('links googleId to existing email/password user', async () => {
       const existingUser = buildUser();
       mockGetTokenInfo.mockResolvedValue({
-        user_id: 'g-999',
+        sub: 'g-999',
         email: 'test@test.com',
         aud: 'test-client-id',
       });
