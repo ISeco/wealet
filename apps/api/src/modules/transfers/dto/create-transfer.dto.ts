@@ -8,6 +8,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { SUPPORTED_CURRENCIES } from '../../../common/money/currency';
+import { IsNotFutureDate } from '../../../common/validators/is-not-future-date.validator';
 
 export class CreateTransferDto {
   @IsUUID()
@@ -26,6 +27,7 @@ export class CreateTransferDto {
   currency?: string;
 
   @IsDateString()
+  @IsNotFutureDate()
   occurredOn: string;
 
   @IsOptional()

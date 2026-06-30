@@ -9,6 +9,7 @@ interface DateInputProps {
   required?: boolean
   error?: boolean
   style?: React.CSSProperties
+  maxDate?: string
 }
 
 const WEEKDAYS = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']
@@ -46,7 +47,7 @@ function buildGrid(y: number, m: number) {
 }
 
 export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
-  function DateInput({ label, placeholder = 'Selecciona una fecha', value, onChange, required, error, style }, ref) {
+  function DateInput({ label, placeholder = 'Selecciona una fecha', value, onChange, required, error, style, maxDate }, ref) {
     const hiddenRef = useRef<HTMLInputElement>(null)
     const triggerRef = useRef<HTMLDivElement>(null)
     useImperativeHandle(ref, () => hiddenRef.current!)
@@ -82,6 +83,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
 
     function selectDay(cell: { y: number; m: number; d: number }) {
       const iso = toISO(cell.y, cell.m, cell.d)
+      if (maxDate && iso > maxDate) return
       // Synthesize a change event on the hidden input so React's onChange fires
       const nativeInput = hiddenRef.current!
       Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set!.call(nativeInput, iso)
@@ -91,6 +93,8 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
 
     const cells = buildGrid(viewY, viewM)
     const todayISO = toISO(today.getFullYear(), today.getMonth() + 1, today.getDate())
+    const nextMonthISO = toISO(viewM === 12 ? viewY + 1 : viewY, viewM === 12 ? 1 : viewM + 1, 1)
+    const isNextMonthDisabled = !!maxDate && nextMonthISO > maxDate
 
     const calendar = open ? createPortal(
       <div
@@ -121,8 +125,9 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
           <span style={{ fontSize: 13.5, fontWeight: 600 }}>{MONTHS_ES[viewM - 1]} {viewY}</span>
           <button
             type="button"
+            disabled={isNextMonthDisabled}
             onClick={() => { const nm = viewM === 12 ? 1 : viewM + 1; setViewM(nm); if (nm === 1) setViewY(y => y + 1) }}
-            style={{ width: 28, height: 28, border: 'none', background: 'var(--card-2)', borderRadius: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}
+            style={{ width: 28, height: 28, border: 'none', background: 'var(--card-2)', borderRadius: 7, cursor: isNextMonthDisabled ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', opacity: isNextMonthDisabled ? 0.35 : 1 }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6" /></svg>
           </button>
@@ -141,23 +146,25 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
             const iso = toISO(cell.y, cell.m, cell.d)
             const isSelected = iso === value
             const isToday = iso === todayISO
+            const isDisabled = !!maxDate && iso > maxDate
             return (
               <button
                 key={i}
                 type="button"
+                disabled={isDisabled}
                 onClick={() => selectDay(cell)}
                 style={{
                   height: 32,
                   border: 'none',
                   borderRadius: 8,
                   fontSize: 13,
-                  cursor: 'pointer',
+                  cursor: isDisabled ? 'not-allowed' : 'pointer',
                   fontFamily: 'inherit',
                   fontVariantNumeric: 'tabular-nums',
                   background: isSelected ? 'var(--grad)' : isToday ? 'var(--info-bg)' : 'transparent',
                   color: isSelected ? '#fff' : isToday ? 'var(--info)' : cell.current ? 'var(--text)' : 'var(--muted)',
                   fontWeight: isSelected || isToday ? 600 : 400,
-                  opacity: cell.current ? 1 : 0.45,
+                  opacity: isDisabled ? 0.3 : cell.current ? 1 : 0.45,
                 }}
               >
                 {cell.d}
@@ -210,6 +217,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
           value={value}
           onChange={onChange}
           required={required}
+          max={maxDate}
           tabIndex={-1}
           style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
         />

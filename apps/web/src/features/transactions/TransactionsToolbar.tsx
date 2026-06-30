@@ -50,6 +50,10 @@ export function TransactionsToolbar({
     setPopoverOpen(false)
   }
 
+  function todayISO(): string {
+    return new Date().toISOString().slice(0, 10)
+  }
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
       {/* search */}
@@ -149,6 +153,7 @@ export function TransactionsToolbar({
                     placeholder="Desde"
                     onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value || undefined }))}
                     style={{ height: 36, borderRadius: 8 }}
+                    maxDate={todayISO()}
                   />
                 </div>
                 <span style={{ color: 'var(--muted)', fontSize: 12 }}>→</span>
@@ -158,6 +163,7 @@ export function TransactionsToolbar({
                     placeholder="Hasta"
                     onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value || undefined }))}
                     style={{ height: 36, borderRadius: 8 }}
+                    maxDate={todayISO()}
                   />
                 </div>
               </div>

@@ -313,6 +313,7 @@ export function TransfersPage() {
             label="Fecha"
             value={occurredOn}
             onChange={(e) => setOccurredOn(e.target.value)}
+            maxDate={todayISO()}
           />
           <div>
             <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Nota (opcional)</div>

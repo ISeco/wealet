@@ -10,6 +10,7 @@ import {
 } from 'class-validator';
 import { SUPPORTED_CURRENCIES } from '../../../common/money/currency';
 import { TransactionType } from '../../../common/enums/transaction-type.enum';
+import { IsNotFutureDate } from '../../../common/validators/is-not-future-date.validator';
 
 export class CreateTransactionDto {
   @IsUUID()
@@ -36,5 +37,6 @@ export class CreateTransactionDto {
   description?: string;
 
   @IsDateString()
+  @IsNotFutureDate()
   occurredOn: string;
 }

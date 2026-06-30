@@ -295,6 +295,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
             }}
             required
             error={fieldErrors.occurredOn}
+            maxDate={new Date().toISOString().slice(0, 10)}
           />
           <div>
             <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Descripción</div>
