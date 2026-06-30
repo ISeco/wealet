@@ -125,6 +125,7 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Authenticate with a Google access token' })
   @Post('google')
+  @HttpCode(200)
   async googleAuth(
     @Body() dto: GoogleAuthDto,
     @Res({ passthrough: true }) res: Response,
