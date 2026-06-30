@@ -13,6 +13,7 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { User } from '../users/entities/user.entity';
+import { MailService } from '../../common/mail/mail.service';
 
 jest.mock('argon2');
 
@@ -20,6 +21,7 @@ describe('AuthService', () => {
   let authService: AuthService;
   let usersService: jest.Mocked<UsersService>;
   let refreshTokenRepository: jest.Mocked<Repository<RefreshToken>>;
+  let mailService: jest.Mocked<MailService>;
 
   const authConfig = {
     jwtSecret: 'secret',
@@ -55,6 +57,15 @@ describe('AuthService', () => {
             findById: jest.fn(),
             create: jest.fn(),
             updatePasswordHash: jest.fn(),
+            findByPasswordResetToken: jest.fn(),
+            savePasswordResetToken: jest.fn(),
+            clearPasswordResetToken: jest.fn(),
+          },
+        },
+        {
+          provide: MailService,
+          useValue: {
+            sendPasswordReset: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -80,6 +91,7 @@ describe('AuthService', () => {
     authService = module.get(AuthService);
     usersService = module.get(UsersService);
     refreshTokenRepository = module.get(getRepositoryToken(RefreshToken));
+    mailService = module.get(MailService);
   });
 
   afterEach(() => {
@@ -280,6 +292,103 @@ describe('AuthService', () => {
       const [[firstCall], [secondCall]] =
         refreshTokenRepository.findOne.mock.calls;
       expect(firstCall).toEqual(secondCall);
+    });
+  });
+
+  describe('forgotPassword', () => {
+    it('does nothing and returns 200-equivalent when email is not registered', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+
+      await expect(
+        authService.forgotPassword('unknown@test.com'),
+      ).resolves.toBeUndefined();
+      expect(mailService.sendPasswordReset).not.toHaveBeenCalled();
+    });
+
+    it('saves a hashed token and sends an email when email exists', async () => {
+      usersService.findByEmail.mockResolvedValue(buildUser());
+      usersService.savePasswordResetToken.mockResolvedValue(undefined);
+
+      await authService.forgotPassword('test@test.com');
+
+      expect(usersService.savePasswordResetToken).toHaveBeenCalledWith(
+        'user-1',
+        expect.any(String),
+        expect.any(Date),
+      );
+      expect(mailService.sendPasswordReset).toHaveBeenCalledWith(
+        'test@test.com',
+        expect.stringContaining('/reset-password?token='),
+      );
+    });
+
+    it('stores a SHA-256 hash, not the raw token', async () => {
+      usersService.findByEmail.mockResolvedValue(buildUser());
+      usersService.savePasswordResetToken.mockResolvedValue(undefined);
+
+      await authService.forgotPassword('test@test.com');
+
+      const [, savedHash] = usersService.savePasswordResetToken.mock.calls[0];
+      const sentUrl = mailService.sendPasswordReset.mock.calls[0][1];
+      const rawToken = sentUrl.split('token=')[1];
+
+      expect(savedHash).not.toBe(rawToken);
+      expect(savedHash).toMatch(/^[a-f0-9]{64}$/);
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('throws BadRequestException when token is not found or expired', async () => {
+      usersService.findByPasswordResetToken.mockResolvedValue(null);
+
+      await expect(
+        authService.resetPassword('invalid-token', 'NewPw123!'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException when token is found but expired', async () => {
+      usersService.findByPasswordResetToken.mockResolvedValue(
+        buildUser({ passwordResetExpiresAt: new Date(Date.now() - 1000) }),
+      );
+
+      await expect(
+        authService.resetPassword('expired-token', 'NewPw123!'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException when new password equals current password', async () => {
+      usersService.findByPasswordResetToken.mockResolvedValue(
+        buildUser({ passwordResetExpiresAt: new Date(Date.now() + 60_000) }),
+      );
+      (argon2.verify as jest.Mock).mockResolvedValue(true);
+
+      await expect(
+        authService.resetPassword('valid-token', 'SamePw123!'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('updates password, clears reset token, and revokes all refresh tokens on success', async () => {
+      usersService.findByPasswordResetToken.mockResolvedValue(
+        buildUser({ passwordResetExpiresAt: new Date(Date.now() + 60_000) }),
+      );
+      (argon2.verify as jest.Mock).mockResolvedValue(false);
+      (argon2.hash as jest.Mock).mockResolvedValue('new-hash');
+      usersService.updatePasswordHash.mockResolvedValue(undefined);
+      usersService.clearPasswordResetToken.mockResolvedValue(undefined);
+
+      await authService.resetPassword('valid-token', 'NewPw456!');
+
+      expect(usersService.updatePasswordHash).toHaveBeenCalledWith(
+        'user-1',
+        'new-hash',
+      );
+      expect(usersService.clearPasswordResetToken).toHaveBeenCalledWith(
+        'user-1',
+      );
+      expect(refreshTokenRepository.update).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: 'user-1' }),
+        expect.objectContaining({ revokedAt: expect.any(Date) }),
+      );
     });
   });
 });

@@ -13,6 +13,7 @@ import { IsNull, Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 import { AuthConfig } from '../../config/auth.config';
+import { MailService } from '../../common/mail/mail.service';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -35,6 +36,7 @@ export class AuthService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly mailService: MailService,
   ) {}
 
   async register(dto: RegisterDto): Promise<IssuedTokens> {
@@ -136,6 +138,53 @@ export class AuthService {
     const passwordHash = await this.hashPassword(dto.newPassword);
     await this.usersService.updatePasswordHash(userId, passwordHash);
     await this.revokeAllForUser(userId);
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) return;
+
+    const rawToken = randomBytes(32).toString('hex');
+    const tokenHash = this.hashToken(rawToken);
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await this.usersService.savePasswordResetToken(
+      user.id,
+      tokenHash,
+      expiresAt,
+    );
+
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL')!;
+    const resetUrl = `${frontendUrl}/reset-password?token=${rawToken}`;
+    await this.mailService.sendPasswordReset(user.email, resetUrl);
+  }
+
+  async resetPassword(rawToken: string, newPassword: string): Promise<void> {
+    const tokenHash = this.hashToken(rawToken);
+    const user = await this.usersService.findByPasswordResetToken(tokenHash);
+
+    if (
+      !user ||
+      !user.passwordResetExpiresAt ||
+      user.passwordResetExpiresAt < new Date()
+    ) {
+      throw new BadRequestException('Token inválido o expirado');
+    }
+
+    const isSamePassword = await this.verifyPassword(
+      newPassword,
+      user.passwordHash,
+    );
+    if (isSamePassword) {
+      throw new BadRequestException(
+        'La nueva contraseña debe ser diferente a la actual',
+      );
+    }
+
+    const passwordHash = await this.hashPassword(newPassword);
+    await this.usersService.updatePasswordHash(user.id, passwordHash);
+    await this.usersService.clearPasswordResetToken(user.id);
+    await this.revokeAllForUser(user.id);
   }
 
   private async issueTokens(user: User): Promise<IssuedTokens> {
