@@ -1,0 +1,82 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+@Injectable()
+export class MailService {
+  private readonly logger = new Logger(MailService.name);
+
+  constructor(private readonly configService: ConfigService) {}
+
+  async sendPasswordReset(to: string, resetUrl: string): Promise<void> {
+    const apiKey = this.configService.get<string>('BREVO_API_KEY')!;
+    const from = this.configService.get<string>('BREVO_FROM_EMAIL')!;
+
+    const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0f1a2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f1a2b;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:#1a2840;border-radius:16px;overflow:hidden;border:1px solid #243352;">
+        <tr>
+          <td style="padding:36px 40px 28px;text-align:center;background:linear-gradient(135deg,#0d2035 0%,#1a2840 100%);">
+            <div style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-.02em;">Wealet</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px 40px;">
+            <h1 style="margin:0 0 12px;font-size:22px;font-weight:600;color:#ffffff;letter-spacing:-.01em;">Recupera tu contraseña</h1>
+            <p style="margin:0 0 28px;font-size:15px;line-height:1.65;color:#8ba3c7;">
+              Recibimos una solicitud para restablecer la contraseña de tu cuenta. Haz clic en el botón de abajo para crear una nueva.
+            </p>
+            <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
+              <tr>
+                <td style="background:linear-gradient(135deg,#1fa9e0,#6bbf3f);border-radius:10px;">
+                  <a href="${resetUrl}" style="display:block;padding:14px 32px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:-.01em;">
+                    Restablecer contraseña
+                  </a>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:0 0 8px;font-size:13px;color:#5d7a9e;">
+              Este link expira en <strong style="color:#8ba3c7;">1 hora</strong>. Si no solicitaste este cambio, puedes ignorar este correo.
+            </p>
+            <p style="margin:0;font-size:12px;color:#3d5570;word-break:break-all;">
+              O copia y pega en tu navegador: ${resetUrl}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 40px;border-top:1px solid #243352;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#3d5570;">© 2026 Wealet · Hecho en Chile</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'api-key': apiKey,
+      },
+      body: JSON.stringify({
+        sender: { name: 'Wealet', email: from },
+        to: [{ email: to }],
+        subject: 'Recupera tu contraseña — Wealet',
+        htmlContent: html,
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      this.logger.error(`Brevo email failed: ${response.status} ${body}`);
+      throw new Error('No se pudo enviar el correo de recuperación');
+    }
+  }
+}
