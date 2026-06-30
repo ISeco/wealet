@@ -19,6 +19,8 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 const REFRESH_COOKIE_NAME = 'refresh_token';
 
@@ -95,6 +97,29 @@ export class AuthController {
     @Body() dto: ChangePasswordDto,
   ): Promise<void> {
     await this.authService.changePassword(userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Request a password reset email' })
+  @Post('forgot-password')
+  @HttpCode(200)
+  async forgotPassword(
+    @Body() dto: ForgotPasswordDto,
+  ): Promise<{ message: string }> {
+    await this.authService.forgotPassword(dto.email);
+    return {
+      message:
+        'Si ese correo está registrado, recibirás un link en los próximos minutos.',
+    };
+  }
+
+  @ApiOperation({ summary: 'Reset password using a valid token' })
+  @Post('reset-password')
+  @HttpCode(200)
+  async resetPassword(
+    @Body() dto: ResetPasswordDto,
+  ): Promise<{ message: string }> {
+    await this.authService.resetPassword(dto.token, dto.newPassword);
+    return { message: 'Contraseña actualizada correctamente.' };
   }
 
   private setRefreshCookie(res: Response, token: string): void {

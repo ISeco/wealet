@@ -16,4 +16,7 @@ export const envValidationSchema = Joi.object({
   REFRESH_TOKEN_EXPIRATION_DAYS: Joi.number().default(7),
   PASSWORD_PEPPER: Joi.string().required(),
   CORS_ORIGIN: Joi.string().default('http://localhost:5173'),
+  BREVO_API_KEY: Joi.string().required(),
+  BREVO_FROM_EMAIL: Joi.string().email().required(),
+  FRONTEND_URL: Joi.string().uri().required(),
 });
