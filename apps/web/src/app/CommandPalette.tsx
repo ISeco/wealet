@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useFunds } from '../features/funds/hooks'
 import type { Fund } from '../features/funds/types'
 import { isMacPlatform } from '../lib/platform'
-import { SearchIcon } from './icons'
+import { CategoriesIcon, FundsIcon, SearchIcon, TransactionsIcon, TransfersIcon } from './icons'
 
 export const OPEN_COMMAND_PALETTE_EVENT = 'wealet:open-command-palette'
 
@@ -33,6 +33,13 @@ const ACTION_ITEMS: PaletteItem[] = [
   { id: 'create-fund',     label: 'Nuevo fondo',         group: 'Crear', route: '/fondos?action=new' },
   { id: 'create-category', label: 'Nueva categoría',     group: 'Crear', route: '/categorias?action=new' },
 ]
+
+const QUICK_ACTION_ICONS: Record<string, { Icon: typeof FundsIcon; color: string; bg: string }> = {
+  'create-tx':       { Icon: TransactionsIcon, color: 'var(--info)', bg: 'var(--info-bg)' },
+  'create-transfer': { Icon: TransfersIcon,    color: 'var(--disp)', bg: 'var(--disp-bg)' },
+  'create-fund':     { Icon: FundsIcon,        color: 'var(--pos)',  bg: 'var(--pos-bg)' },
+  'create-category': { Icon: CategoriesIcon,   color: 'var(--comp)', bg: 'var(--comp-bg)' },
+}
 
 const STATIC_ITEMS = [...NAV_ITEMS, ...ACTION_ITEMS]
 
@@ -80,22 +87,23 @@ export function CommandPalette() {
   }, [])
 
   const q = query.trim().toLowerCase()
+  const isQuickMode = !q
 
   const fundItems: PaletteItem[] = useMemo(
     () => funds.map((f: Fund) => ({
       id: `fund-${f.id}`,
       label: f.name,
-      group: q ? 'Fondos' : 'Fondos recientes',
+      group: 'Fondos',
       route: `/fondos/${f.id}`,
     })),
-    [funds, q]
+    [funds]
   )
 
   const filtered = useMemo(
-    () => q
-      ? [...STATIC_ITEMS, ...fundItems].filter((item) => item.label.toLowerCase().includes(q))
-      : [...STATIC_ITEMS, ...fundItems.slice(0, 3)],
-    [fundItems, q]
+    () => isQuickMode
+      ? ACTION_ITEMS
+      : [...STATIC_ITEMS, ...fundItems].filter((item) => item.label.toLowerCase().includes(q)),
+    [isQuickMode, fundItems, q]
   )
 
   const grouped = useMemo(
@@ -172,44 +180,88 @@ export function CommandPalette() {
             ESC
           </span>
         </div>
-        <div style={{ padding: 8 }}>
-          {indexedGroups.length === 0 ? (
-            <div style={{ padding: 10, fontSize: 13.5, color: 'var(--muted)' }}>Sin resultados</div>
-          ) : (
-            indexedGroups.map(({ group, items }) => (
-              <div key={group}>
-                <div style={{
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  color: 'var(--muted)',
-                  padding: '8px 10px 4px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                }}>
-                  {group}
+        {isQuickMode ? (
+          <div style={{ padding: 8 }}>
+            <div style={{
+              fontSize: '0.7rem',
+              fontWeight: 600,
+              color: 'var(--muted)',
+              padding: '8px 10px 4px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}>
+              Acciones rápidas
+            </div>
+            {filtered.map((item, index) => {
+              const iconInfo = QUICK_ACTION_ICONS[item.id]
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => handleSelect(item)}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: 10,
+                    borderRadius: 9,
+                    cursor: 'pointer',
+                    background: index === activeIndex ? 'var(--card-2)' : 'transparent',
+                  }}
+                >
+                  {iconInfo && (
+                    <span style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: iconInfo.bg }}>
+                      <iconInfo.Icon color={iconInfo.color} size={15} />
+                    </span>
+                  )}
+                  <span style={{ flex: 1, fontSize: 13.5, fontWeight: 500, color: 'var(--text)' }}>{item.label}</span>
                 </div>
-                {items.map(({ item, index }) => (
-                  <div
-                    key={item.id}
-                    onClick={() => handleSelect(item)}
-                    onMouseEnter={() => setActiveIndex(index)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: 10,
-                      borderRadius: 9,
-                      cursor: 'pointer',
-                      background: index === activeIndex ? 'var(--card-2)' : 'transparent',
-                    }}
-                  >
-                    <span style={{ flex: 1, fontSize: 13.5, fontWeight: 500, color: 'var(--text)' }}>{item.label}</span>
+              )
+            })}
+            <div style={{ padding: '10px 10px 4px', fontSize: 12, color: 'var(--muted)', lineHeight: 1.5 }}>
+              Escribe para buscar fondos, pantallas y otras opciones de la app.
+            </div>
+          </div>
+        ) : (
+          <div style={{ padding: 8, maxHeight: 'min(50vh, 420px)', overflowY: 'auto' }}>
+            {indexedGroups.length === 0 ? (
+              <div style={{ padding: 10, fontSize: 13.5, color: 'var(--muted)' }}>Sin resultados</div>
+            ) : (
+              indexedGroups.map(({ group, items }) => (
+                <div key={group}>
+                  <div style={{
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    color: 'var(--muted)',
+                    padding: '8px 10px 4px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}>
+                    {group}
                   </div>
-                ))}
-              </div>
-            ))
-          )}
-        </div>
+                  {items.map(({ item, index }) => (
+                    <div
+                      key={item.id}
+                      onClick={() => handleSelect(item)}
+                      onMouseEnter={() => setActiveIndex(index)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        padding: 10,
+                        borderRadius: 9,
+                        cursor: 'pointer',
+                        background: index === activeIndex ? 'var(--card-2)' : 'transparent',
+                      }}
+                    >
+                      <span style={{ flex: 1, fontSize: 13.5, fontWeight: 500, color: 'var(--text)' }}>{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
