@@ -16,8 +16,11 @@ export class User {
   @Column({ type: 'citext', unique: true })
   email: string;
 
-  @Column({ name: 'password_hash', type: 'text' })
-  passwordHash: string;
+  @Column({ name: 'password_hash', type: 'text', nullable: true })
+  passwordHash: string | null;
+
+  @Column({ name: 'google_id', type: 'text', unique: true, nullable: true })
+  googleId: string | null;
 
   @Column({ name: 'display_name', type: 'text', nullable: true })
   displayName: string | null;

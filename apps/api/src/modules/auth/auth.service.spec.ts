@@ -35,6 +35,7 @@ describe('AuthService', () => {
     id: 'user-1',
     email: 'test@test.com',
     passwordHash: 'hashed',
+    googleId: null,
     displayName: null,
     theme: 'system',
     onboardingCompleted: false,

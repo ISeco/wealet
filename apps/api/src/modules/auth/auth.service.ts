@@ -61,6 +61,10 @@ export class AuthService {
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
     }
 
+    if (!user.passwordHash) {
+      throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
+    }
+
     const valid = await this.verifyPassword(dto.password, user.passwordHash);
     if (!valid) {
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
@@ -117,6 +121,10 @@ export class AuthService {
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
     }
 
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
     const valid = await this.verifyPassword(
       dto.currentPassword,
       user.passwordHash,
@@ -171,14 +179,16 @@ export class AuthService {
       throw new BadRequestException('Token inválido o expirado');
     }
 
-    const isSamePassword = await this.verifyPassword(
-      newPassword,
-      user.passwordHash,
-    );
-    if (isSamePassword) {
-      throw new BadRequestException(
-        'La nueva contraseña debe ser diferente a la actual',
+    if (user.passwordHash) {
+      const isSamePassword = await this.verifyPassword(
+        newPassword,
+        user.passwordHash,
       );
+      if (isSamePassword) {
+        throw new BadRequestException(
+          'La nueva contraseña debe ser diferente a la actual',
+        );
+      }
     }
 
     const passwordHash = await this.hashPassword(newPassword);
