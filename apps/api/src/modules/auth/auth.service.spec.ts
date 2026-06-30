@@ -37,6 +37,8 @@ describe('AuthService', () => {
     theme: 'system',
     onboardingCompleted: false,
     onboardingCompletedAt: null,
+    passwordResetToken: null,
+    passwordResetExpiresAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,

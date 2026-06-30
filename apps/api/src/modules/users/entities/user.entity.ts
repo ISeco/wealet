@@ -40,6 +40,16 @@ export class User {
   })
   onboardingCompletedAt: Date | null;
 
+  @Column({ name: 'password_reset_token', type: 'text', nullable: true })
+  passwordResetToken: string | null;
+
+  @Column({
+    name: 'password_reset_expires_at',
+    type: 'timestamptz',
+    nullable: true,
+  })
+  passwordResetExpiresAt: Date | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
