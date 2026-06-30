@@ -287,6 +287,30 @@ describe('AuthService', () => {
         expect.objectContaining({ revokedAt: expect.any(Date) }),
       );
     });
+
+    it('allows Google-only user to set a password without currentPassword', async () => {
+      const googleUser = buildUser({ passwordHash: null });
+      usersService.findById.mockResolvedValue(googleUser);
+      (argon2.hash as jest.Mock).mockResolvedValue('new-hash');
+
+      await expect(
+        authService.changePassword('user-1', { newPassword: 'NewPass1!' }),
+      ).resolves.toBeUndefined();
+
+      expect(usersService.updatePasswordHash).toHaveBeenCalledWith(
+        'user-1',
+        'new-hash',
+      );
+    });
+
+    it('requires currentPassword when user has an existing password', async () => {
+      const user = buildUser({ passwordHash: 'hashed' });
+      usersService.findById.mockResolvedValue(user);
+
+      await expect(
+        authService.changePassword('user-1', { newPassword: 'NewPass1!' }),
+      ).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe('hashToken determinism', () => {
