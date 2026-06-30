@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
+import { OAuth2Client } from 'google-auth-library';
 import { IsNull, Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
@@ -57,11 +58,7 @@ export class AuthService {
 
   async login(dto: LoginDto): Promise<IssuedTokens> {
     const user = await this.usersService.findByEmail(dto.email);
-    if (!user) {
-      throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
-    }
-
-    if (!user.passwordHash) {
+    if (!user || user.passwordHash === null) {
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
     }
 
@@ -70,6 +67,48 @@ export class AuthService {
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
     }
 
+    return this.issueTokens(user);
+  }
+
+  async loginWithGoogle(accessToken: string): Promise<IssuedTokens> {
+    const client = new OAuth2Client(this.authConfig.googleClientId);
+
+    let googleId: string;
+    let email: string;
+
+    try {
+      const tokenInfo = await client.getTokenInfo(accessToken);
+      // getTokenInfo returns user_id (not sub) and does not auto-check aud
+      if (!tokenInfo.user_id || !tokenInfo.email) {
+        throw new Error('Missing fields');
+      }
+      if (tokenInfo.aud !== this.authConfig.googleClientId) {
+        throw new Error('Invalid audience');
+      }
+      googleId = tokenInfo.user_id;
+      email = tokenInfo.email;
+    } catch {
+      throw new UnauthorizedException('Token de Google inválido');
+    }
+
+    // 1. find by googleId
+    let user = await this.usersService.findByGoogleId(googleId);
+    if (user) return this.issueTokens(user);
+
+    // 2. find by email — link account
+    user = await this.usersService.findByEmail(email);
+    if (user) {
+      await this.usersService.linkGoogleId(user.id, googleId);
+      user.googleId = googleId;
+      return this.issueTokens(user);
+    }
+
+    // 3. create new user
+    user = await this.usersService.createWithGoogle({
+      googleId,
+      email,
+      displayName: null,
+    });
     return this.issueTokens(user);
   }
 
@@ -121,26 +160,27 @@ export class AuthService {
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
     }
 
-    if (!user.passwordHash) {
-      throw new UnauthorizedException('Current password is incorrect');
-    }
-
-    const valid = await this.verifyPassword(
-      dto.currentPassword,
-      user.passwordHash,
-    );
-    if (!valid) {
-      throw new UnauthorizedException('Current password is incorrect');
-    }
-
-    const isSamePassword = await this.verifyPassword(
-      dto.newPassword,
-      user.passwordHash,
-    );
-    if (isSamePassword) {
-      throw new BadRequestException(
-        'New password must be different from current password',
+    if (user.passwordHash !== null) {
+      if (!dto.currentPassword) {
+        throw new BadRequestException('Current password is required');
+      }
+      const valid = await this.verifyPassword(
+        dto.currentPassword,
+        user.passwordHash,
       );
+      if (!valid) {
+        throw new UnauthorizedException('Current password is incorrect');
+      }
+
+      const isSamePassword = await this.verifyPassword(
+        dto.newPassword,
+        user.passwordHash,
+      );
+      if (isSamePassword) {
+        throw new BadRequestException(
+          'New password must be different from current password',
+        );
+      }
     }
 
     const passwordHash = await this.hashPassword(dto.newPassword);
@@ -179,7 +219,7 @@ export class AuthService {
       throw new BadRequestException('Token inválido o expirado');
     }
 
-    if (user.passwordHash) {
+    if (user.passwordHash !== null) {
       const isSamePassword = await this.verifyPassword(
         newPassword,
         user.passwordHash,

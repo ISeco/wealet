@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test } from '@nestjs/testing';
 import * as argon2 from 'argon2';
+import { OAuth2Client } from 'google-auth-library';
 import { Repository } from 'typeorm';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
@@ -16,6 +17,11 @@ import { User } from '../users/entities/user.entity';
 import { MailService } from '../../common/mail/mail.service';
 
 jest.mock('argon2');
+jest.mock('google-auth-library', () => ({
+  OAuth2Client: jest.fn().mockImplementation(() => ({
+    getTokenInfo: jest.fn(),
+  })),
+}));
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -29,6 +35,7 @@ describe('AuthService', () => {
     refreshTokenExpirationDays: 7,
     passwordPepper: 'pepper',
     corsOrigin: 'http://localhost:5173',
+    googleClientId: 'test-client-id',
   };
 
   const buildUser = (overrides: Partial<User> = {}): User => ({
@@ -61,6 +68,9 @@ describe('AuthService', () => {
             findByPasswordResetToken: jest.fn(),
             savePasswordResetToken: jest.fn(),
             clearPasswordResetToken: jest.fn(),
+            findByGoogleId: jest.fn(),
+            createWithGoogle: jest.fn(),
+            linkGoogleId: jest.fn(),
           },
         },
         {
@@ -389,6 +399,88 @@ describe('AuthService', () => {
       expect(refreshTokenRepository.update).toHaveBeenCalledWith(
         expect.objectContaining({ userId: 'user-1' }),
         expect.objectContaining({ revokedAt: expect.any(Date) }),
+      );
+    });
+  });
+
+  describe('loginWithGoogle', () => {
+    let mockGetTokenInfo: jest.Mock;
+
+    beforeEach(() => {
+      mockGetTokenInfo = jest.fn();
+      (OAuth2Client as unknown as jest.Mock).mockImplementation(() => ({
+        getTokenInfo: mockGetTokenInfo,
+      }));
+    });
+
+    it('creates a new user when no matching googleId or email', async () => {
+      mockGetTokenInfo.mockResolvedValue({
+        user_id: 'g-123',
+        email: 'new@test.com',
+        aud: 'test-client-id',
+      });
+      usersService.findByGoogleId.mockResolvedValue(null);
+      usersService.findByEmail.mockResolvedValue(null);
+      const newUser = buildUser({
+        id: 'user-2',
+        email: 'new@test.com',
+        googleId: 'g-123',
+        passwordHash: null,
+      });
+      usersService.createWithGoogle.mockResolvedValue(newUser);
+      refreshTokenRepository.create.mockReturnValue({} as RefreshToken);
+      refreshTokenRepository.save.mockResolvedValue({} as RefreshToken);
+
+      const result = await authService.loginWithGoogle('valid-token');
+
+      expect(usersService.createWithGoogle).toHaveBeenCalledWith({
+        googleId: 'g-123',
+        email: 'new@test.com',
+        displayName: null,
+      });
+      expect(result.authResponse.user.email).toBe('new@test.com');
+    });
+
+    it('returns tokens for existing user with matching googleId', async () => {
+      const existingUser = buildUser({ googleId: 'g-123' });
+      mockGetTokenInfo.mockResolvedValue({
+        user_id: 'g-123',
+        email: 'test@test.com',
+        aud: 'test-client-id',
+      });
+      usersService.findByGoogleId.mockResolvedValue(existingUser);
+      refreshTokenRepository.create.mockReturnValue({} as RefreshToken);
+      refreshTokenRepository.save.mockResolvedValue({} as RefreshToken);
+
+      const result = await authService.loginWithGoogle('valid-token');
+
+      expect(usersService.createWithGoogle).not.toHaveBeenCalled();
+      expect(result.authResponse.user.id).toBe('user-1');
+    });
+
+    it('links googleId to existing email/password user', async () => {
+      const existingUser = buildUser();
+      mockGetTokenInfo.mockResolvedValue({
+        user_id: 'g-999',
+        email: 'test@test.com',
+        aud: 'test-client-id',
+      });
+      usersService.findByGoogleId.mockResolvedValue(null);
+      usersService.findByEmail.mockResolvedValue(existingUser);
+      usersService.linkGoogleId.mockResolvedValue(undefined);
+      refreshTokenRepository.create.mockReturnValue({} as RefreshToken);
+      refreshTokenRepository.save.mockResolvedValue({} as RefreshToken);
+
+      await authService.loginWithGoogle('valid-token');
+
+      expect(usersService.linkGoogleId).toHaveBeenCalledWith('user-1', 'g-999');
+    });
+
+    it('throws UnauthorizedException for invalid token', async () => {
+      mockGetTokenInfo.mockRejectedValue(new Error('Invalid token'));
+
+      await expect(authService.loginWithGoogle('bad-token')).rejects.toThrow(
+        UnauthorizedException,
       );
     });
   });

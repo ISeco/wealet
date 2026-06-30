@@ -21,6 +21,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { GoogleAuthDto } from './dto/google-auth.dto';
 
 const REFRESH_COOKIE_NAME = 'refresh_token';
 
@@ -120,6 +121,18 @@ export class AuthController {
   ): Promise<{ message: string }> {
     await this.authService.resetPassword(dto.token, dto.newPassword);
     return { message: 'Contraseña actualizada correctamente.' };
+  }
+
+  @ApiOperation({ summary: 'Authenticate with a Google access token' })
+  @Post('google')
+  async googleAuth(
+    @Body() dto: GoogleAuthDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthResponseDto> {
+    const { authResponse, refreshToken } =
+      await this.authService.loginWithGoogle(dto.accessToken);
+    this.setRefreshCookie(res, refreshToken);
+    return authResponse;
   }
 
   private setRefreshCookie(res: Response, token: string): void {
