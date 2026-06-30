@@ -4,6 +4,6 @@ export interface UpdateProfilePayload {
 }
 
 export interface ChangePasswordPayload {
-  currentPassword: string
+  currentPassword?: string
   newPassword: string
 }

@@ -7,6 +7,8 @@ export function SecurityCard() {
   const { user } = useAuth()
   const [showModal, setShowModal] = useState(false)
 
+  const passwordLabel = user?.hasPassword ? 'Cambiar contraseña' : 'Establecer contraseña'
+
   return (
     <>
       <div style={card}>
@@ -14,10 +16,12 @@ export function SecurityCard() {
         <div style={{ ...settingsRow, borderBottom: '1px solid var(--border)' }}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 500 }}>Contraseña</div>
-            <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>Última actualización desconocida</div>
+            <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>
+              {user?.hasPassword ? 'Última actualización desconocida' : 'No tienes contraseña configurada'}
+            </div>
           </div>
           <button onClick={() => setShowModal(true)} style={rowBtn}>
-            Cambiar contraseña
+            {passwordLabel}
           </button>
         </div>
         <div style={settingsRow}>

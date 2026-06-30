@@ -10,10 +10,11 @@ interface Props {
 }
 
 export function ChangePasswordModal({ onClose }: Props) {
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const { mutateAsync, isPending } = useChangePassword()
 
+  const hasPassword = user?.hasPassword ?? true
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -33,7 +34,10 @@ export function ChangePasswordModal({ onClose }: Props) {
     }
 
     try {
-      await mutateAsync({ currentPassword, newPassword })
+      await mutateAsync({
+        ...(hasPassword ? { currentPassword } : {}),
+        newPassword,
+      })
       await logout()
       navigate('/login')
     } catch (err) {
@@ -70,9 +74,12 @@ export function ChangePasswordModal({ onClose }: Props) {
     display: 'block',
   }
 
+  const title = hasPassword ? 'Cambiar contraseña' : 'Establecer contraseña'
+  const submitLabel = hasPassword ? 'Cambiar contraseña' : 'Establecer contraseña'
+
   return (
     <Modal
-      title="Cambiar contraseña"
+      title={title}
       onClose={onClose}
       width={420}
       footer={
@@ -112,26 +119,28 @@ export function ChangePasswordModal({ onClose }: Props) {
               fontFamily: 'inherit',
             }}
           >
-            {isPending ? 'Guardando…' : 'Cambiar contraseña'}
+            {isPending ? 'Guardando…' : submitLabel}
           </button>
         </div>
       }
     >
       <form id="change-password-form" onSubmit={handleSubmit}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div>
-            <label style={labelStyle}>Contraseña actual</label>
-            <div style={fieldStyle}>
-              <input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                style={inputStyle}
-              />
+          {hasPassword && (
+            <div>
+              <label style={labelStyle}>Contraseña actual</label>
+              <div style={fieldStyle}>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  style={inputStyle}
+                />
+              </div>
             </div>
-          </div>
+          )}
           <div>
             <label style={labelStyle}>Nueva contraseña</label>
             <div style={fieldStyle}>
@@ -162,7 +171,7 @@ export function ChangePasswordModal({ onClose }: Props) {
             <p style={{ fontSize: 13, color: 'var(--neg)', margin: 0 }}>{error}</p>
           )}
           <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>
-            Al cambiar tu contraseña se cerrará la sesión en todos tus dispositivos.
+            Al {hasPassword ? 'cambiar' : 'establecer'} tu contraseña se cerrará la sesión en todos tus dispositivos.
           </p>
         </div>
       </form>
