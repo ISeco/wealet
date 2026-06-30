@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useGoogleLogin } from '@react-oauth/google'
 import { WealetIcon } from '../../components/ui/WealetIcon'
 import { LoginForm } from './LoginForm'
@@ -16,6 +16,7 @@ export function AuthPage({ mode }: AuthPageProps) {
   const passwordReset = isLogin && searchParams.get('reset') === 'ok'
 
   const { loginWithGoogle } = useAuth()
+  const navigate = useNavigate()
   const [googleError, setGoogleError] = useState<string | null>(null)
 
   const handleGoogleLogin = useGoogleLogin({
@@ -23,6 +24,7 @@ export function AuthPage({ mode }: AuthPageProps) {
       try {
         setGoogleError(null)
         await loginWithGoogle(tokenResponse.access_token)
+        navigate('/', { replace: true })
       } catch {
         setGoogleError('Error al iniciar sesión con Google. Intenta de nuevo.')
       }

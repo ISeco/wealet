@@ -78,14 +78,16 @@ export class AuthService {
 
     try {
       const tokenInfo = await client.getTokenInfo(accessToken);
-      // getTokenInfo returns user_id (not sub) and does not auto-check aud
-      if (!tokenInfo.user_id || !tokenInfo.email) {
+      // getTokenInfo returns `sub` as the user identifier (not `user_id`,
+      // which Google's tokeninfo endpoint no longer populates) and does not
+      // auto-check aud.
+      if (!tokenInfo.sub || !tokenInfo.email) {
         throw new Error('Missing fields');
       }
       if (tokenInfo.aud !== this.authConfig.googleClientId) {
         throw new Error('Invalid audience');
       }
-      googleId = tokenInfo.user_id;
+      googleId = tokenInfo.sub;
       email = tokenInfo.email;
     } catch {
       throw new UnauthorizedException('Token de Google inválido');
