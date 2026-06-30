@@ -35,7 +35,7 @@ jobs:
       JWT_SECRET: ci-test-secret
       PASSWORD_PEPPER: ci-test-pepper
       BREVO_API_KEY: ci-test-brevo-key
-      BREVO_FROM_EMAIL: noreply@ci.test
+      BREVO_FROM_EMAIL: noreply@domain.com
       FRONTEND_URL: http://localhost:5173
 
     steps:
