@@ -10,6 +10,7 @@ export interface AuthContextValue {
   register: (payload: RegisterPayload) => Promise<void>
   logout: () => Promise<void>
   refetchUser: () => Promise<void>
+  loginWithGoogle: (accessToken: string) => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)

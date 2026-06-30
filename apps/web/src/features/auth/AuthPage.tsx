@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useGoogleLogin } from '@react-oauth/google'
 import { WealetIcon } from '../../components/ui/WealetIcon'
 import { LoginForm } from './LoginForm'
 import { RegisterForm } from './RegisterForm'
+import { useAuth } from './useAuth'
 
 interface AuthPageProps {
   mode: 'login' | 'register'
@@ -11,6 +14,23 @@ export function AuthPage({ mode }: AuthPageProps) {
   const isLogin = mode === 'login'
   const [searchParams] = useSearchParams()
   const passwordReset = isLogin && searchParams.get('reset') === 'ok'
+
+  const { loginWithGoogle } = useAuth()
+  const [googleError, setGoogleError] = useState<string | null>(null)
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setGoogleError(null)
+        await loginWithGoogle(tokenResponse.access_token)
+      } catch {
+        setGoogleError('Error al iniciar sesión con Google. Intenta de nuevo.')
+      }
+    },
+    onError: () => {
+      setGoogleError('Error al iniciar sesión con Google. Intenta de nuevo.')
+    },
+  })
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex' }}>
@@ -108,6 +128,7 @@ export function AuthPage({ mode }: AuthPageProps) {
 
           <button
             type="button"
+            onClick={() => handleGoogleLogin()}
             style={{
               width: '100%',
               display: 'flex',
@@ -122,11 +143,8 @@ export function AuthPage({ mode }: AuthPageProps) {
               fontFamily: 'inherit',
               fontSize: 14,
               fontWeight: 500,
-              cursor: 'not-allowed',
-              opacity: 0.6,
+              cursor: 'pointer',
             }}
-            disabled
-            title="Próximamente"
           >
             <svg width="17" height="17" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.2-4.8 3.2-7.8z" />
@@ -136,6 +154,11 @@ export function AuthPage({ mode }: AuthPageProps) {
             </svg>
             Continuar con Google
           </button>
+          {googleError && (
+            <p style={{ fontSize: 13, color: 'var(--neg)', margin: '8px 0 0', textAlign: 'center' }}>
+              {googleError}
+            </p>
+          )}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '18px 0' }}>
             <div style={{ flex: 1, height: 1, background: 'var(--border)' }}></div>

@@ -59,9 +59,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(me)
   }, [])
 
+  const loginWithGoogle = useCallback(async (accessToken: string) => {
+    const response = await authApi.googleAuth(accessToken)
+    setAccessToken(response.accessToken)
+    setUser(response.user)
+    setStatus('authenticated')
+  }, [])
+
   const value = useMemo<AuthContextValue>(
-    () => ({ user, status, login, register, logout, refetchUser }),
-    [user, status, login, register, logout, refetchUser],
+    () => ({ user, status, login, register, logout, refetchUser, loginWithGoogle }),
+    [user, status, login, register, logout, refetchUser, loginWithGoogle],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

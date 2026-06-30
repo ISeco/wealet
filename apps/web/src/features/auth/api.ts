@@ -30,3 +30,10 @@ export function resetPassword(token: string, newPassword: string): Promise<{ mes
     body: { token, newPassword },
   })
 }
+
+export function googleAuth(accessToken: string): Promise<AuthResponse> {
+  return apiFetch<AuthResponse>('/auth/google', {
+    method: 'POST',
+    body: { accessToken },
+  })
+}
