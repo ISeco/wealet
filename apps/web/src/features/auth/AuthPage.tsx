@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { WealetIcon } from '../../components/ui/WealetIcon'
 import { LoginForm } from './LoginForm'
 import { RegisterForm } from './RegisterForm'
@@ -9,6 +9,8 @@ interface AuthPageProps {
 
 export function AuthPage({ mode }: AuthPageProps) {
   const isLogin = mode === 'login'
+  const [searchParams] = useSearchParams()
+  const passwordReset = isLogin && searchParams.get('reset') === 'ok'
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex' }}>
@@ -140,6 +142,15 @@ export function AuthPage({ mode }: AuthPageProps) {
             <span style={{ fontSize: 12, color: 'var(--muted)' }}>o con tu correo</span>
             <div style={{ flex: 1, height: 1, background: 'var(--border)' }}></div>
           </div>
+
+          {passwordReset && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'var(--pos-bg)', border: '1px solid var(--pos)', borderRadius: 10, marginBottom: 16, fontSize: 13.5, color: 'var(--pos)', fontWeight: 500 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Contraseña actualizada. Ya puedes iniciar sesión.
+            </div>
+          )}
 
           {isLogin ? <LoginForm /> : <RegisterForm />}
 

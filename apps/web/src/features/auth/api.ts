@@ -16,3 +16,17 @@ export function logout(): Promise<void> {
 export function getMe(): Promise<User> {
   return apiFetch<User>('/users/me')
 }
+
+export function forgotPassword(email: string): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>('/auth/forgot-password', {
+    method: 'POST',
+    body: { email },
+  })
+}
+
+export function resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>('/auth/reset-password', {
+    method: 'POST',
+    body: { token, newPassword },
+  })
+}

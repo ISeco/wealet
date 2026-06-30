@@ -1,5 +1,5 @@
 import { useState, type SubmitEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ApiError } from '../../lib/api/client'
 import { useFormFieldErrors } from '../../lib/useFormFieldErrors'
 import { EmailField } from './components/EmailField'
@@ -60,6 +60,15 @@ export function LoginForm() {
         }}
         error={fieldErrors.password ? 'Ingresa tu contraseña.' : error}
       />
+
+      <div style={{ textAlign: 'right', marginTop: -8 }}>
+        <Link
+          to="/forgot-password"
+          style={{ fontSize: 13, color: 'var(--info)', textDecoration: 'none', fontWeight: 500 }}
+        >
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </div>
 
       <SubmitButton submitting={submitting} label="Iniciar sesión" submittingLabel="Iniciando sesión…" />
     </form>
