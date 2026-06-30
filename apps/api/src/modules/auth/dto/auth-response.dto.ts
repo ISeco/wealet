@@ -3,6 +3,7 @@ export class UserResponseDto {
   email: string;
   displayName: string | null;
   onboardingCompleted: boolean;
+  hasPassword: boolean;
 }
 
 export class AuthResponseDto {

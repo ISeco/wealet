@@ -7,4 +7,5 @@ export class UserProfileDto {
   theme: UserTheme;
   onboardingCompleted: boolean;
   onboardingCompletedAt: Date | null;
+  hasPassword: boolean;
 }

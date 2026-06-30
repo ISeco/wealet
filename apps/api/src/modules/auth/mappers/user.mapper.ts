@@ -7,5 +7,6 @@ export function toUserResponseDto(user: User): UserResponseDto {
     email: user.email,
     displayName: user.displayName,
     onboardingCompleted: user.onboardingCompleted,
+    hasPassword: user.passwordHash !== null,
   };
 }

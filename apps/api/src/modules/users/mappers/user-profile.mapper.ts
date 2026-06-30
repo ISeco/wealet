@@ -9,5 +9,6 @@ export function toUserProfileDto(user: User): UserProfileDto {
     theme: user.theme,
     onboardingCompleted: user.onboardingCompleted,
     onboardingCompletedAt: user.onboardingCompletedAt,
+    hasPassword: user.passwordHash !== null,
   };
 }
