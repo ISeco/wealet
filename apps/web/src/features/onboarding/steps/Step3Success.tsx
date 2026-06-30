@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom'
+import { useNetWorth } from '../../dashboard/hooks'
+import { formatMoney } from '../../../lib/money'
 
 const PRESET_NAMES: Record<string, string> = {
   jars_eker: 'Jars of Eker',
@@ -16,8 +18,12 @@ interface Props {
 
 export function Step3Success({ preset, displayName, isReconfigure }: Props) {
   const navigate = useNavigate()
+  const { data: netWorth, isLoading } = useNetWorth()
   const name = displayName ?? 'todo'
   const presetName = PRESET_NAMES[preset] ?? preset
+  const total = netWorth
+    ? BigInt(netWorth.available) + BigInt(netWorth.reserve) + BigInt(netWorth.committed)
+    : null
 
   return (
     <div style={{ textAlign: 'center' }}>
@@ -34,7 +40,9 @@ export function Step3Success({ preset, displayName, isReconfigure }: Props) {
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 32, margin: '32px 0 8px' }}>
         <div>
-          <div style={{ fontSize: 24, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: 'var(--text)' }}>$0</div>
+          <div style={{ fontSize: 24, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: 'var(--text)' }}>
+            {isLoading || total === null ? '—' : formatMoney(total.toString(), 'CLP')}
+          </div>
           <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 2 }}>patrimonio inicial</div>
         </div>
         <div style={{ width: 1, background: 'var(--border)' }} />
