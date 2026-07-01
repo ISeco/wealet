@@ -199,4 +199,22 @@ describe('Import/Export (e2e)', () => {
     expect(withYear.body.rows).toHaveLength(1);
     expect(withYear.body.rows[0].occurredOn).toBe('2026-04-01');
   });
+
+  it('rejects a year outside the valid range', async () => {
+    const fileBuffer = buildLedgerBuffer();
+
+    await request(app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/import/preview`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .field('year', '1999')
+      .attach('file', fileBuffer, 'ledger.xlsx')
+      .expect(400);
+
+    await request(app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/import/preview`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .field('year', '2101')
+      .attach('file', fileBuffer, 'ledger.xlsx')
+      .expect(400);
+  });
 });
