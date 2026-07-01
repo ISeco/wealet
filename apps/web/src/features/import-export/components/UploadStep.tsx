@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Button } from '../../../components/ui/Button'
 
 interface Props {
   onFileReady: (file: File) => void
@@ -97,24 +98,14 @@ export function UploadStep({ onFileReady, isPending, error }: Props) {
 
         {!isPending && (
           <>
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => inputRef.current?.click()}
-              style={{
-                marginTop: 20,
-                height: 40,
-                padding: '0 18px',
-                border: '1px solid var(--border)',
-                borderRadius: 9,
-                background: 'var(--card)',
-                color: 'var(--text)',
-                fontFamily: 'inherit',
-                fontSize: 13.5,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
+              style={{ marginTop: 20 }}
             >
               Seleccionar archivo
-            </button>
+            </Button>
             <input
               ref={inputRef}
               type="file"

@@ -29,6 +29,7 @@ export interface ImportPreviewResponseDto {
   openingBalances: OpeningBalanceDto[]
   unknownFunds: string[]
   errors: ParseErrorDto[]
+  needsYear: boolean
 }
 
 export interface ImportCommitResultDto {

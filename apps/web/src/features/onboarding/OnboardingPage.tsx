@@ -1,18 +1,22 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { createFund } from './api'
 import { useCompleteOnboarding } from './hooks/useCompleteOnboarding'
 import { Step1Preset, type PresetOption } from './steps/Step1Preset'
 import { Step2Funds } from './steps/Step2Funds'
+import { Step2Excel } from './steps/Step2Excel'
 import { Step3Income } from './steps/Step3Income'
 import { Step3Success } from './steps/Step3Success'
+import { Button } from '../../components/ui/Button'
+import { useExcelImportFlow } from '../import-export/useExcelImportFlow'
 import type { CreateFundPayload } from '../funds/types'
 
 const SLOT_PRESETS: PresetOption[] = ['jars_eker', '50_30_20', 'profit_first']
 
 export function OnboardingPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isReconfigure = searchParams.get('from') === 'settings'
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
@@ -20,6 +24,7 @@ export function OnboardingPage() {
   const [customFunds, setCustomFunds] = useState<CreateFundPayload[]>([])
   const [addFundError, setAddFundError] = useState<string | null>(null)
   const [incomeAmount, setIncomeAmount] = useState('')
+  const excelFlow = useExcelImportFlow()
 
   const { complete, isPending, error } = useCompleteOnboarding()
 
@@ -86,10 +91,16 @@ export function OnboardingPage() {
           ))}
         </div>
         <button
-          onClick={() => { window.location.href = '/login' }}
+          onClick={() => {
+            if (isReconfigure) {
+              navigate('/ajustes')
+            } else {
+              window.location.href = '/login'
+            }
+          }}
           style={{ border: 'none', background: 'none', color: 'var(--muted)', fontFamily: 'inherit', fontSize: 13.5, cursor: 'pointer' }}
         >
-          Salir
+          {isReconfigure ? 'Volver a Ajustes' : 'Salir'}
         </button>
       </div>
 
@@ -99,17 +110,17 @@ export function OnboardingPage() {
           {step === 1 && (
             <Step1Preset selected={selected} onSelect={setSelected} />
           )}
-          {step === 2 && selected && (
+          {step === 2 && selected && selected !== 'excel' && (
             <Step2Funds
               preset={selected}
               customFunds={customFunds}
               onAddFund={handleAddFund}
               onRemoveFund={handleRemoveFund}
-              onConfirm={handleConfirmStep2}
-              onExcelComplete={handleExcelComplete}
-              isPending={isPending}
               error={error ?? addFundError}
             />
+          )}
+          {step === 2 && selected === 'excel' && (
+            <Step2Excel flow={excelFlow} onCommitSuccess={handleExcelComplete} />
           )}
           {step === 3 && (
             <Step3Income
@@ -130,54 +141,53 @@ export function OnboardingPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {/* Atrás */}
               {(step === 2 || step === 3) && (
-                <button
-                  onClick={() => setStep(step === 3 ? 2 : 1)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 7, height: 46, padding: '0 22px', border: '1px solid var(--border)', borderRadius: 9, background: 'var(--card)', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
-                >
+                <Button variant="secondary" onClick={() => setStep(step === 3 ? 2 : 1)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
                   Atrás
-                </button>
+                </Button>
               )}
 
               {/* Siguiente (step 1) */}
               {step === 1 && (
-                <button
-                  onClick={() => selected && setStep(2)}
-                  disabled={!selected}
-                  style={{ height: 46, padding: '0 30px', border: 'none', borderRadius: 9, background: selected ? 'var(--grad)' : 'var(--border)', color: selected ? '#fff' : 'var(--muted)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: selected ? 'pointer' : 'not-allowed', transition: 'all .15s' }}
-                >
+                <Button onClick={() => selected && setStep(2)} disabled={!selected}>
                   Siguiente
-                </button>
+                </Button>
+              )}
+
+              {/* Continuar (step 2, excel path, waiting for a year) */}
+              {step === 2 && selected === 'excel' && excelFlow.phase === 'year' && (
+                <Button
+                  onClick={excelFlow.submitYear}
+                  disabled={!excelFlow.isYearValid || excelFlow.isPreviewPending}
+                >
+                  {excelFlow.isPreviewPending ? 'Analizando…' : 'Continuar'}
+                </Button>
               )}
 
               {/* Confirmar (step 2, no excel) */}
               {step === 2 && selected !== 'excel' && (
-                <button
-                  onClick={handleConfirmStep2}
-                  disabled={isPending}
-                  style={{ height: 46, padding: '0 30px', border: 'none', borderRadius: 9, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: isPending ? 'not-allowed' : 'pointer', opacity: isPending ? 0.7 : 1, boxShadow: 'var(--shadow)' }}
-                >
+                <Button onClick={handleConfirmStep2} disabled={isPending}>
                   {isPending ? 'Configurando…' : 'Confirmar'}
-                </button>
+                </Button>
               )}
 
               {/* Step 3: Saltar + Continuar */}
               {step === 3 && (
                 <>
-                  <button
+                  <Button
+                    variant="secondary"
+                    muted
                     onClick={() => handleConfirmIncome(undefined)}
                     disabled={isPending}
-                    style={{ height: 46, padding: '0 20px', border: '1px solid var(--border)', borderRadius: 9, background: 'var(--card)', color: 'var(--muted)', fontFamily: 'inherit', fontSize: 14, fontWeight: 500, cursor: isPending ? 'not-allowed' : 'pointer', opacity: isPending ? 0.7 : 1 }}
                   >
                     Saltar por ahora
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => handleConfirmIncome(incomeAmount || undefined)}
                     disabled={!incomeAmount || isPending}
-                    style={{ height: 46, padding: '0 30px', border: 'none', borderRadius: 9, background: incomeAmount ? 'var(--grad)' : 'var(--border)', color: incomeAmount ? '#fff' : 'var(--muted)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: (!incomeAmount || isPending) ? 'not-allowed' : 'pointer', opacity: isPending ? 0.7 : 1, boxShadow: incomeAmount ? 'var(--shadow)' : 'none', transition: 'all .15s' }}
                   >
                     {isPending ? 'Configurando…' : 'Continuar'}
-                  </button>
+                  </Button>
                 </>
               )}
 

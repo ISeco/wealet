@@ -25,6 +25,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ExportQueryDto } from './dto/export-query.dto';
 import { ImportCommitDto } from './dto/import-commit.dto';
 import { ImportCommitResultDto } from './dto/import-commit-result.dto';
+import { ImportPreviewDto } from './dto/import-preview.dto';
 import { ImportPreviewResponseDto } from './dto/import-preview-response.dto';
 import { ImportExportService } from './import-export.service';
 
@@ -42,12 +43,13 @@ export class ImportExportController {
   @UseInterceptors(FileInterceptor('file'))
   async preview(
     @CurrentUser() userId: string,
+    @Body() dto: ImportPreviewDto,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<ImportPreviewResponseDto> {
     if (!file) {
       throw new BadRequestException('A file is required');
     }
-    return this.importExportService.preview(userId, file.buffer);
+    return this.importExportService.preview(userId, file.buffer, dto.year);
   }
 
   @ApiOperation({ summary: 'Persist confirmed rows from a previewed import' })

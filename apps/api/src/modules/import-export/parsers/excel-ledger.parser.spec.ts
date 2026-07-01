@@ -28,6 +28,21 @@ function buildWorkbookBuffer(): Buffer {
   return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
 }
 
+function buildMonthOnlySheetBuffer(sheetName: string): Buffer {
+  const data: unknown[][] = [
+    [],
+    [null, null, null, null, 'Fondo Test'],
+    [null, null, null, null, 0],
+    [null, null, null, null, -500],
+    [null, null, null, null, 0],
+  ];
+  const worksheet = XLSX.utils.aoa_to_sheet(data);
+  worksheet['!ref'] = 'A1:E5';
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
+}
+
 describe('parseLedgerWorkbook', () => {
   it('parses fund columns, comments, opening balances, and skips totals', () => {
     const result = parseLedgerWorkbook(buildWorkbookBuffer());
@@ -72,7 +87,7 @@ describe('parseLedgerWorkbook', () => {
     expect(first.rows[0].dedupeHash).toBe(second.rows[0].dedupeHash);
   });
 
-  it('records an error for a sheet whose name cannot be parsed as a month', () => {
+  it('silently skips a sheet whose name has no recognizable month', () => {
     const data: unknown[][] = [
       [],
       [null, 'Fondo Libre'],
@@ -90,9 +105,38 @@ describe('parseLedgerWorkbook', () => {
 
     const result = parseLedgerWorkbook(buffer);
 
-    expect(result.errors).toHaveLength(1);
-    expect(result.errors[0].sheet).toBe('Invalid Sheet Name');
+    expect(result.errors).toHaveLength(0);
     expect(result.rows).toHaveLength(0);
+    expect(result.needsYear).toBe(false);
+  });
+
+  it('flags needsYear when a sheet has a month but no year in its name', () => {
+    const buffer = buildMonthOnlySheetBuffer('Plantilla Enero');
+
+    const result = parseLedgerWorkbook(buffer);
+
+    expect(result.needsYear).toBe(true);
+    expect(result.rows).toEqual([]);
+  });
+
+  it('uses the provided year for sheets whose name has a month but no year', () => {
+    const buffer = buildMonthOnlySheetBuffer('Plantilla Enero');
+
+    const result = parseLedgerWorkbook(buffer, { year: 2026 });
+
+    expect(result.needsYear).toBe(false);
+    const expense = result.rows.find((row) => row.cell === 'E4')!;
+    expect(expense.occurredOn).toBe('2026-01-01');
+  });
+
+  it('recognizes a month name embedded in a longer sheet name', () => {
+    const buffer = buildMonthOnlySheetBuffer('Plantilla Enero 2026');
+
+    const result = parseLedgerWorkbook(buffer);
+
+    expect(result.needsYear).toBe(false);
+    const expense = result.rows.find((row) => row.cell === 'E4')!;
+    expect(expense.occurredOn).toBe('2026-01-01');
   });
 
   it('records an error for a non-numeric cell value', () => {
@@ -117,5 +161,37 @@ describe('parseLedgerWorkbook', () => {
 
     expect(result.errors.length).toBeGreaterThan(0);
     expect(result.errors[0].message).toContain('Expected a numeric amount');
+  });
+
+  it('excludes a multi-row totals footer bounded by the days in the month', () => {
+    const zeroRows: unknown[][] = Array.from({ length: 30 }, () => [
+      null,
+      null,
+      null,
+      null,
+      0,
+    ]);
+    const data: unknown[][] = [
+      [],
+      [null, null, null, null, 'Fondo Test'],
+      [null, null, null, null, 1000],
+      [null, null, null, null, -500],
+      ...zeroRows,
+      [null, null, null, 'Total c/u', 99999],
+      [null, null, null, 'Total en la cuenta', 99999],
+    ];
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    worksheet['!ref'] = 'A1:E36';
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Enero 2026');
+    const buffer = XLSX.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx',
+    }) as Buffer;
+
+    const result = parseLedgerWorkbook(buffer);
+
+    expect(result.rows.some((row) => row.amount === '99999')).toBe(false);
+    expect(result.rows).toHaveLength(2); // day-1 expense + opening balance
   });
 });
