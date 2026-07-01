@@ -49,20 +49,25 @@ export interface ParsedWorkbook {
   openingBalances: ParsedOpeningBalance[];
   fundNames: string[];
   errors: ParseError[];
+  needsYear: boolean;
 }
+
+const MONTH_PATTERN = new RegExp(
+  `\\b(${Object.keys(MONTH_NAMES_ES).join('|')})\\b`,
+  'i',
+);
+const YEAR_PATTERN = /\b(\d{4})\b/;
 
 function parseSheetMonth(
   sheetName: string,
-): { year: number; month: number } | null {
-  const match = /^([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)\s+(\d{4})$/.exec(sheetName.trim());
-  if (!match) {
+): { month: number; year: number | null } | null {
+  const monthMatch = MONTH_PATTERN.exec(sheetName);
+  if (!monthMatch) {
     return null;
   }
-  const month = MONTH_NAMES_ES[match[1].toLowerCase()];
-  if (!month) {
-    return null;
-  }
-  return { year: Number(match[2]), month };
+  const month = MONTH_NAMES_ES[monthMatch[1].toLowerCase()];
+  const yearMatch = YEAR_PATTERN.exec(sheetName);
+  return { month, year: yearMatch ? Number(yearMatch[1]) : null };
 }
 
 function daysInMonth(year: number, month: number): number {
@@ -91,8 +96,26 @@ function getCell(
   return (sheet as Record<string, XLSX.CellObject | undefined>)[address];
 }
 
-export function parseLedgerWorkbook(buffer: Buffer): ParsedWorkbook {
+export function parseLedgerWorkbook(
+  buffer: Buffer,
+  options?: { year?: number },
+): ParsedWorkbook {
   const workbook = XLSX.read(buffer, { type: 'buffer' });
+
+  const needsYear = workbook.SheetNames.some((sheetName) => {
+    const match = parseSheetMonth(sheetName);
+    return match !== null && match.year === null;
+  });
+  if (needsYear && options?.year === undefined) {
+    return {
+      rows: [],
+      openingBalances: [],
+      fundNames: [],
+      errors: [],
+      needsYear: true,
+    };
+  }
+
   const rows: ParsedTransactionRow[] = [];
   const openingBalances: ParsedOpeningBalance[] = [];
   const errors: ParseError[] = [];
@@ -104,20 +127,26 @@ export function parseLedgerWorkbook(buffer: Buffer): ParsedWorkbook {
     if (!ref) {
       continue;
     }
-    const period = parseSheetMonth(sheetName);
-    if (!period) {
-      errors.push({
-        sheet: sheetName,
-        cell: '',
-        message: `Could not parse month/year from sheet name "${sheetName}"`,
-      });
-      continue;
+    const monthMatch = parseSheetMonth(sheetName);
+    if (!monthMatch) {
+      continue; // not a recognized monthly data sheet — skip silently
     }
+    const year = monthMatch.year ?? options?.year;
+    if (year === undefined) {
+      continue; // unreachable: the needsYear guard above already covers this
+    }
+    const month = monthMatch.month;
 
     const range = XLSX.utils.decode_range(ref);
     const totalsRowIndex = range.e.r;
-    const lastDataRowIndex = totalsRowIndex - 1;
-    const lastDay = daysInMonth(period.year, period.month);
+    const lastDay = daysInMonth(year, month);
+    // Bound by calendar days, not by footer position — tolerates a footer
+    // of any number of summary rows (1, 2, or more) without needing to
+    // detect "Total" labels by content.
+    const lastDataRowIndex = Math.min(
+      totalsRowIndex - 1,
+      FIRST_DATA_ROW_INDEX + lastDay - 1,
+    );
 
     const fundColumns: Array<{ col: number; name: string }> = [];
     for (let col = range.s.c; col <= range.e.c; col++) {
@@ -186,7 +215,7 @@ export function parseLedgerWorkbook(buffer: Buffer): ParsedWorkbook {
           amount: String(Math.abs(amount)),
           type: amount > 0 ? TransactionType.INCOME : TransactionType.EXPENSE,
           description,
-          occurredOn: toIsoDate(period.year, period.month, day),
+          occurredOn: toIsoDate(year, month, day),
           dedupeHash: computeDedupeHash(sheetName, fundName, address, amount),
         });
       }
@@ -201,16 +230,20 @@ export function parseLedgerWorkbook(buffer: Buffer): ParsedWorkbook {
     { year: number; month: number; amount: number }
   >();
   for (const ob of openingBalances) {
-    const period = parseSheetMonth(ob.sheet);
-    if (!period) continue;
+    const monthMatch = parseSheetMonth(ob.sheet);
+    if (!monthMatch) continue;
+    const year = monthMatch.year ?? options?.year;
+    if (year === undefined) continue; // unreachable: see needsYear guard above
+    const month = monthMatch.month;
     const existing = earliestPerFund.get(ob.fundName);
     if (
       !existing ||
-      period.year < existing.year ||
-      (period.year === existing.year && period.month < existing.month)
+      year < existing.year ||
+      (year === existing.year && month < existing.month)
     ) {
       earliestPerFund.set(ob.fundName, {
-        ...period,
+        year,
+        month,
         amount: Number(ob.amount),
       });
     }
@@ -238,5 +271,6 @@ export function parseLedgerWorkbook(buffer: Buffer): ParsedWorkbook {
     openingBalances,
     fundNames: Array.from(fundNames),
     errors,
+    needsYear: false,
   };
 }

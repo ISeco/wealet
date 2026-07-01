@@ -3,10 +3,6 @@ import type { PresetOption } from './Step1Preset'
 import { FundRow } from '../components/FundRow'
 import { AddFundForm } from '../components/AddFundForm'
 import type { CreateFundPayload, FundClassification } from '../../funds/types'
-import { UploadStep } from '../../import-export/components/UploadStep'
-import { PreviewStep } from '../../import-export/components/PreviewStep'
-import { useImportPreview, useImportCommit } from '../../import-export/hooks'
-import type { ImportPreviewResponseDto } from '../../import-export/types'
 
 interface PresetFundDef {
   name: string
@@ -42,92 +38,15 @@ const PRESET_NAMES: Record<Exclude<PresetOption, 'fondos' | 'excel'>, string> = 
 }
 
 interface Props {
-  preset: PresetOption
+  preset: Exclude<PresetOption, 'excel'>
   customFunds: CreateFundPayload[]
   onAddFund: (fund: CreateFundPayload) => void
   onRemoveFund: (index: number) => void
-  onConfirm: () => void
-  onExcelComplete: () => void
-  isPending: boolean
   error: string | null
 }
 
-export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, onExcelComplete, error }: Props) {
+export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, error }: Props) {
   const [showAddForm, setShowAddForm] = useState(false)
-  const [excelPreviewData, setExcelPreviewData] = useState<ImportPreviewResponseDto | null>(null)
-  const [approvedFunds, setApprovedFunds] = useState<Set<string>>(new Set())
-  const previewMutation = useImportPreview()
-  const commitMutation = useImportCommit()
-
-  function handleExcelFileReady(file: File) {
-    previewMutation.mutate(file, {
-      onSuccess: (data) => {
-        setExcelPreviewData(data)
-        setApprovedFunds(new Set(data.unknownFunds))
-      },
-    })
-  }
-
-  function handleToggleFund(name: string) {
-    setApprovedFunds((prev) => {
-      const next = new Set(prev)
-      if (next.has(name)) { next.delete(name) } else { next.add(name) }
-      return next
-    })
-  }
-
-  function handleExcelBack() {
-    previewMutation.reset()
-    setExcelPreviewData(null)
-    setApprovedFunds(new Set())
-  }
-
-  function handleExcelConfirm() {
-    if (!excelPreviewData) return
-    const rowsToCommit = excelPreviewData.rows.filter(
-      (row) => !row.duplicate && (!excelPreviewData.unknownFunds.includes(row.fundName) || approvedFunds.has(row.fundName)),
-    )
-    commitMutation.mutate(rowsToCommit, {
-      onSuccess: () => onExcelComplete(),
-    })
-  }
-
-  if (preset === 'excel') {
-    return (
-      <div>
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>
-            Paso 2 · Importar historial
-          </div>
-          <div style={{ fontSize: 30, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--text)', marginTop: 10 }}>
-            Importar Excel
-          </div>
-          <div style={{ fontSize: 15, color: 'var(--muted)', marginTop: 8 }}>
-            Sube tu archivo para detectar fondos y transacciones automáticamente.
-          </div>
-        </div>
-        <div style={{ maxWidth: 700, margin: '0 auto' }}>
-          {!excelPreviewData ? (
-            <UploadStep
-              onFileReady={handleExcelFileReady}
-              isPending={previewMutation.isPending}
-              error={previewMutation.error?.message ?? null}
-            />
-          ) : (
-            <PreviewStep
-              previewData={excelPreviewData}
-              approvedFunds={approvedFunds}
-              onToggleFund={handleToggleFund}
-              onBack={handleExcelBack}
-              onConfirm={handleExcelConfirm}
-              isPending={commitMutation.isPending}
-              error={commitMutation.error?.message ?? null}
-            />
-          )}
-        </div>
-      </div>
-    )
-  }
 
   const isPreset = preset !== 'fondos'
   const presetFunds = isPreset ? PRESET_FUNDS[preset as Exclude<PresetOption, 'fondos' | 'excel'>] : []

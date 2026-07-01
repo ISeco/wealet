@@ -3,9 +3,12 @@ import { API_BASE_URL } from '../../lib/api/config'
 import { getAccessToken } from '../../lib/api/tokenStore'
 import type { ImportCommitResultDto, ImportPreviewResponseDto, ImportRowDto } from './types'
 
-export async function importPreview(file: File): Promise<ImportPreviewResponseDto> {
+export async function importPreview(file: File, year?: number): Promise<ImportPreviewResponseDto> {
   const formData = new FormData()
   formData.append('file', file)
+  if (year !== undefined) {
+    formData.append('year', String(year))
+  }
   const token = getAccessToken()
   const response = await fetch(`${API_BASE_URL}/import/preview`, {
     method: 'POST',

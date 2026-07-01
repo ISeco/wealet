@@ -90,7 +90,9 @@ Reports (read-only, aggregated in SQL)
   GET  /reports/cash-flow?months=12       → monthly net flow (dashboard bars), excludes transfers
 
 Import / Export
-  POST /import/preview    (multipart) → parsed rows, errors, duplicates flagged
+  POST /import/preview    (multipart, optional `year` field) → parsed rows, errors, duplicates flagged
+                           → `needsYear: true` (rows empty) if sheet names carry a month but no year and
+                             `year` wasn't supplied — client re-calls with `year` once the user provides it
   POST /import/commit                 → persists confirmed rows
   GET  /export?from=&to=              → .xlsx download
 

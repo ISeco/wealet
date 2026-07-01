@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
+import { isRemoteDatabaseUrl } from './is-remote-database-url';
 
 export default new DataSource({
   type: 'postgres',
@@ -12,7 +13,7 @@ export default new DataSource({
   entities: [`${__dirname}/../**/*.entity{.ts,.js}`],
   migrations: [`${__dirname}/../database/migrations/*{.ts,.js}`],
   synchronize: false,
-  ssl: process.env.DATABASE_URL?.includes('render.com')
+  ssl: isRemoteDatabaseUrl(process.env.DATABASE_URL)
     ? { rejectUnauthorized: false }
     : false,
 });
