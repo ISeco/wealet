@@ -3,7 +3,7 @@ import { importCommit, importPreview } from './api'
 
 export function useImportPreview() {
   return useMutation({
-    mutationFn: (file: File) => importPreview(file),
+    mutationFn: ({ file, year }: { file: File; year?: number }) => importPreview(file, year),
   })
 }
 

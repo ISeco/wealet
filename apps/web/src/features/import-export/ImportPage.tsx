@@ -8,6 +8,7 @@ import { StepIndicator } from './components/StepIndicator'
 import { UploadStep } from './components/UploadStep'
 import { PreviewStep } from './components/PreviewStep'
 import { SuccessStep } from './components/SuccessStep'
+import { YearPromptStep } from './components/YearPromptStep'
 
 export function ImportPage() {
   const navigate = useNavigate()
@@ -17,13 +18,32 @@ export function ImportPage() {
   const [previewData, setPreviewData] = useState<ImportPreviewResponseDto | null>(null)
   const [approvedFunds, setApprovedFunds] = useState<Set<string>>(new Set())
   const [commitResult, setCommitResult] = useState<ImportCommitResultDto | null>(null)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [awaitingYear, setAwaitingYear] = useState(false)
 
   const previewMutation = useImportPreview()
   const commitMutation = useImportCommit()
 
   function handleFileReady(file: File) {
-    previewMutation.mutate(file, {
+    setPendingFile(file)
+    previewMutation.mutate({ file }, {
       onSuccess: (data) => {
+        if (data.needsYear) {
+          setAwaitingYear(true)
+          return
+        }
+        setPreviewData(data)
+        setApprovedFunds(new Set(data.unknownFunds))
+        setStep(2)
+      },
+    })
+  }
+
+  function handleYearSubmit(year: number) {
+    if (!pendingFile) return
+    previewMutation.mutate({ file: pendingFile, year }, {
+      onSuccess: (data) => {
+        setAwaitingYear(false)
         setPreviewData(data)
         setApprovedFunds(new Set(data.unknownFunds))
         setStep(2)
@@ -47,6 +67,8 @@ export function ImportPage() {
     previewMutation.reset()
     setPreviewData(null)
     setApprovedFunds(new Set())
+    setPendingFile(null)
+    setAwaitingYear(false)
     setStep(1)
   }
 
@@ -71,6 +93,8 @@ export function ImportPage() {
     setPreviewData(null)
     setApprovedFunds(new Set())
     setCommitResult(null)
+    setPendingFile(null)
+    setAwaitingYear(false)
     setStep(1)
   }
 
@@ -78,11 +102,20 @@ export function ImportPage() {
     <div style={{ maxWidth: 920, margin: '0 auto' }}>
       <StepIndicator currentStep={step} />
 
-      {step === 1 && (
+      {step === 1 && !awaitingYear && (
         <UploadStep
           onFileReady={handleFileReady}
           isPending={previewMutation.isPending}
           error={previewMutation.error?.message ?? null}
+        />
+      )}
+
+      {step === 1 && awaitingYear && pendingFile && (
+        <YearPromptStep
+          fileName={pendingFile.name}
+          isPending={previewMutation.isPending}
+          error={previewMutation.error?.message ?? null}
+          onSubmit={handleYearSubmit}
         />
       )}
 

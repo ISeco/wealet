@@ -60,7 +60,7 @@ export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, onExc
   const commitMutation = useImportCommit()
 
   function handleExcelFileReady(file: File) {
-    previewMutation.mutate(file, {
+    previewMutation.mutate({ file }, {
       onSuccess: (data) => {
         setExcelPreviewData(data)
         setApprovedFunds(new Set(data.unknownFunds))
