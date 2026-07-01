@@ -1,5 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { isRemoteDatabaseUrl } from './is-remote-database-url';
 
 export default registerAs(
   'database',
@@ -15,7 +16,7 @@ export default registerAs(
     migrations: [`${__dirname}/../database/migrations/*{.ts,.js}`],
     synchronize: false,
     migrationsRun: false,
-    ssl: process.env.DATABASE_URL?.includes('render.com')
+    ssl: isRemoteDatabaseUrl(process.env.DATABASE_URL)
       ? { rejectUnauthorized: false }
       : false,
   }),
