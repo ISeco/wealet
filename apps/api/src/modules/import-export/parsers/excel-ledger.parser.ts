@@ -116,8 +116,14 @@ export function parseLedgerWorkbook(buffer: Buffer): ParsedWorkbook {
 
     const range = XLSX.utils.decode_range(ref);
     const totalsRowIndex = range.e.r;
-    const lastDataRowIndex = totalsRowIndex - 1;
     const lastDay = daysInMonth(period.year, period.month);
+    // Bound by calendar days, not by footer position — tolerates a footer
+    // of any number of summary rows (1, 2, or more) without needing to
+    // detect "Total" labels by content.
+    const lastDataRowIndex = Math.min(
+      totalsRowIndex - 1,
+      FIRST_DATA_ROW_INDEX + lastDay - 1,
+    );
 
     const fundColumns: Array<{ col: number; name: string }> = [];
     for (let col = range.s.c; col <= range.e.c; col++) {

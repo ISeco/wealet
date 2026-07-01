@@ -118,4 +118,36 @@ describe('parseLedgerWorkbook', () => {
     expect(result.errors.length).toBeGreaterThan(0);
     expect(result.errors[0].message).toContain('Expected a numeric amount');
   });
+
+  it('excludes a multi-row totals footer bounded by the days in the month', () => {
+    const zeroRows: unknown[][] = Array.from({ length: 30 }, () => [
+      null,
+      null,
+      null,
+      null,
+      0,
+    ]);
+    const data: unknown[][] = [
+      [],
+      [null, null, null, null, 'Fondo Test'],
+      [null, null, null, null, 1000],
+      [null, null, null, null, -500],
+      ...zeroRows,
+      [null, null, null, 'Total c/u', 99999],
+      [null, null, null, 'Total en la cuenta', 99999],
+    ];
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    worksheet['!ref'] = 'A1:E36';
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Enero 2026');
+    const buffer = XLSX.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx',
+    }) as Buffer;
+
+    const result = parseLedgerWorkbook(buffer);
+
+    expect(result.rows.some((row) => row.amount === '99999')).toBe(false);
+    expect(result.rows).toHaveLength(2); // day-1 expense + opening balance
+  });
 });
