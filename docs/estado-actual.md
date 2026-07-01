@@ -54,6 +54,8 @@ Registro cronológico de cambios significativos, bugs corregidos y pendientes. C
   - **CommandPalette**: ArrowDown/Up navegan la lista; hover sincroniza el ítem activo; Enter selecciona el activo (no siempre el primero).
   - **Tests nuevos**: `lib/money.spec.ts` (12), `funds/utils.spec.ts` (8), `dashboard/utils.spec.ts` (4), `transactions/utils.spec.ts` (7), `health/utils.spec.ts` (9), `auth/passwordRules.spec.ts` (7).
 
+- **Import — tolerancia de plantillas Excel**: el parser (`excel-ledger.parser.ts`) ya no asume que el nombre de hoja siempre trae año (`"enero 2026"`) ni que el pie de página de totales mide 1 fila. Ahora: (1) detecta el mes por palabra en cualquier parte del nombre de hoja (case-insensitive) en vez de exigir el patrón exacto `mes año`; hojas sin ninguna palabra-mes se ignoran en silencio (antes generaban un `ParseError` falso-positivo); (2) si una hoja trae mes pero no año, el parser corta y devuelve `needsYear: true` — el endpoint `POST /import/preview` acepta un campo `year` opcional (multipart) para ese caso, y el wizard de `/import` pide el año una sola vez antes de continuar (el flujo con plantillas que ya traen año no cambia); (3) el fin de las filas de datos se acota por días reales del mes (`FIRST_DATA_ROW_INDEX + lastDay - 1`) en vez de por la posición asumida del pie de página, tolerando pies de 1, 2 o más filas de resumen sin necesitar detectarlas por contenido. Las columnas de ingreso/gasto no atadas a un fondo (ej. "Sueldo Líquido", "Gastos en el Mes") se siguen ignorando sin cambios — ya no tenían encabezado de fondo en la fila de headers.
+
 ---
 
 ## Pendientes documentados
