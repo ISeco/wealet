@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import type { PresetOption } from './Step1Preset'
 import { FundRow } from '../components/FundRow'
 import { AddFundForm } from '../components/AddFundForm'
