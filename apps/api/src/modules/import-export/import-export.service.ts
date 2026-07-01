@@ -31,8 +31,19 @@ export class ImportExportService {
   async preview(
     userId: string,
     buffer: Buffer,
+    year?: number,
   ): Promise<ImportPreviewResponseDto> {
-    const parsed = parseLedgerWorkbook(buffer);
+    const parsed = parseLedgerWorkbook(buffer, { year });
+
+    if (parsed.needsYear) {
+      return {
+        rows: [],
+        openingBalances: [],
+        unknownFunds: [],
+        errors: [],
+        needsYear: true,
+      };
+    }
 
     const existingFunds = await this.fundsRepository.find({
       where: { userId },
@@ -59,6 +70,7 @@ export class ImportExportService {
       openingBalances: parsed.openingBalances,
       unknownFunds,
       errors: parsed.errors,
+      needsYear: false,
     };
   }
 

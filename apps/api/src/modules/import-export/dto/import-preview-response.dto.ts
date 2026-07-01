@@ -17,4 +17,5 @@ export class ImportPreviewResponseDto {
   openingBalances: OpeningBalanceDto[];
   unknownFunds: string[];
   errors: ParseErrorDto[];
+  needsYear: boolean;
 }

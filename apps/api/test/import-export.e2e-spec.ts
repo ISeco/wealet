@@ -161,4 +161,42 @@ describe('Import/Export (e2e)', () => {
     expect(exportedRows[0].Monto).toBe(-5000);
     expect(exportedRows[0].Descripcion).toBe('Compra E2E');
   });
+
+  it('requires a year for sheets without one, then previews using the provided year', async () => {
+    const data: unknown[][] = [
+      [],
+      [null, null, null, null, FUND_NAME],
+      [null, null, null, null, 0],
+      [null, null, null, null, -3000],
+      [null, null, null, null, 0],
+    ];
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    worksheet['!ref'] = 'A1:E5';
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Plantilla Abril');
+    const buffer = XLSX.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx',
+    }) as Buffer;
+
+    const withoutYear = await request(app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/import/preview`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .attach('file', buffer, 'no-year.xlsx')
+      .expect(201);
+
+    expect(withoutYear.body.needsYear).toBe(true);
+    expect(withoutYear.body.rows).toEqual([]);
+
+    const withYear = await request(app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/import/preview`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .field('year', '2026')
+      .attach('file', buffer, 'no-year.xlsx')
+      .expect(201);
+
+    expect(withYear.body.needsYear).toBe(false);
+    expect(withYear.body.rows).toHaveLength(1);
+    expect(withYear.body.rows[0].occurredOn).toBe('2026-04-01');
+  });
 });
