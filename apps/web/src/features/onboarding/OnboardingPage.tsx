@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { createFund } from './api'
 import { useCompleteOnboarding } from './hooks/useCompleteOnboarding'
@@ -16,6 +16,7 @@ const SLOT_PRESETS: PresetOption[] = ['jars_eker', '50_30_20', 'profit_first']
 
 export function OnboardingPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isReconfigure = searchParams.get('from') === 'settings'
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
@@ -90,10 +91,16 @@ export function OnboardingPage() {
           ))}
         </div>
         <button
-          onClick={() => { window.location.href = '/login' }}
+          onClick={() => {
+            if (isReconfigure) {
+              navigate('/ajustes')
+            } else {
+              window.location.href = '/login'
+            }
+          }}
           style={{ border: 'none', background: 'none', color: 'var(--muted)', fontFamily: 'inherit', fontSize: 13.5, cursor: 'pointer' }}
         >
-          Salir
+          {isReconfigure ? 'Volver a Ajustes' : 'Salir'}
         </button>
       </div>
 
