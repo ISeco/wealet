@@ -134,7 +134,6 @@ export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, onExc
               isPending={previewMutation.isPending}
               error={previewMutation.error?.message ?? null}
               onSubmit={handleExcelYearSubmit}
-              onBack={handleExcelBack}
             />
           ) : !excelPreviewData ? (
             <UploadStep

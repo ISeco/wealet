@@ -5,7 +5,7 @@ interface Props {
   isPending: boolean
   error: string | null
   onSubmit: (year: number) => void
-  onBack: () => void
+  onBack?: () => void
 }
 
 const CURRENT_YEAR = new Date().getFullYear()
@@ -58,26 +58,28 @@ export function YearPromptStep({ fileName, isPending, error, onSubmit, onBack }:
         </div>
       )}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={isPending}
-          style={{
-            height: 40,
-            padding: '0 18px',
-            border: '1px solid var(--border)',
-            borderRadius: 9,
-            background: 'var(--card)',
-            color: 'var(--text)',
-            fontFamily: 'inherit',
-            fontSize: 13.5,
-            fontWeight: 500,
-            cursor: isPending ? 'default' : 'pointer',
-            opacity: isPending ? 0.6 : 1,
-          }}
-        >
-          ← Volver
-        </button>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            disabled={isPending}
+            style={{
+              height: 40,
+              padding: '0 18px',
+              border: '1px solid var(--border)',
+              borderRadius: 9,
+              background: 'var(--card)',
+              color: 'var(--text)',
+              fontFamily: 'inherit',
+              fontSize: 13.5,
+              fontWeight: 500,
+              cursor: isPending ? 'default' : 'pointer',
+              opacity: isPending ? 0.6 : 1,
+            }}
+          >
+            ← Volver
+          </button>
+        )}
         <button
           type="submit"
           disabled={isPending}
