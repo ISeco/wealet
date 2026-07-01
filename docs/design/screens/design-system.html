@@ -1,0 +1,211 @@
+<!-- Wealet — pantalla: design-system
+     Referencia de diseño extraída de Wealet.dc.html (solo esta pantalla).
+     Trabaja SOLO esta pantalla en Claude Code; no abras el .dc.html completo.
+     Sintaxis del prototipo: {{ x }} = interpolación, <sc-if>/<sc-for> = condicional/loop.
+     Los tokens de color/tipografía viven en el <style> de abajo. -->
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Geist',system-ui,-apple-system,sans-serif;background:#F6F8FB;color:#12294A;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(100,116,139,.28);border-radius:8px;border:3px solid transparent;background-clip:padding-box}
+  :root{
+    --bg:#F6F8FB;--card:#FFFFFF;--card-2:#F1F5FA;--tint:#F3F8FE;--border:#E6EBF2;--border-strong:#D6DEEA;
+    --text:#12294A;--muted:#64748B;--navy:#12294A;
+    --pos:#037940;--pos-bg:#E7F4EC;--neg:#DC2626;--neg-bg:#FBEAEA;--warn:#D97706;--warn-bg:#FBF1E1;--info:#2563EB;--info-bg:#E9F0FE;
+    --disp:#16A89A;--disp-bg:#E3F5F2;--res:#2563EB;--res-bg:#E9F0FE;--comp:#D97706;--comp-bg:#FBF1E1;
+    --grad:linear-gradient(120deg,#1FA9E0 0%,#16A89A 52%,#6BBF3F 100%);
+    --shadow:0 1px 2px rgba(18,41,74,.05),0 1px 3px rgba(18,41,74,.04);
+    --shadow-lg:0 8px 30px rgba(18,41,74,.10),0 2px 8px rgba(18,41,74,.06);
+    --field:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    --bg:#0F2240;--card:#1A2F52;--card-2:#16294A;--tint:#16314F;--border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.15);
+    --text:#E6ECF5;--muted:#93A4C0;--navy:#0F2240;
+    --pos:#34D17E;--pos-bg:rgba(52,209,126,.13);--neg:#F87171;--neg-bg:rgba(248,113,113,.13);--warn:#FBBF24;--warn-bg:rgba(251,191,36,.13);--info:#60A5FA;--info-bg:rgba(96,165,250,.13);
+    --disp:#2DD4BF;--disp-bg:rgba(45,212,191,.13);--res:#60A5FA;--res-bg:rgba(96,165,250,.13);--comp:#FBBF24;--comp-bg:rgba(251,191,36,.13);
+    --shadow:0 1px 2px rgba(0,0,0,.24),0 1px 3px rgba(0,0,0,.18);
+    --shadow-lg:0 12px 36px rgba(0,0,0,.34),0 3px 10px rgba(0,0,0,.24);
+    --field:#16294A;
+  }
+  @keyframes wl-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  @keyframes wl-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes wl-pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  @keyframes wl-fade{from{opacity:0}to{opacity:1}}
+</style>
+<div data-theme="light" style="background:var(--bg);color:var(--text);font-family:'Geist',system-ui,sans-serif;padding:16px">
+<sc-if value="{{ show.ds }}" hint-placeholder-val="{{ false }}">
+          <div>
+
+            <!-- intro -->
+            <div style="border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:26px 28px;margin-bottom:28px;display:flex;align-items:center;gap:22px;flex-wrap:wrap">
+              <div style="width:64px;height:64px;flex:none">{{ logoDS }}</div>
+              <div style="flex:1;min-width:220px">
+                <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;color:var(--text)">Wealet Design System</div>
+                <div style="font-size:14px;color:var(--muted);margin-top:5px;line-height:1.55;max-width:560px">Wealth + Wallet. Minimal-pro con un toque cálido: navy de marca, gradiente azul→teal→verde usado con precisión, tipografía Geist y números tabulares. CLP sin decimales.</div>
+              </div>
+              <div style="height:54px;width:200px;border-radius:11px;background:var(--grad);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px;letter-spacing:.02em;flex:none">Gradiente firma</div>
+            </div>
+
+            <!-- COLOR -->
+            <div style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 0 14px">Color · claro &amp; oscuro</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin-bottom:14px">
+              <sc-for list="{{ dsBrand }}" as="s" hint-placeholder-count="6">
+                <div style="border:1px solid var(--border);border-radius:11px;overflow:hidden;background:var(--card)">
+                  <div style="height:56px;background:{{ s.bg }}"></div>
+                  <div style="padding:9px 11px">
+                    <div style="font-size:12.5px;font-weight:600;color:var(--text)">{{ s.name }}</div>
+                    <div style="font-size:11px;color:var(--muted);font-family:'Geist Mono',monospace;margin-top:2px">{{ s.hex }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin-bottom:28px">
+              <sc-for list="{{ dsSemantic }}" as="s" hint-placeholder-count="7">
+                <div style="border:1px solid var(--border);border-radius:11px;overflow:hidden;background:var(--card)">
+                  <div style="height:44px;background:{{ s.bg }};display:flex;align-items:center;justify-content:center"><span style="font-size:11.5px;font-weight:600;color:{{ s.fg }}">{{ s.tag }}</span></div>
+                  <div style="padding:9px 11px">
+                    <div style="font-size:12.5px;font-weight:600;color:var(--text)">{{ s.name }}</div>
+                    <div style="font-size:11px;color:var(--muted);font-family:'Geist Mono',monospace;margin-top:2px">{{ s.hex }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- TYPE + SPACING -->
+            <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-bottom:28px">
+              <div style="border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:24px">
+                <div style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:18px">Tipografía · Geist</div>
+                <div style="display:flex;flex-direction:column;gap:16px">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-bottom:1px solid var(--border);padding-bottom:16px"><span style="font-size:38px;font-weight:600;letter-spacing:-.025em;color:var(--text)">$13.080.000</span><span style="font-size:11.5px;color:var(--muted);font-family:'Geist Mono',monospace">Display · 38 / 600 · tnum</span></div>
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-bottom:1px solid var(--border);padding-bottom:16px"><span style="font-size:25px;font-weight:600;letter-spacing:-.02em;color:var(--text)">Salud financiera</span><span style="font-size:11.5px;color:var(--muted);font-family:'Geist Mono',monospace">Título · 25 / 600</span></div>
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-bottom:1px solid var(--border);padding-bottom:16px"><span style="font-size:17px;font-weight:600;color:var(--text)">Sección · medium</span><span style="font-size:11.5px;color:var(--muted);font-family:'Geist Mono',monospace">17 / 600</span></div>
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-bottom:1px solid var(--border);padding-bottom:16px"><span style="font-size:14px;font-weight:400;color:var(--text)">Cuerpo regular para descripciones y microcopy.</span><span style="font-size:11.5px;color:var(--muted);font-family:'Geist Mono',monospace">14 / 400</span></div>
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px"><span style="font-size:12.5px;color:var(--muted)">Caption / meta secundaria</span><span style="font-size:11.5px;color:var(--muted);font-family:'Geist Mono',monospace">12.5 · muted</span></div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:18px">
+                <div style="border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:24px">
+                  <div style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">Espaciado · 4px base</div>
+                  <div style="display:flex;align-items:flex-end;gap:10px">
+                    <sc-for list="{{ dsSpace }}" as="sp" hint-placeholder-count="5">
+                      <div style="text-align:center"><div style="width:{{ sp.s }};height:{{ sp.s }};background:var(--grad);border-radius:4px;margin:0 auto"></div><div style="font-size:10.5px;color:var(--muted);font-family:'Geist Mono',monospace;margin-top:6px">{{ sp.n }}</div></div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:24px">
+                  <div style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">Radios</div>
+                  <div style="display:flex;align-items:center;gap:14px">
+                    <div style="text-align:center"><div style="width:46px;height:46px;border:1.5px solid var(--border-strong);border-radius:8px;background:var(--card-2)"></div><div style="font-size:10.5px;color:var(--muted);font-family:'Geist Mono',monospace;margin-top:6px">8 · input</div></div>
+                    <div style="text-align:center"><div style="width:46px;height:46px;border:1.5px solid var(--border-strong);border-radius:12px;background:var(--card-2)"></div><div style="font-size:10.5px;color:var(--muted);font-family:'Geist Mono',monospace;margin-top:6px">12 · card</div></div>
+                    <div style="text-align:center"><div style="width:46px;height:46px;border:1.5px solid var(--border-strong);border-radius:50%;background:var(--card-2)"></div><div style="font-size:10.5px;color:var(--muted);font-family:'Geist Mono',monospace;margin-top:6px">full · avatar</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- COMPONENTS -->
+            <div style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 0 14px">Componentes</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+              <div style="border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:24px">
+                <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:16px">Botones</div>
+                <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+                  <button style="height:40px;padding:0 18px;border:none;border-radius:8px;background:var(--grad);color:#fff;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:var(--shadow)">Primario</button>
+                  <button style="height:40px;padding:0 18px;border:1px solid var(--border-strong);border-radius:8px;background:var(--card);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer">Secundario</button>
+                  <button style="height:40px;padding:0 18px;border:none;border-radius:8px;background:transparent;color:var(--muted);font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer">Ghost</button>
+                  <button style="height:40px;padding:0 18px;border:none;border-radius:8px;background:var(--neg);color:#fff;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer">Eliminar</button>
+                  <button style="width:40px;height:40px;border:1px solid var(--border-strong);border-radius:8px;background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></button>
+                </div>
+                <div style="font-size:13px;font-weight:600;color:var(--text);margin:22px 0 12px">Chips de clasificación</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                  <span style="font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:7px;background:var(--disp-bg);color:var(--disp)">Disponible</span>
+                  <span style="font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:7px;background:var(--res-bg);color:var(--res)">Reserva</span>
+                  <span style="font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:7px;background:var(--comp-bg);color:var(--comp)">Comprometido</span>
+                  <span style="font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:7px;background:var(--pos-bg);color:var(--pos)">Ingreso</span>
+                  <span style="font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:7px;background:var(--neg-bg);color:var(--neg)">Gasto</span>
+                </div>
+              </div>
+              <div style="border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:24px">
+                <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:16px">Inputs &amp; controles</div>
+                <div style="display:flex;align-items:center;height:42px;border:1px solid var(--border-strong);border-radius:8px;background:var(--field);padding:0 13px;margin-bottom:12px"><span style="font-size:14px;color:var(--text)">$54.300</span></div>
+                <div style="display:flex;align-items:center;height:42px;border:1px solid var(--info);border-radius:8px;background:var(--field);padding:0 13px;margin-bottom:12px;box-shadow:0 0 0 3px var(--info-bg)"><span style="font-size:14px;color:var(--text)">Foco activo</span></div>
+                <div style="display:flex;padding:3px;background:var(--card-2);border:1px solid var(--border);border-radius:9px;gap:3px;margin-bottom:14px">
+                  <div style="flex:1;text-align:center;padding:7px;border-radius:6px;font-size:13px;font-weight:600;background:var(--card);box-shadow:var(--shadow);color:var(--text)">Segmento</div>
+                  <div style="flex:1;text-align:center;padding:7px;border-radius:6px;font-size:13px;color:var(--muted)">Off</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div style="width:38px;height:22px;border-radius:11px;background:var(--pos);position:relative;flex:none"><span style="position:absolute;top:2px;left:18px;width:18px;height:18px;border-radius:50%;background:#fff"></span></div>
+                  <div style="width:38px;height:22px;border-radius:11px;background:var(--border-strong);position:relative;flex:none"><span style="position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff"></span></div>
+                  <span style="font-size:12.5px;color:var(--muted)">Toggle on / off</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- segmented bar + data viz -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px">
+              <div style="border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:24px">
+                <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:16px">Barra segmentada · patrimonio</div>
+                <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px">
+                  <div style="width:46%;background:var(--disp)"></div>
+                  <div style="width:36%;background:var(--res)"></div>
+                  <div style="width:18%;background:var(--comp)"></div>
+                </div>
+                <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap">
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:var(--disp)"></span>Disponible</div>
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:var(--res)"></span>Reserva</div>
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:var(--comp)"></span>Comprometido</div>
+                </div>
+                <div style="font-size:13px;font-weight:600;color:var(--text);margin:22px 0 14px">Flujo neto · barras +/−</div>
+                <div style="display:flex;align-items:center;gap:8px;height:90px">
+                  <sc-for list="{{ netFlow }}" as="b" hint-placeholder-count="6">
+                    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">
+                      <div style="flex:1;display:flex;align-items:flex-end;width:100%;justify-content:center"><div style="width:62%;border-radius:4px 4px 0 0;background:{{ b.posBg }};height:{{ b.posH }}"></div></div>
+                      <div style="height:1px;width:100%;background:var(--border)"></div>
+                      <div style="flex:.5;display:flex;align-items:flex-start;width:100%;justify-content:center"><div style="width:62%;border-radius:0 0 4px 4px;background:{{ b.negBg }};height:{{ b.negH }}"></div></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:24px">
+                <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:16px">Mini-barras · gasto por categoría</div>
+                <div style="display:flex;flex-direction:column;gap:11px">
+                  <sc-for list="{{ catSpend }}" as="c" hint-placeholder-count="4">
+                    <div>
+                      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><span style="color:var(--text)">{{ c.name }}</span><span style="color:var(--muted);font-variant-numeric:tabular-nums">{{ c.amt }}</span></div>
+                      <div style="height:6px;border-radius:3px;background:var(--card-2)"><div style="height:100%;border-radius:3px;width:{{ c.w }};background:{{ c.color }}"></div></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+
+            <!-- STATES -->
+            <div style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 0 14px">Estados · carga · vacío · error</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+              <!-- loading -->
+              <div style="border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:22px">
+                <div style="font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:16px">Cargando · skeleton</div>
+                <div style="height:14px;width:55%;border-radius:5px;background:linear-gradient(90deg,var(--card-2),var(--border),var(--card-2));background-size:400px 100%;animation:wl-shimmer 1.3s infinite linear;margin-bottom:18px"></div>
+                <div style="height:34px;width:75%;border-radius:7px;background:linear-gradient(90deg,var(--card-2),var(--border),var(--card-2));background-size:400px 100%;animation:wl-shimmer 1.3s infinite linear;margin-bottom:18px"></div>
+                <div style="display:flex;gap:8px;margin-bottom:10px"><div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(90deg,var(--card-2),var(--border),var(--card-2));background-size:400px 100%;animation:wl-shimmer 1.3s infinite linear"></div><div style="flex:1"><div style="height:11px;width:70%;border-radius:5px;background:var(--card-2);margin-bottom:7px"></div><div style="height:11px;width:40%;border-radius:5px;background:var(--card-2)"></div></div></div>
+                <div style="display:flex;gap:8px"><div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(90deg,var(--card-2),var(--border),var(--card-2));background-size:400px 100%;animation:wl-shimmer 1.3s infinite linear"></div><div style="flex:1"><div style="height:11px;width:60%;border-radius:5px;background:var(--card-2);margin-bottom:7px"></div><div style="height:11px;width:45%;border-radius:5px;background:var(--card-2)"></div></div></div>
+              </div>
+              <!-- empty -->
+              <div style="border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+                <div style="width:52px;height:52px;border-radius:13px;background:var(--tint);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--disp);margin-bottom:14px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"></rect><path d="M3 8l9 5 9-5"></path></svg></div>
+                <div style="font-size:14.5px;font-weight:600;color:var(--text)">Aún no hay movimientos</div>
+                <div style="font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5">Registra tu primer ingreso o gasto y aparecerá aquí.</div>
+                <button style="margin-top:16px;height:36px;padding:0 16px;border:none;border-radius:8px;background:var(--grad);color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">Registrar movimiento</button>
+              </div>
+              <!-- error -->
+              <div style="border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+                <div style="width:52px;height:52px;border-radius:13px;background:var(--neg-bg);display:flex;align-items:center;justify-content:center;color:var(--neg);margin-bottom:14px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><path d="M12 9v4M12 17h.01"></path></svg></div>
+                <div style="font-size:14.5px;font-weight:600;color:var(--text)">No pudimos cargar tus datos</div>
+                <div style="font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5">Revisa tu conexión. Tus movimientos están a salvo.</div>
+                <button style="margin-top:16px;height:36px;padding:0 16px;border:1px solid var(--border-strong);border-radius:8px;background:var(--card);color:var(--text);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">Reintentar</button>
+              </div>
+            </div>
+
+          </div>
+          </sc-if>
+</div>

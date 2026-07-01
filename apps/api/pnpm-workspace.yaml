@@ -1,2 +1,4 @@
 allowBuilds:
+  '@scarf/scarf': false
+  argon2: false
   unrs-resolver: false

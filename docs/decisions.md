@@ -60,7 +60,9 @@ Verified by mandatory cross-user E2E tests (user A cannot read or modify user B'
 ## ADR-06 — Excel import: preview before commit
 
 Import is a two-step flow: **parse + validate → preview (with duplicate flags) → confirmed commit**.
-Duplicate detection via hash of (date + amount + description) stored as `dedupeHash`.
+Duplicate detection via a hash of (sheet name + fund name + cell reference + amount), stored as `dedupeHash` —
+the physical Excel cell is a more reliable identity than (date + amount + description) for this ledger format,
+since the same description can repeat across unrelated rows.
 Uniqueness enforced at DB level (partial unique index where `source = 'import'`).
 
 **Trade-off:** more work than a direct INSERT. This is the feature with the highest signal-per-hour-invested ratio — don't simplify it.
@@ -83,21 +85,37 @@ Fund balance is derived via SQL aggregation (never a stored column).
 
 **Trade-off:** more complex than Category + Transaction. The atomic transfer, derived balance, and segmented net worth are the technically interesting parts — don't simplify them away.
 
+**Note — API additions from design review (2026-06):** the design prototype surfaced a few endpoints the original API lacked. Importantly, they introduce **no new pattern**: `/funds/:id/history` and `/reports/cash-flow` are SQL-aggregated reads consistent with the derived-balance rule above, and `/funds/preset` is the implementation of the Jars-factory seed mentioned in this ADR. The canonical endpoint list lives in `modules.md` (single source of truth) — not duplicated here.
+
+---
+
+## ADR-08 — Endpoint unificado `/activity` para el timeline de Transacciones
+
+La vista Transacciones muestra transacciones y transferencias mezcladas en un timeline cronológico.
+
+**Problema:** el enfoque de doble llamada (`GET /transactions` + `GET /transfers`) hace imposible paginar el resultado combinado correctamente — la página 1 de cada stream no equivale a los N eventos más recientes del timeline unificado. Cualquier intento de mezclar en el cliente produce un orden incorrecto.
+
+**Solución:** endpoint único `GET /activity` que ejecuta un `UNION ALL` en SQL entre `transactions` y `transfers`, aplica filtros, ordena por `occurred_on DESC`, y pagina sobre el resultado combinado. La respuesta incluye un discriminador `type: 'transaction' | 'transfer'` para que el frontend renderice cada item según su naturaleza.
+
+**Trade-off:** TypeORM no soporta UNION nativo — se usa `DataSource.query()` con raw SQL parametrizado. Es aceptable porque es un endpoint de lectura puro, la query usa parámetros posicionales (sin concatenación de strings de usuario), y sigue el patrón ya establecido en `reports.service.ts`.
+
+**`GET /transfers` se mantiene** para el formulario de creación y cualquier uso puntual que no necesite el timeline combinado. `/activity` es el endpoint del listado paginado.
+
 ---
 
 ## §7 — Engineering Best Practices
 
 ### Architecture
-- Domain logic (Money calculations, balance derivation, runway, framework adherence) lives in pure service functions — no coupling to TypeORM or Express. Makes them trivial to unit test.
-- Services depend on **repository interfaces** (DI tokens), not TypeORM concrete classes. Allows mocking in tests.
-- We do NOT do full hexagonal/ports-and-adapters — too much ceremony for a 2-week MVP.
+- Domain logic (balance derivation, runway, framework adherence, dedupe) lives **inline in each module's service** (`funds.service.ts`, `reports.service.ts`, `import-export.service.ts`), not split into separate calculator classes. At this scale, one service per domain is the right level of indirection — splitting `BalanceCalculator`/`RunwayCalculator`/`DedupeService` out today would be an abstraction with a single caller and no real benefit (see "what we deliberately don't do" below).
+- Services inject TypeORM's `Repository<Entity>` directly via `@InjectRepository()` — no repository-interface/DI-token layer on top. NestJS's own DI already lets tests mock the repository; an extra interface would duplicate what NestJS gives for free.
+- We do NOT do full hexagonal/ports-and-adapters — too much ceremony for a project this size.
 
 ### SOLID applied to this project
-- **S**: one service per domain; `MoneyHelper`, `DedupeService`, `BalanceCalculator`, `RunwayCalculator` each have one job; `reports/` (read) is separate from `transactions/` (write).
-- **O**: financial frameworks (50/30/20, Jars, Fondos) behind a `FinancialFrameworkStrategy` interface. Adding a new one = new class only.
+- **S**: one service per domain; `reports/` (read) is separate from `transactions/` (write). A service owns one aggregate's read+write logic rather than being split further.
+- **O**: financial frameworks (50/30/20, Jars, Fondos) are open for extension via `FRAMEWORK_FUND_TEMPLATES` in `health/framework-funds.ts` — adding a new framework = new entry in the templates map. The `FinancialFrameworkStrategy` class hierarchy was removed; targets live as `frameworkSlot` + `targetPercentage` on each `Fund` row, which is more granular and needs no extra abstraction layer.
 - **L**: all strategies honor the same contract; interchangeable without breaking consumers.
-- **I**: small, focused interfaces — one repository per aggregate, specific DTOs per endpoint.
-- **D**: services depend on injected abstractions (NestJS DI), not on concrete implementations.
+- **I**: small, focused interfaces where they exist — specific DTOs per endpoint; `FinancialFrameworkStrategy` is intentionally narrow (one method).
+- **D**: services depend on NestJS DI to receive their `Repository<Entity>` and collaborator services — concrete TypeORM types, not hand-rolled abstractions over them.
 
 ### Clean Code
 - Names express intent. Short functions with a single job. No magic numbers — use named constants.

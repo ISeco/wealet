@@ -17,12 +17,26 @@ Apply naturally when the use case fits. Never force them.
 
 | Pattern | Where it applies |
 |---|---|
-| **Repository** (interface + DI token) | Services depend on the interface, not TypeORM concrete class |
-| **Strategy** | `FinancialFrameworkStrategy` — adding a new framework = new class only, existing code untouched |
+| **Repository** (TypeORM `Repository<Entity>` via `@InjectRepository()`) | Services depend on it directly — no extra interface/DI-token layer; NestJS DI already lets tests mock it |
+| **Strategy** | `FinancialFrameworkStrategy` pattern was evaluated but removed — framework targets now live as `frameworkSlot` + `targetPercentage` on each `Fund` row, which is more granular and needs no extra abstraction |
 | **DTO + Mapper** | No entity leaks through the API surface |
-| **Money Value Object** | `Money(amount, currency)` instead of raw `bigint` everywhere (avoids primitive obsession) |
+| **Money helper** | `formatMoney`/`parseMoney` in `common/money/` format `bigint` for presentation — not a `Money(amount, currency)` Value Object, since nothing yet needs Money instances to carry behavior beyond formatting |
 | **Unit of Work** | `DataSource.transaction()` for atomic transfers |
 | **Factory / Seed** | Jars of Eker preset = factory that creates 6 Fund rows |
+| **Component extraction** (frontend) | When two or more forms/screens in a feature repeat the same markup (a field, a button, an icon), pull it into a small component under `features/<feature>/components/` instead of duplicating it. See `features/auth/components/` |
+| **Section colocation** (frontend) | When a page grows into a "god component" — concentrating state, hooks and markup for multiple independent sections — extract each section into its own component. A section qualifies for extraction when it has its own local state and/or its own data hooks and does not share mutable state with sibling sections. The page component becomes pure composition. Shared style tokens (`card`, `settingsRow`) live in a `styles.ts` alongside the page. See `features/settings/`. |
+
+#### Section extraction criteria
+
+Extract a section into its own component when **all three** are true:
+1. It has local state (`useState`) or data hooks (`useQuery` / `useMutation`) of its own
+2. That state is not read or mutated by any sibling section
+3. The section is large enough that its presence in the page file obscures the overall structure (~40+ lines of JSX)
+
+**Do not extract** when:
+- The section is a few lines with no state — inline is cleaner
+- Two sections share mutable state (e.g., one section opens a modal that another section triggers) — keep them together or lift state to the page
+- Extraction would require passing props back down just to reconnect what was co-located — prop drilling as a result of extraction is a signal the boundary is wrong
 
 ### What we deliberately do NOT do
 - No microservices, CQRS/event-sourcing, or hexagonal ports-and-adapters
@@ -45,6 +59,10 @@ Apply naturally when the use case fits. Never force them.
 **Coverage focus** (not 100%): money calculations, derived fund balances, atomic transfers, import dedupe, cross-user authorization.
 
 The cross-user auth tests are mandatory — they prove multi-tenancy actually works, not just in theory.
+
+**Local e2e DB**: e2e tests run against `wealet_test` (separate Postgres DB), not `wealet_dev` — `apps/api/test/setup-env.ts` loads `apps/api/.env.test` (gitignored, same shape as `.env.example` with `DB_DATABASE=wealet_test`) before the app boots, overriding whatever `.env` set. In CI this file doesn't exist, so the job-level env vars (pointing at the ephemeral Postgres service, also named `wealet_test`) are used untouched.
+
+**Zero-step setup on a fresh clone**: `docker-compose.yml` mounts `docker/init-test-db.sql`, which creates the `wealet_test` database the first time the Postgres container initializes its volume. `pnpm --filter api test:e2e` runs a `pretest:e2e` hook (`apps/api/scripts/migrate-test-db.js`) that applies pending migrations to `wealet_test` automatically before every e2e run — no manual `migration:run` step needed after `docker-compose up` + `pnpm install`.
 
 ---
 

@@ -1,0 +1,101 @@
+<!-- Wealet — pantalla: salud
+     Referencia de diseño extraída de Wealet.dc.html (solo esta pantalla).
+     Trabaja SOLO esta pantalla en Claude Code; no abras el .dc.html completo.
+     Sintaxis del prototipo: {{ x }} = interpolación, <sc-if>/<sc-for> = condicional/loop.
+     Los tokens de color/tipografía viven en el <style> de abajo. -->
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Geist',system-ui,-apple-system,sans-serif;background:#F6F8FB;color:#12294A;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(100,116,139,.28);border-radius:8px;border:3px solid transparent;background-clip:padding-box}
+  :root{
+    --bg:#F6F8FB;--card:#FFFFFF;--card-2:#F1F5FA;--tint:#F3F8FE;--border:#E6EBF2;--border-strong:#D6DEEA;
+    --text:#12294A;--muted:#64748B;--navy:#12294A;
+    --pos:#037940;--pos-bg:#E7F4EC;--neg:#DC2626;--neg-bg:#FBEAEA;--warn:#D97706;--warn-bg:#FBF1E1;--info:#2563EB;--info-bg:#E9F0FE;
+    --disp:#16A89A;--disp-bg:#E3F5F2;--res:#2563EB;--res-bg:#E9F0FE;--comp:#D97706;--comp-bg:#FBF1E1;
+    --grad:linear-gradient(120deg,#1FA9E0 0%,#16A89A 52%,#6BBF3F 100%);
+    --shadow:0 1px 2px rgba(18,41,74,.05),0 1px 3px rgba(18,41,74,.04);
+    --shadow-lg:0 8px 30px rgba(18,41,74,.10),0 2px 8px rgba(18,41,74,.06);
+    --field:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    --bg:#0F2240;--card:#1A2F52;--card-2:#16294A;--tint:#16314F;--border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.15);
+    --text:#E6ECF5;--muted:#93A4C0;--navy:#0F2240;
+    --pos:#34D17E;--pos-bg:rgba(52,209,126,.13);--neg:#F87171;--neg-bg:rgba(248,113,113,.13);--warn:#FBBF24;--warn-bg:rgba(251,191,36,.13);--info:#60A5FA;--info-bg:rgba(96,165,250,.13);
+    --disp:#2DD4BF;--disp-bg:rgba(45,212,191,.13);--res:#60A5FA;--res-bg:rgba(96,165,250,.13);--comp:#FBBF24;--comp-bg:rgba(251,191,36,.13);
+    --shadow:0 1px 2px rgba(0,0,0,.24),0 1px 3px rgba(0,0,0,.18);
+    --shadow-lg:0 12px 36px rgba(0,0,0,.34),0 3px 10px rgba(0,0,0,.24);
+    --field:#16294A;
+  }
+  @keyframes wl-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  @keyframes wl-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes wl-pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  @keyframes wl-fade{from{opacity:0}to{opacity:1}}
+</style>
+<div data-theme="light" style="background:var(--bg);color:var(--text);font-family:'Geist',system-ui,sans-serif;padding:16px">
+<sc-if value="{{ show.salud }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="display:inline-flex;padding:3px;background:var(--card-2);border:1px solid var(--border);border-radius:10px;gap:3px;margin-bottom:20px">
+              <sc-for list="{{ fwTabs }}" as="tb" hint-placeholder-count="3">
+                <div onClick="{{ tb.go }}" style="padding:7px 15px;border-radius:7px;font-size:13px;cursor:pointer;transition:all .15s;background:{{ tb.bg }};color:{{ tb.color }};box-shadow:{{ tb.sh }};font-weight:{{ tb.fw }}">{{ tb.label }}</div>
+              </sc-for>
+            </div>
+
+            <div style="display:grid;grid-template-columns:300px 1fr;gap:16px;margin-bottom:16px">
+              <!-- score -->
+              <div style="position:relative;border-radius:14px;padding:24px;overflow:hidden;background:#0F2240;color:#fff;box-shadow:var(--shadow)">
+                <div style="position:absolute;inset:0;background:var(--grad);opacity:.16"></div>
+                <div style="position:absolute;left:-30px;bottom:-40px;width:160px;height:160px;border-radius:50%;background:var(--grad);opacity:.22;filter:blur(8px)"></div>
+                <div style="position:relative">
+                  <div style="font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.72)">Adherencia</div>
+                  <div style="display:flex;align-items:baseline;gap:4px;margin:10px 0 4px">
+                    <span style="font-size:56px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;background:linear-gradient(120deg,#7FD4FF,#5DE0C8 52%,#A7E07A);-webkit-background-clip:text;background-clip:text;color:transparent">{{ fwMeta.score }}</span>
+                    <span style="font-size:24px;font-weight:500;color:rgba(255,255,255,.8)">/100</span>
+                  </div>
+                  <div style="font-size:14px;font-weight:600;margin-top:8px">{{ fwMeta.title }}</div>
+                  <div style="font-size:13px;color:rgba(255,255,255,.74);line-height:1.5;margin-top:6px">{{ fwMeta.desc }}</div>
+                  <div style="display:inline-flex;align-items:center;gap:6px;margin-top:18px;font-size:12px;font-weight:600;background:rgba(255,255,255,.14);padding:5px 11px;border-radius:20px">Framework activo</div>
+                </div>
+              </div>
+              <!-- bars -->
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:22px 24px">
+                <div style="font-size:14.5px;font-weight:600;margin-bottom:4px">Objetivo vs. real</div>
+                <div style="font-size:12.5px;color:var(--muted);margin-bottom:20px">La línea marca tu meta; la barra, dónde estás hoy.</div>
+                <div style="display:flex;flex-direction:column;gap:20px">
+                  <sc-for list="{{ fwBars }}" as="b" hint-placeholder-count="3">
+                    <div>
+                      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:7px">
+                        <span style="font-size:13.5px;font-weight:600">{{ b.name }}</span>
+                        <div style="display:flex;align-items:center;gap:10px">
+                          <span style="font-size:11.5px;font-weight:600;color:{{ b.tagc }}">{{ b.tag }}</span>
+                          <span style="font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums">{{ b.amt }}</span>
+                        </div>
+                      </div>
+                      <div style="position:relative;height:10px;background:var(--card-2);border-radius:6px">
+                        <div style="height:100%;border-radius:6px;background:{{ b.color }};width:{{ b.realW }}"></div>
+                        <div style="position:absolute;top:-4px;width:2px;height:18px;border-radius:2px;background:var(--text);opacity:.6;left:{{ b.targetW }}"></div>
+                      </div>
+                      <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--muted)"><span>Real {{ b.real }}%</span><span>Meta {{ b.target }}%</span></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+
+            <!-- recommendations -->
+            <div>
+              <div style="font-size:14px;font-weight:600;margin-bottom:12px">Recomendaciones</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+                <sc-for list="{{ recs }}" as="r" hint-placeholder-count="3">
+                  <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:18px 20px">
+                    <span style="width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:{{ r.bg }};color:{{ r.color }}">{{ r.iconEl }}</span>
+                    <div style="font-size:13.5px;font-weight:600;margin-top:12px;line-height:1.35">{{ r.t }}</div>
+                    <div style="font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5">{{ r.d }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+</div>

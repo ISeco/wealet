@@ -1,10 +1,16 @@
 {
   "name": "wealet",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@11.8.0",
   "scripts": {
+    "prepare": "husky",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
     "type-check": "pnpm -r type-check"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8"
   }
 }

@@ -1,0 +1,139 @@
+<!-- Wealet — pantalla: onboarding
+     Referencia de diseño extraída de Wealet.dc.html (solo esta pantalla).
+     Trabaja SOLO esta pantalla en Claude Code; no abras el .dc.html completo.
+     Sintaxis del prototipo: {{ x }} = interpolación, <sc-if>/<sc-for> = condicional/loop.
+     Los tokens de color/tipografía viven en el <style> de abajo. -->
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Geist',system-ui,-apple-system,sans-serif;background:#F6F8FB;color:#12294A;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(100,116,139,.28);border-radius:8px;border:3px solid transparent;background-clip:padding-box}
+  :root{
+    --bg:#F6F8FB;--card:#FFFFFF;--card-2:#F1F5FA;--tint:#F3F8FE;--border:#E6EBF2;--border-strong:#D6DEEA;
+    --text:#12294A;--muted:#64748B;--navy:#12294A;
+    --pos:#037940;--pos-bg:#E7F4EC;--neg:#DC2626;--neg-bg:#FBEAEA;--warn:#D97706;--warn-bg:#FBF1E1;--info:#2563EB;--info-bg:#E9F0FE;
+    --disp:#16A89A;--disp-bg:#E3F5F2;--res:#2563EB;--res-bg:#E9F0FE;--comp:#D97706;--comp-bg:#FBF1E1;
+    --grad:linear-gradient(120deg,#1FA9E0 0%,#16A89A 52%,#6BBF3F 100%);
+    --shadow:0 1px 2px rgba(18,41,74,.05),0 1px 3px rgba(18,41,74,.04);
+    --shadow-lg:0 8px 30px rgba(18,41,74,.10),0 2px 8px rgba(18,41,74,.06);
+    --field:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    --bg:#0F2240;--card:#1A2F52;--card-2:#16294A;--tint:#16314F;--border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.15);
+    --text:#E6ECF5;--muted:#93A4C0;--navy:#0F2240;
+    --pos:#34D17E;--pos-bg:rgba(52,209,126,.13);--neg:#F87171;--neg-bg:rgba(248,113,113,.13);--warn:#FBBF24;--warn-bg:rgba(251,191,36,.13);--info:#60A5FA;--info-bg:rgba(96,165,250,.13);
+    --disp:#2DD4BF;--disp-bg:rgba(45,212,191,.13);--res:#60A5FA;--res-bg:rgba(96,165,250,.13);--comp:#FBBF24;--comp-bg:rgba(251,191,36,.13);
+    --shadow:0 1px 2px rgba(0,0,0,.24),0 1px 3px rgba(0,0,0,.18);
+    --shadow-lg:0 12px 36px rgba(0,0,0,.34),0 3px 10px rgba(0,0,0,.24);
+    --field:#16294A;
+  }
+  @keyframes wl-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  @keyframes wl-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes wl-pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  @keyframes wl-fade{from{opacity:0}to{opacity:1}}
+</style>
+<div data-theme="light" style="background:var(--bg);color:var(--text);font-family:'Geist',system-ui,sans-serif;padding:16px">
+<sc-if value="{{ show.onboarding }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:100vh;background:var(--bg);display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 32px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;flex:none">{{ logoOnboard }}</div>
+        <span style="font-weight:600;font-size:17px;letter-spacing:-.02em;color:var(--text)">Wealet</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px">
+        <sc-for list="{{ obDots }}" as="d" hint-placeholder-count="3">
+          <span style="height:8px;border-radius:4px;transition:width .25s,background .25s;width:{{ d.w }};background:{{ d.bg }}"></span>
+        </sc-for>
+      </div>
+      <button onClick="{{ go.auth }}" style="border:none;background:none;color:var(--muted);font-family:inherit;font-size:13.5px;cursor:pointer">Salir</button>
+    </div>
+
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:8px 24px 48px">
+      <div style="width:100%;max-width:780px">
+
+        <!-- STEP 1 -->
+        <sc-if value="{{ obS1 }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="text-align:center;margin-bottom:30px">
+            <div style="font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Paso 1 · Tu sistema</div>
+            <div style="font-size:30px;font-weight:600;letter-spacing:-.02em;color:var(--text);margin-top:10px">Hola, Ignacio. ¿Cómo quieres ordenar tu dinero?</div>
+            <div style="font-size:15px;color:var(--muted);margin-top:8px;max-width:480px;margin-left:auto;margin-right:auto">Elige un punto de partida. Podrás ajustar, renombrar y agregar fondos cuando quieras.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+            <sc-for list="{{ presets }}" as="p" hint-placeholder-count="4">
+              <div onClick="{{ p.go }}" style="position:relative;text-align:left;padding:22px;border-radius:14px;cursor:pointer;border:1px solid {{ p.bd }};background:{{ p.bg }};box-shadow:{{ p.ring }};transition:all .15s">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                  <span style="width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:{{ p.iconBg }};color:{{ p.iconColor }}">{{ p.icon }}</span>
+                  <span style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--disp);opacity:{{ p.check }};transition:opacity .15s"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                </div>
+                <div style="font-size:16.5px;font-weight:600;color:var(--text)">{{ p.name }}</div>
+                <div style="font-size:13.5px;color:var(--muted);line-height:1.5;margin-top:6px">{{ p.d }}</div>
+                <div style="display:inline-flex;align-items:center;margin-top:14px;font-size:11.5px;font-weight:600;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:7px;padding:4px 9px">{{ p.meta }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- STEP 2 -->
+        <sc-if value="{{ obS2 }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="text-align:center;margin-bottom:28px">
+            <div style="font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Paso 2 · Tus fondos</div>
+            <div style="font-size:30px;font-weight:600;letter-spacing:-.02em;color:var(--text);margin-top:10px">{{ obPresetName }}</div>
+            <div style="font-size:15px;color:var(--muted);margin-top:8px">Estos son los fondos que crearemos. Cada uno con su clasificación.</div>
+          </div>
+          <div style="max-width:520px;margin:0 auto">
+            <sc-if value="{{ obIsExcel }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1.5px dashed var(--border-strong);border-radius:14px;padding:40px;text-align:center;background:var(--card)">
+              <div style="width:52px;height:52px;border-radius:13px;background:var(--card-2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--muted)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11M12 14l-4-4M12 14l4-4"></path><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg></div>
+              <div style="font-size:16px;font-weight:600;color:var(--text)">Arrastra tu planilla aquí</div>
+              <div style="font-size:13.5px;color:var(--muted);margin-top:6px">Detectaremos tus columnas y crearemos los fondos automáticamente. Formatos: .xlsx, .csv</div>
+            </div>
+            </sc-if>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ obFunds }}" as="f" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:13px;padding:15px 16px;border:1px solid var(--border);border-radius:12px;background:var(--card)">
+                  <span style="width:38px;height:38px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;background:{{ f.chipBg }};color:{{ f.color }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"></rect><path d="M3 8l9 5 9-5"></path></svg></span>
+                  <div style="flex:1;font-size:14.5px;font-weight:600;color:var(--text)">{{ f.n }}</div>
+                  <span style="font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:7px;background:{{ f.chipBg }};color:{{ f.color }}">{{ f.cls }}</span>
+                </div>
+              </sc-for>
+              <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border:1px dashed var(--border-strong);border-radius:12px;color:var(--muted);font-size:13.5px;font-weight:500;cursor:pointer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                Agregar otro fondo
+              </div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- STEP 3 -->
+        <sc-if value="{{ obS3 }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center">
+          <div style="width:78px;height:78px;border-radius:22px;background:var(--grad);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:var(--shadow-lg)">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div style="font-size:30px;font-weight:600;letter-spacing:-.02em;color:var(--text)">Todo listo, Ignacio.</div>
+          <div style="font-size:15px;color:var(--muted);margin-top:10px;max-width:440px;margin-left:auto;margin-right:auto">Tu espacio con <b style="color:var(--text)">{{ obPresetName }}</b> está creado. Registra tu primer movimiento o importa tu historial cuando quieras.</div>
+          <div style="display:flex;justify-content:center;gap:32px;margin:32px 0 8px">
+            <div><div style="font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--text)">$0</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">patrimonio inicial</div></div>
+            <div style="width:1px;background:var(--border)"></div>
+            <div><div style="font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent">CLP</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">moneda</div></div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- nav footer -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:36px">
+          <sc-if value="{{ obShowBack }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ obBack }}" style="display:flex;align-items:center;gap:7px;height:46px;padding:0 22px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>{{ obBackLabel }}</button>
+          </sc-if>
+          <button onClick="{{ obNext }}" style="height:46px;padding:0 30px;border:none;border-radius:9px;background:var(--grad);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:var(--shadow)">{{ obNextLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+</div>

@@ -20,9 +20,10 @@ modules/
   categories/       CRUD + system category seed
   transactions/     CRUD, filters, pagination
   transfers/        atomic reallocation between funds
+  activity/         unified paginated timeline: transactions + transfers via SQL UNION
   reports/          read-only aggregations: summary, by-category, net-worth, runway
   import-export/    SheetJS parse → preview → commit (with dedupe); export
-  health/           framework adherence (50/30/20, Jars of Eker, fondos)
+  health/           framework adherence (50/30/20, Jars of Eker, Profit First, fondos)
 test/               e2e tests (supertest)
 ```
 
@@ -35,12 +36,17 @@ Base path: `/api/v1`. Swagger at `/api/docs`.
 ```
 Auth
   POST  /auth/register
-  POST  /auth/login         → { accessToken } + set-cookie refresh
-  POST  /auth/refresh       → rotates refresh, issues new access token
-  POST  /auth/logout        → revokes refresh token
+  POST  /auth/login            → { accessToken } + set-cookie refresh
+  POST  /auth/refresh          → rotates refresh, issues new access token
+  POST  /auth/logout           → revokes refresh token
+  POST  /auth/change-password  → requires JWT; revokes all refresh tokens (Ajustes)
+
+Users
+  GET    /users/me             → profile: id, email, displayName, theme, onboardingCompleted(At)
+  PATCH  /users/me             → update displayName / theme / onboardingCompleted
 
 Transactions
-  GET    /transactions?from=&to=&type=&categoryId=&fundId=&page=&limit=
+  GET    /transactions?from=&to=&type=&categoryId=&fundId=&q=&page=&limit=
   POST   /transactions
   GET    /transactions/:id
   PATCH  /transactions/:id
@@ -48,13 +54,23 @@ Transactions
 
 Funds
   GET    /funds                   → list with derived balance per fund
+  GET    /funds/:id               → single fund detail
+  GET    /funds/:id/history?months=12   → balance evolution (detail chart)
   POST   /funds
+  POST   /funds/preset            → create preset (jars_eker / 50_30_20 / profit_first) atomically (onboarding)
   PATCH  /funds/:id
   DELETE /funds/:id               → soft archive if fund has movements
 
 Transfers
-  GET    /transfers?from=&to=
+  GET    /transfers?from=&to=&page=&limit=
   POST   /transfers               → atomic debit + credit between funds
+
+Activity (unified timeline — transactions + transfers merged and paginated server-side)
+  GET    /activity?from=&to=&type=transaction|transfer&subtype=income|expense&fundId=&categoryId=&q=&page=&limit=
+         → { data: ActivityItem[], total, page, limit }
+         ActivityItem: { type, id, amount, amountFormatted, currency, occurredOn, createdAt,
+                         description?, subtype?, fundId?, categoryId?, source?, updatedAt?,  ← transaction fields
+                         fromFundId?, toFundId?, note? }                                      ← transfer fields
 
 Categories
   GET    /categories
@@ -63,10 +79,15 @@ Categories
   DELETE /categories/:id
 
 Reports (read-only, aggregated in SQL)
-  GET  /reports/summary?from=&to=         → balance, income, expenses
-  GET  /reports/by-category?from=&to=     → breakdown for chart
-  GET  /reports/net-worth                 → available / reserve / committed
+  GET  /reports/months                    → meses con datos en los últimos 12 meses (YYYY-MM[], DESC), para selector del dashboard
+  GET  /reports/summary?from=&to=         → balance (puntual al `to`), income, expenses del período
+         ?month=YYYY-MM                   → alternativa a from/to; balance e income/expense puntuales al mes
+  GET  /reports/by-category?from=&to=    → breakdown for chart
+         ?month=YYYY-MM                   → alternativa a from/to
+  GET  /reports/net-worth                 → available / reserve / committed (balances acumulados todo el tiempo)
+         ?month=YYYY-MM                   → punto en el tiempo: balances hasta el último día del mes
   GET  /reports/runway                    → months of runway (cushion ÷ burn)
+  GET  /reports/cash-flow?months=12       → monthly net flow (dashboard bars), excludes transfers
 
 Import / Export
   POST /import/preview    (multipart) → parsed rows, errors, duplicates flagged
@@ -76,7 +97,7 @@ Import / Export
 Health
   GET  /health/profile
   PUT  /health/profile
-  GET  /health/assessment?from=&to=   → adherence to selected framework
+  GET  /health/assessment?[from=&to=] → adherence to selected framework; from/to requeridos solo para 50/30/20 y jars_eker (miden flujo); fondos usa balances acumulados e ignora el rango
 ```
 
 ### API conventions
@@ -89,19 +110,45 @@ Health
 ## Frontend structure (`apps/web/src/`)
 
 ```
-app/              router, providers
+app/              router, providers, AppLayout (Sidebar + TopBar shell)
 lib/
   api/            fetch client + refresh interceptor (retries once on 401)
   money.ts        format amounts by currency
 features/
   auth/           login, register, route guard
+  dashboard/      summary cards + Recharts charts  ← cards en placeholder "Próximamente"; solo HealthCard activa
+  funds/          fund list + detail (balance history)
   transactions/   list, filters, create/edit form
-  dashboard/      summary cards + Recharts charts
-  import-export/  file uploader + preview table
-  health/         framework adherence visual
+  transfers/      move money between funds (A→B)
+  categories/     CRUD + color
+  health/         framework adherence visual; selector de mes convierte YYYY-MM → from/to en cliente
+  onboarding/      wizard 3 pasos: preset → fondos → éxito (Excel path embebe import)
+  import-export/   file uploader + preview table
+  settings/                   profile, prefs, theme, runway toggles, export
 components/ui/    reusable UI components
 ```
 
 - **TanStack Query (React Query)** for all server state. No Redux.
 - Local UI state with `useState` only.
 - Shared types from `packages/shared`.
+
+---
+
+## Screen → endpoints
+
+Design reference per screen lives in `docs/design/screens/` (one isolated `.html` each).
+
+| Screen (`features/`) | Endpoints |
+|---|---|
+| auth | `POST /auth/login`, `/auth/register`, `/auth/refresh`, `/auth/logout` |
+| onboarding | `POST /funds/preset`; (Excel path) `POST /import/preview`, `/import/commit`; `PATCH /users/me`; `PUT /health/profile` |
+| dashboard | `GET /reports/months`, `/reports/summary`, `/reports/net-worth`, `/reports/runway`, `/reports/cash-flow`, `/reports/by-category`, `/health/assessment`, `/transactions?limit=`, `/funds` |
+| funds | `GET /funds`, `/funds/:id`, `/funds/:id/history`, `/transactions?fundId=`, `POST /funds` (drawer "Nuevo fondo"), `PATCH /funds/:id`, `DELETE /funds/:id` |
+| transactions | `GET /activity` (+filters, `?type=transaction\|transfer` para filtrar por tab; `?subtype=income\|expense` para tabs de tipo), `POST/GET/PATCH/DELETE /transactions/:id` (`PATCH` también reasigna fondo desde la fila), `GET /funds` (opciones del reassign por fila) |
+| categories | `GET /categories` (devuelve todas; filtro mine/system/all es client-side vía `isSystem`), `POST /categories` (drawer Nueva), `PATCH /categories/:id` (drawer Editar), `DELETE /categories/:id` (solo propias), `GET /reports/by-category` |
+| transfers | `POST /transfers`, `GET /funds` |
+| health | `GET /health/assessment`, `GET/PUT /health/profile` |
+| import-export | `POST /import/preview`, `/import/commit`, `GET /export` |
+| settings | `GET/PATCH /users/me`, `POST /auth/change-password`, `PATCH /funds/:id` (countsForRunway), `PUT /health/profile`, `GET /export` |
+
+Endpoints marcados `[pendiente]` están planificados pero aún no implementados en la API.

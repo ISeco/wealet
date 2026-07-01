@@ -7,10 +7,13 @@ All user-owned entities have: `userId` (uuid fk → User, indexed).
 
 ```
 User
-  id              uuid pk
-  email           citext unique not null
-  passwordHash    text not null
-  displayName     text
+  id                      uuid pk
+  email                   citext unique not null
+  passwordHash            text not null
+  displayName             text
+  theme                   enum(light | dark | system) default 'system'
+  onboardingCompleted     bool default false
+  onboardingCompletedAt   timestamptz null
   createdAt, updatedAt
 
 RefreshToken
@@ -22,14 +25,16 @@ RefreshToken
   createdAt
 
 Fund                               ← spine of the domain (envelope system)
-  id              uuid pk
-  userId          uuid fk idx
-  name            text not null
-  classification  enum(available | reserve | committed) not null
-  color           text
-  isOperative     bool default false    ← the daily spending fund
-  countsForRunway bool default false    ← counts toward financial runway
-  archivedAt      timestamptz null
+  id                uuid pk
+  userId            uuid fk idx
+  name              text not null
+  classification    enum(available | reserve | committed) not null
+  color             text
+  isOperative       bool default false    ← the daily spending fund
+  countsForRunway   bool default false    ← counts toward financial runway
+  frameworkSlot     text null             ← named slot in the active health framework (e.g. "50_30_20:necesidades")
+  targetPercentage  integer null          ← target allocation % for health assessment
+  archivedAt        timestamptz null
   UNIQUE(userId, name)
 
 Category                           ← analysis dimension (not the spine)
@@ -73,9 +78,8 @@ Transfer                           ← reallocation between Funds, net worth unc
 HealthProfile
   id              uuid pk
   userId          uuid fk unique
-  framework       enum(50_30_20 | jars_eker | fondos) default 'fondos'
-  monthlyIncome   bigint
-  config          jsonb             ← percentages / jars / custom envelope targets
+  framework       enum(50_30_20 | jars_eker | profit_first | fondos) default 'fondos'
+  monthlyIncome   bigint null
   updatedAt
 ```
 
@@ -90,4 +94,5 @@ HealthProfile
 - **`citext`** for email: case-insensitive without `lower()` on every query.
 - **`dedupeHash`** partial unique index: import idempotency enforced at DB level, not just application.
 - **`amount` as non-negative bigint + separate `type`** (instead of signed amount): cleaner reports and simpler validation.
-- **Jars of Eker** = a factory that creates 6 `Fund` rows with preset classifications and targets. No separate schema needed.
+- **Health framework targets live on `Fund`**: `frameworkSlot` + `targetPercentage` replace a `config` jsonb blob. Seeded automatically when the user selects a framework in health profile. `fondos` framework measures net current balances (no slot needed); 50/30/20 and Jars use slot-tagged funds and measure period income flow.
+- **Jars of Eker** = seeds 6 `Fund` rows with `frameworkSlot` tags and preset `targetPercentage` values. No separate schema needed.

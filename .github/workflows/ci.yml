@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: wealet
+          POSTGRES_PASSWORD: wealet
+          POSTGRES_DB: wealet_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wealet -d wealet_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      NODE_ENV: test
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USERNAME: wealet
+      DB_PASSWORD: wealet
+      DB_DATABASE: wealet_test
+      JWT_SECRET: ci-test-secret
+      PASSWORD_PEPPER: ci-test-pepper
+      BREVO_API_KEY: ci-test-brevo-key
+      BREVO_FROM_EMAIL: noreply@domain.com
+      FRONTEND_URL: http://localhost:5173
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint
+
+      - run: pnpm type-check
+
+      - run: pnpm test
+
+      - run: pnpm --filter web test
+
+      - run: pnpm --filter api test:e2e
+
+      - run: pnpm --filter api build
+
+      - run: pnpm --filter web build

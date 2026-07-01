@@ -1,0 +1,85 @@
+<!-- Wealet — pantalla: drawer-fundform (Nuevo fondo)
+     Referencia de diseño extraída de Wealet.dc.html (solo esta pantalla).
+     Drawer lateral que abre el botón "Nuevo fondo" de fondos.html (onClick openFundForm).
+     Trabaja SOLO esta pantalla en Claude Code; no abras el .dc.html completo.
+     Sintaxis del prototipo: {{ x }} = interpolación, <sc-if>/<sc-for> = condicional/loop.
+     Los tokens de color/tipografía viven en el <style> de abajo. -->
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Geist',system-ui,-apple-system,sans-serif;background:#F6F8FB;color:#12294A;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(100,116,139,.28);border-radius:8px;border:3px solid transparent;background-clip:padding-box}
+  :root{
+    --bg:#F6F8FB;--card:#FFFFFF;--card-2:#F1F5FA;--tint:#F3F8FE;--border:#E6EBF2;--border-strong:#D6DEEA;
+    --text:#12294A;--muted:#64748B;--navy:#12294A;
+    --pos:#037940;--pos-bg:#E7F4EC;--neg:#DC2626;--neg-bg:#FBEAEA;--warn:#D97706;--warn-bg:#FBF1E1;--info:#2563EB;--info-bg:#E9F0FE;
+    --disp:#16A89A;--disp-bg:#E3F5F2;--res:#2563EB;--res-bg:#E9F0FE;--comp:#D97706;--comp-bg:#FBF1E1;
+    --grad:linear-gradient(120deg,#1FA9E0 0%,#16A89A 52%,#6BBF3F 100%);
+    --shadow:0 1px 2px rgba(18,41,74,.05),0 1px 3px rgba(18,41,74,.04);
+    --shadow-lg:0 8px 30px rgba(18,41,74,.10),0 2px 8px rgba(18,41,74,.06);
+    --field:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    --bg:#0F2240;--card:#1A2F52;--card-2:#16294A;--tint:#16314F;--border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.15);
+    --text:#E6ECF5;--muted:#93A4C0;--navy:#0F2240;
+    --pos:#34D17E;--pos-bg:rgba(52,209,126,.13);--neg:#F87171;--neg-bg:rgba(248,113,113,.13);--warn:#FBBF24;--warn-bg:rgba(251,191,36,.13);--info:#60A5FA;--info-bg:rgba(96,165,250,.13);
+    --disp:#2DD4BF;--disp-bg:rgba(45,212,191,.13);--res:#60A5FA;--res-bg:rgba(96,165,250,.13);--comp:#FBBF24;--comp-bg:rgba(251,191,36,.13);
+    --shadow:0 1px 2px rgba(0,0,0,.24),0 1px 3px rgba(0,0,0,.18);
+    --shadow-lg:0 12px 36px rgba(0,0,0,.34),0 3px 10px rgba(0,0,0,.24);
+    --field:#16294A;
+  }
+  @keyframes wl-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  @keyframes wl-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes wl-pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  @keyframes wl-fade{from{opacity:0}to{opacity:1}}
+</style>
+<div data-theme="light" style="background:var(--bg);color:var(--text);font-family:'Geist',system-ui,sans-serif;padding:16px">
+  <sc-if value="{{ fundForm }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeFundForm }}" style="position:fixed;inset:0;z-index:70;background:rgba(15,34,64,.42);backdrop-filter:blur(3px);display:flex;justify-content:flex-end;animation:wl-fade .15s both">
+    <div onClick="{{ stop }}" style="width:440px;max-width:94vw;height:100%;background:var(--card);border-left:1px solid var(--border);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow-y:auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)">
+        <div style="font-size:16px;font-weight:600">Nuevo fondo</div>
+        <button onClick="{{ closeFundForm }}" style="width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
+      <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:8px">Nombre del fondo</div>
+          <div style="display:flex;align-items:center;height:44px;border:1px solid var(--border-strong);border-radius:10px;background:var(--field);padding:0 14px"><input placeholder="Ej. Fondo Vacaciones" style="flex:1;border:none;background:none;outline:none;font-family:inherit;font-size:14px;color:var(--text)"></div>
+        </div>
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:8px">Clasificación</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 6px;border-radius:10px;cursor:pointer;border:1px solid transparent;background:var(--disp-bg);box-shadow:0 0 0 1.5px var(--disp)"><span style="width:9px;height:9px;border-radius:3px;background:var(--disp)"></span><span style="font-size:12.5px;font-weight:600;color:var(--disp)">Disponible</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 6px;border-radius:10px;cursor:pointer;border:1px solid var(--border-strong);background:var(--card)"><span style="width:9px;height:9px;border-radius:3px;background:var(--res)"></span><span style="font-size:12.5px;font-weight:500;color:var(--muted)">Reserva</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 6px;border-radius:10px;cursor:pointer;border:1px solid var(--border-strong);background:var(--card)"><span style="width:9px;height:9px;border-radius:3px;background:var(--comp)"></span><span style="font-size:12.5px;font-weight:500;color:var(--muted)">Comprometido</span></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:8px">Color</div>
+          <div style="display:flex;gap:10px">
+            <span style="width:30px;height:30px;border-radius:8px;background:#16A89A;cursor:pointer;box-shadow:0 0 0 2px var(--card),0 0 0 4px #16A89A"></span>
+            <span style="width:30px;height:30px;border-radius:8px;background:#2563EB;cursor:pointer"></span>
+            <span style="width:30px;height:30px;border-radius:8px;background:#D97706;cursor:pointer"></span>
+            <span style="width:30px;height:30px;border-radius:8px;background:#6BBF3F;cursor:pointer"></span>
+            <span style="width:30px;height:30px;border-radius:8px;background:#8B5CF6;cursor:pointer"></span>
+            <span style="width:30px;height:30px;border-radius:8px;background:#DC2626;cursor:pointer"></span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--tint);border:1px solid var(--border);border-radius:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--disp)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 2v20M2 12h20"></path></svg>
+            <div><div style="font-size:13px;font-weight:600">Contar para el runway</div><div style="font-size:12px;color:var(--muted)">Incluir este fondo como colchón.</div></div>
+          </div>
+          <div style="width:38px;height:22px;border-radius:11px;background:var(--border-strong);position:relative;flex:none;cursor:pointer"><span style="position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff"></span></div>
+        </div>
+      </div>
+      <div style="margin-top:auto;display:flex;gap:10px;padding:18px 24px;border-top:1px solid var(--border)">
+        <button onClick="{{ closeFundForm }}" style="flex:1;height:42px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer">Cancelar</button>
+        <button onClick="{{ closeFundForm }}" style="flex:1.4;height:42px;border:none;border-radius:9px;background:var(--grad);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:var(--shadow)">Crear fondo</button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+</div>

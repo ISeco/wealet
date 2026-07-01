@@ -1,0 +1,97 @@
+<!-- Wealet — pantalla: categorias
+     Referencia de diseño extraída de Wealet.dc.html (solo esta pantalla).
+     Trabaja SOLO esta pantalla en Claude Code; no abras el .dc.html completo.
+     Sintaxis del prototipo: {{ x }} = interpolación, <sc-if>/<sc-for> = condicional/loop.
+     Los tokens de color/tipografía viven en el <style> de abajo. -->
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Geist',system-ui,-apple-system,sans-serif;background:#F6F8FB;color:#12294A;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(100,116,139,.28);border-radius:8px;border:3px solid transparent;background-clip:padding-box}
+  :root{
+    --bg:#F6F8FB;--card:#FFFFFF;--card-2:#F1F5FA;--tint:#F3F8FE;--border:#E6EBF2;--border-strong:#D6DEEA;
+    --text:#12294A;--muted:#64748B;--navy:#12294A;
+    --pos:#037940;--pos-bg:#E7F4EC;--neg:#DC2626;--neg-bg:#FBEAEA;--warn:#D97706;--warn-bg:#FBF1E1;--info:#2563EB;--info-bg:#E9F0FE;
+    --disp:#16A89A;--disp-bg:#E3F5F2;--res:#2563EB;--res-bg:#E9F0FE;--comp:#D97706;--comp-bg:#FBF1E1;
+    --grad:linear-gradient(120deg,#1FA9E0 0%,#16A89A 52%,#6BBF3F 100%);
+    --shadow:0 1px 2px rgba(18,41,74,.05),0 1px 3px rgba(18,41,74,.04);
+    --shadow-lg:0 8px 30px rgba(18,41,74,.10),0 2px 8px rgba(18,41,74,.06);
+    --field:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    --bg:#0F2240;--card:#1A2F52;--card-2:#16294A;--tint:#16314F;--border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.15);
+    --text:#E6ECF5;--muted:#93A4C0;--navy:#0F2240;
+    --pos:#34D17E;--pos-bg:rgba(52,209,126,.13);--neg:#F87171;--neg-bg:rgba(248,113,113,.13);--warn:#FBBF24;--warn-bg:rgba(251,191,36,.13);--info:#60A5FA;--info-bg:rgba(96,165,250,.13);
+    --disp:#2DD4BF;--disp-bg:rgba(45,212,191,.13);--res:#60A5FA;--res-bg:rgba(96,165,250,.13);--comp:#FBBF24;--comp-bg:rgba(251,191,36,.13);
+    --shadow:0 1px 2px rgba(0,0,0,.24),0 1px 3px rgba(0,0,0,.18);
+    --shadow-lg:0 12px 36px rgba(0,0,0,.34),0 3px 10px rgba(0,0,0,.24);
+    --field:#16294A;
+  }
+  @keyframes wl-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  @keyframes wl-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes wl-pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  @keyframes wl-fade{from{opacity:0}to{opacity:1}}
+</style>
+<div data-theme="light" style="background:var(--bg);color:var(--text);font-family:'Geist',system-ui,sans-serif;padding:16px">
+          <sc-if value="{{ show.categorias }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <div style="font-size:13.5px;color:var(--muted);max-width:560px">Las categorías son una dimensión de análisis del gasto — no reemplazan a los fondos.</div>
+              <button onClick="{{ openCatForm }}" style="display:flex;align-items:center;gap:7px;height:36px;padding:0 14px;border:none;border-radius:9px;background:var(--grad);color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);flex:none">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Nueva categoría
+              </button>
+            </div>
+
+            <div style="display:inline-flex;padding:3px;background:var(--card-2);border:1px solid var(--border);border-radius:10px;gap:3px;margin-bottom:22px">
+              <sc-for list="{{ catScopeTabs }}" as="s" hint-placeholder-count="3">
+                <div onClick="{{ s.go }}" style="display:flex;align-items:center;gap:7px;padding:6px 13px;border-radius:7px;font-size:13px;cursor:pointer;transition:all .15s;background:{{ s.bg }};color:{{ s.color }};box-shadow:{{ s.sh }};font-weight:{{ s.fw }}">{{ s.label }}<span style="font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--muted);background:var(--bg);border-radius:20px;padding:1px 7px">{{ s.n }}</span></div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:13px;font-weight:600;color:var(--muted)">Gastos</span><span style="font-size:12px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">· {{ catGastoCount }}</span></div>
+            <sc-if value="{{ catGastoEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:13px;color:var(--muted);padding:14px 0 26px">No tienes categorías de gasto en este grupo.</div>
+            </sc-if>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:26px">
+              <sc-for list="{{ catGasto }}" as="c" hint-placeholder-count="8">
+                <div style="display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:13px 15px;transition:border-color .15s" style-hover="border-color:var(--border-strong)">
+                  <span style="width:34px;height:34px;border-radius:9px;flex:none;background:{{ c.color }}"></span>
+                  <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.n }}</div><div style="font-size:12px;color:var(--muted)">{{ c.mov }} · {{ c.t }}</div></div>
+                  <sc-if value="{{ c.isSys }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-flex;align-items:center;gap:4px;flex:none;font-size:10.5px;font-weight:600;color:var(--muted);background:var(--card-2);border:1px solid var(--border);border-radius:6px;padding:3px 7px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>Sistema</span>
+                  </sc-if>
+                  <sc-if value="{{ c.isMine }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;gap:6px;flex:none">
+                    <button onClick="{{ c.edit }}" style="width:30px;height:30px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="border-color:var(--border-strong);color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg></button>
+                    <button onClick="{{ c.del }}" style="width:30px;height:30px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="border-color:var(--neg);color:var(--neg)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg></button>
+                  </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:13px;font-weight:600;color:var(--muted)">Ingresos</span><span style="font-size:12px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">· {{ catIngresoCount }}</span></div>
+            <sc-if value="{{ catIngresoEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:13px;color:var(--muted);padding:14px 0">No tienes categorías de ingreso en este grupo.</div>
+            </sc-if>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
+              <sc-for list="{{ catIngreso }}" as="c" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:13px 15px;transition:border-color .15s" style-hover="border-color:var(--border-strong)">
+                  <span style="width:34px;height:34px;border-radius:9px;flex:none;background:{{ c.color }}"></span>
+                  <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.n }}</div><div style="font-size:12px;color:var(--pos)">{{ c.mov }} · {{ c.t }}</div></div>
+                  <sc-if value="{{ c.isSys }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-flex;align-items:center;gap:4px;flex:none;font-size:10.5px;font-weight:600;color:var(--muted);background:var(--card-2);border:1px solid var(--border);border-radius:6px;padding:3px 7px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>Sistema</span>
+                  </sc-if>
+                  <sc-if value="{{ c.isMine }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;gap:6px;flex:none">
+                    <button onClick="{{ c.edit }}" style="width:30px;height:30px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="border-color:var(--border-strong);color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg></button>
+                    <button onClick="{{ c.del }}" style="width:30px;height:30px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="border-color:var(--neg);color:var(--neg)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg></button>
+                  </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+</div>
