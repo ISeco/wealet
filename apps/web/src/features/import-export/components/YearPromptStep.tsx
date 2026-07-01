@@ -5,11 +5,12 @@ interface Props {
   isPending: boolean
   error: string | null
   onSubmit: (year: number) => void
+  onBack: () => void
 }
 
 const CURRENT_YEAR = new Date().getFullYear()
 
-export function YearPromptStep({ fileName, isPending, error, onSubmit }: Props) {
+export function YearPromptStep({ fileName, isPending, error, onSubmit, onBack }: Props) {
   const [year, setYear] = useState(String(CURRENT_YEAR))
 
   function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
@@ -56,7 +57,27 @@ export function YearPromptStep({ fileName, isPending, error, onSubmit }: Props) 
           {error}
         </div>
       )}
-      <div>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={isPending}
+          style={{
+            height: 40,
+            padding: '0 18px',
+            border: '1px solid var(--border)',
+            borderRadius: 9,
+            background: 'var(--card)',
+            color: 'var(--text)',
+            fontFamily: 'inherit',
+            fontSize: 13.5,
+            fontWeight: 500,
+            cursor: isPending ? 'default' : 'pointer',
+            opacity: isPending ? 0.6 : 1,
+          }}
+        >
+          ← Volver
+        </button>
         <button
           type="submit"
           disabled={isPending}
@@ -65,12 +86,13 @@ export function YearPromptStep({ fileName, isPending, error, onSubmit }: Props) 
             padding: '0 20px',
             border: 'none',
             borderRadius: 9,
-            background: 'var(--info)',
-            color: '#fff',
+            background: isPending ? 'var(--card-2)' : 'var(--grad)',
+            color: isPending ? 'var(--muted)' : '#fff',
             fontFamily: 'inherit',
             fontSize: 13.5,
             fontWeight: 600,
-            cursor: 'pointer',
+            cursor: isPending ? 'default' : 'pointer',
+            boxShadow: isPending ? 'none' : 'var(--shadow)',
           }}
         >
           {isPending ? 'Analizando…' : 'Continuar'}

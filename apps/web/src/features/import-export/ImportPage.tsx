@@ -116,6 +116,7 @@ export function ImportPage() {
           isPending={previewMutation.isPending}
           error={previewMutation.error?.message ?? null}
           onSubmit={handleYearSubmit}
+          onBack={handleBack}
         />
       )}
 
