@@ -1,10 +1,11 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import type { PresetOption } from './Step1Preset'
 import { FundRow } from '../components/FundRow'
 import { AddFundForm } from '../components/AddFundForm'
 import type { CreateFundPayload, FundClassification } from '../../funds/types'
 import { UploadStep } from '../../import-export/components/UploadStep'
 import { PreviewStep } from '../../import-export/components/PreviewStep'
+import { YearPromptStep } from '../../import-export/components/YearPromptStep'
 import { useImportPreview, useImportCommit } from '../../import-export/hooks'
 import type { ImportPreviewResponseDto } from '../../import-export/types'
 
@@ -56,12 +57,30 @@ export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, onExc
   const [showAddForm, setShowAddForm] = useState(false)
   const [excelPreviewData, setExcelPreviewData] = useState<ImportPreviewResponseDto | null>(null)
   const [approvedFunds, setApprovedFunds] = useState<Set<string>>(new Set())
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [awaitingYear, setAwaitingYear] = useState(false)
   const previewMutation = useImportPreview()
   const commitMutation = useImportCommit()
 
   function handleExcelFileReady(file: File) {
+    setPendingFile(file)
     previewMutation.mutate({ file }, {
       onSuccess: (data) => {
+        if (data.needsYear) {
+          setAwaitingYear(true)
+          return
+        }
+        setExcelPreviewData(data)
+        setApprovedFunds(new Set(data.unknownFunds))
+      },
+    })
+  }
+
+  function handleExcelYearSubmit(year: number) {
+    if (!pendingFile) return
+    previewMutation.mutate({ file: pendingFile, year }, {
+      onSuccess: (data) => {
+        setAwaitingYear(false)
         setExcelPreviewData(data)
         setApprovedFunds(new Set(data.unknownFunds))
       },
@@ -80,6 +99,8 @@ export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, onExc
     previewMutation.reset()
     setExcelPreviewData(null)
     setApprovedFunds(new Set())
+    setPendingFile(null)
+    setAwaitingYear(false)
   }
 
   function handleExcelConfirm() {
@@ -107,7 +128,14 @@ export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, onExc
           </div>
         </div>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
-          {!excelPreviewData ? (
+          {awaitingYear && pendingFile ? (
+            <YearPromptStep
+              fileName={pendingFile.name}
+              isPending={previewMutation.isPending}
+              error={previewMutation.error?.message ?? null}
+              onSubmit={handleExcelYearSubmit}
+            />
+          ) : !excelPreviewData ? (
             <UploadStep
               onFileReady={handleExcelFileReady}
               isPending={previewMutation.isPending}
