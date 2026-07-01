@@ -1,43 +1,14 @@
-import { useState, type SubmitEvent } from 'react'
-
 interface Props {
   fileName: string
+  value: string
+  onChange: (value: string) => void
   isPending: boolean
   error: string | null
-  onSubmit: (year: number) => void
-  onBack?: () => void
-  /** When false, the card renders no action buttons — an external button
-   * elsewhere in the page submits this form via the `form={formId}` HTML
-   * attribute instead. Used when the page already has its own footer nav. */
-  showActions?: boolean
-  formId?: string
 }
 
-const CURRENT_YEAR = new Date().getFullYear()
-const DEFAULT_FORM_ID = 'year-prompt-form'
-
-export function YearPromptStep({
-  fileName,
-  isPending,
-  error,
-  onSubmit,
-  onBack,
-  showActions = true,
-  formId = DEFAULT_FORM_ID,
-}: Props) {
-  const [year, setYear] = useState(String(CURRENT_YEAR))
-
-  function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const parsed = Number(year)
-    if (!Number.isInteger(parsed) || parsed < 2000 || parsed > 2100) return
-    onSubmit(parsed)
-  }
-
+export function YearPromptStep({ fileName, value, onChange, isPending, error }: Props) {
   return (
-    <form
-      id={formId}
-      onSubmit={handleSubmit}
+    <div
       style={{
         background: 'var(--card)',
         border: '1px solid var(--border)',
@@ -54,8 +25,8 @@ export function YearPromptStep({
       </div>
       <input
         type="number"
-        value={year}
-        onChange={(e) => setYear(e.target.value)}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         disabled={isPending}
         style={{
           width: 120,
@@ -64,59 +35,13 @@ export function YearPromptStep({
           fontSize: 15,
           border: '1px solid var(--border)',
           borderRadius: 9,
-          marginBottom: 16,
         }}
       />
       {error && (
-        <div style={{ fontSize: 13, color: 'var(--neg)', marginBottom: 12 }}>
+        <div style={{ fontSize: 13, color: 'var(--neg)', marginTop: 12 }}>
           {error}
         </div>
       )}
-      {showActions && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
-          {onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              disabled={isPending}
-              style={{
-                height: 40,
-                padding: '0 18px',
-                border: '1px solid var(--border)',
-                borderRadius: 9,
-                background: 'var(--card)',
-                color: 'var(--text)',
-                fontFamily: 'inherit',
-                fontSize: 13.5,
-                fontWeight: 500,
-                cursor: isPending ? 'default' : 'pointer',
-                opacity: isPending ? 0.6 : 1,
-              }}
-            >
-              ← Volver
-            </button>
-          )}
-          <button
-            type="submit"
-            disabled={isPending}
-            style={{
-              height: 40,
-              padding: '0 20px',
-              border: 'none',
-              borderRadius: 9,
-              background: isPending ? 'var(--card-2)' : 'var(--grad)',
-              color: isPending ? 'var(--muted)' : '#fff',
-              fontFamily: 'inherit',
-              fontSize: 13.5,
-              fontWeight: 600,
-              cursor: isPending ? 'default' : 'pointer',
-              boxShadow: isPending ? 'none' : 'var(--shadow)',
-            }}
-          >
-            {isPending ? 'Analizando…' : 'Continuar'}
-          </button>
-        </div>
-      )}
-    </form>
+    </div>
   )
 }

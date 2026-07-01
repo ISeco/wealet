@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Button } from '../../../components/ui/Button'
 import { formatMoney } from '../../../lib/money'
 import type { ImportPreviewResponseDto, ImportRowDto } from '../types'
 import { UnknownFundsSection } from './UnknownFundsSection'
@@ -243,44 +244,12 @@ export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, 
 
       {/* Actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
-        <button
-          onClick={onBack}
-          disabled={isPending}
-          style={{
-            height: 44,
-            padding: '0 18px',
-            border: '1px solid var(--border)',
-            borderRadius: 10,
-            background: 'var(--card)',
-            color: 'var(--text)',
-            fontFamily: 'inherit',
-            fontSize: 14,
-            fontWeight: 500,
-            cursor: isPending ? 'default' : 'pointer',
-            opacity: isPending ? 0.6 : 1,
-          }}
-        >
+        <Button variant="secondary" onClick={onBack} disabled={isPending}>
           ← Volver
-        </button>
-        <button
-          onClick={onConfirm}
-          disabled={isPending || willImportCount === 0}
-          style={{
-            height: 44,
-            padding: '0 22px',
-            border: 'none',
-            borderRadius: 10,
-            background: isPending || willImportCount === 0 ? 'var(--card-2)' : 'var(--grad)',
-            color: isPending || willImportCount === 0 ? 'var(--muted)' : '#fff',
-            fontFamily: 'inherit',
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: isPending || willImportCount === 0 ? 'default' : 'pointer',
-            boxShadow: isPending || willImportCount === 0 ? 'none' : 'var(--shadow)',
-          }}
-        >
+        </Button>
+        <Button onClick={onConfirm} disabled={isPending || willImportCount === 0}>
           {isPending ? 'Importando…' : `Confirmar e importar ${willImportCount}`}
-        </button>
+        </Button>
       </div>
     </div>
   )
