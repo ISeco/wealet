@@ -6,11 +6,25 @@ interface Props {
   error: string | null
   onSubmit: (year: number) => void
   onBack?: () => void
+  /** When false, the card renders no action buttons — an external button
+   * elsewhere in the page submits this form via the `form={formId}` HTML
+   * attribute instead. Used when the page already has its own footer nav. */
+  showActions?: boolean
+  formId?: string
 }
 
 const CURRENT_YEAR = new Date().getFullYear()
+const DEFAULT_FORM_ID = 'year-prompt-form'
 
-export function YearPromptStep({ fileName, isPending, error, onSubmit, onBack }: Props) {
+export function YearPromptStep({
+  fileName,
+  isPending,
+  error,
+  onSubmit,
+  onBack,
+  showActions = true,
+  formId = DEFAULT_FORM_ID,
+}: Props) {
   const [year, setYear] = useState(String(CURRENT_YEAR))
 
   function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
@@ -22,6 +36,7 @@ export function YearPromptStep({ fileName, isPending, error, onSubmit, onBack }:
 
   return (
     <form
+      id={formId}
       onSubmit={handleSubmit}
       style={{
         background: 'var(--card)',
@@ -57,49 +72,51 @@ export function YearPromptStep({ fileName, isPending, error, onSubmit, onBack }:
           {error}
         </div>
       )}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
-        {onBack && (
+      {showActions && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              disabled={isPending}
+              style={{
+                height: 40,
+                padding: '0 18px',
+                border: '1px solid var(--border)',
+                borderRadius: 9,
+                background: 'var(--card)',
+                color: 'var(--text)',
+                fontFamily: 'inherit',
+                fontSize: 13.5,
+                fontWeight: 500,
+                cursor: isPending ? 'default' : 'pointer',
+                opacity: isPending ? 0.6 : 1,
+              }}
+            >
+              ← Volver
+            </button>
+          )}
           <button
-            type="button"
-            onClick={onBack}
+            type="submit"
             disabled={isPending}
             style={{
               height: 40,
-              padding: '0 18px',
-              border: '1px solid var(--border)',
+              padding: '0 20px',
+              border: 'none',
               borderRadius: 9,
-              background: 'var(--card)',
-              color: 'var(--text)',
+              background: isPending ? 'var(--card-2)' : 'var(--grad)',
+              color: isPending ? 'var(--muted)' : '#fff',
               fontFamily: 'inherit',
               fontSize: 13.5,
-              fontWeight: 500,
+              fontWeight: 600,
               cursor: isPending ? 'default' : 'pointer',
-              opacity: isPending ? 0.6 : 1,
+              boxShadow: isPending ? 'none' : 'var(--shadow)',
             }}
           >
-            ← Volver
+            {isPending ? 'Analizando…' : 'Continuar'}
           </button>
-        )}
-        <button
-          type="submit"
-          disabled={isPending}
-          style={{
-            height: 40,
-            padding: '0 20px',
-            border: 'none',
-            borderRadius: 9,
-            background: isPending ? 'var(--card-2)' : 'var(--grad)',
-            color: isPending ? 'var(--muted)' : '#fff',
-            fontFamily: 'inherit',
-            fontSize: 13.5,
-            fontWeight: 600,
-            cursor: isPending ? 'default' : 'pointer',
-            boxShadow: isPending ? 'none' : 'var(--shadow)',
-          }}
-        >
-          {isPending ? 'Analizando…' : 'Continuar'}
-        </button>
-      </div>
+        </div>
+      )}
     </form>
   )
 }

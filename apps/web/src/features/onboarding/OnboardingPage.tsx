@@ -4,7 +4,7 @@ import { useAuth } from '../auth/useAuth'
 import { createFund } from './api'
 import { useCompleteOnboarding } from './hooks/useCompleteOnboarding'
 import { Step1Preset, type PresetOption } from './steps/Step1Preset'
-import { Step2Funds } from './steps/Step2Funds'
+import { EXCEL_YEAR_FORM_ID, Step2Funds } from './steps/Step2Funds'
 import { Step3Income } from './steps/Step3Income'
 import { Step3Success } from './steps/Step3Success'
 import type { CreateFundPayload } from '../funds/types'
@@ -20,6 +20,7 @@ export function OnboardingPage() {
   const [customFunds, setCustomFunds] = useState<CreateFundPayload[]>([])
   const [addFundError, setAddFundError] = useState<string | null>(null)
   const [incomeAmount, setIncomeAmount] = useState('')
+  const [excelYearState, setExcelYearState] = useState({ awaiting: false, isPending: false })
 
   const { complete, isPending, error } = useCompleteOnboarding()
 
@@ -109,6 +110,7 @@ export function OnboardingPage() {
               onExcelComplete={handleExcelComplete}
               isPending={isPending}
               error={error ?? addFundError}
+              onExcelYearPromptState={setExcelYearState}
             />
           )}
           {step === 3 && (
@@ -147,6 +149,18 @@ export function OnboardingPage() {
                   style={{ height: 46, padding: '0 30px', border: 'none', borderRadius: 9, background: selected ? 'var(--grad)' : 'var(--border)', color: selected ? '#fff' : 'var(--muted)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: selected ? 'pointer' : 'not-allowed', transition: 'all .15s' }}
                 >
                   Siguiente
+                </button>
+              )}
+
+              {/* Continuar (step 2, excel path, waiting for a year) */}
+              {step === 2 && selected === 'excel' && excelYearState.awaiting && (
+                <button
+                  type="submit"
+                  form={EXCEL_YEAR_FORM_ID}
+                  disabled={excelYearState.isPending}
+                  style={{ height: 46, padding: '0 30px', border: 'none', borderRadius: 9, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: excelYearState.isPending ? 'not-allowed' : 'pointer', opacity: excelYearState.isPending ? 0.7 : 1, boxShadow: 'var(--shadow)' }}
+                >
+                  {excelYearState.isPending ? 'Analizando…' : 'Continuar'}
                 </button>
               )}
 

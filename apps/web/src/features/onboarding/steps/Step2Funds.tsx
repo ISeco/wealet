@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { PresetOption } from './Step1Preset'
 import { FundRow } from '../components/FundRow'
 import { AddFundForm } from '../components/AddFundForm'
@@ -42,6 +42,8 @@ const PRESET_NAMES: Record<Exclude<PresetOption, 'fondos' | 'excel'>, string> = 
   profit_first: 'Profit First',
 }
 
+export const EXCEL_YEAR_FORM_ID = 'onboarding-excel-year-form'
+
 interface Props {
   preset: PresetOption
   customFunds: CreateFundPayload[]
@@ -51,9 +53,13 @@ interface Props {
   onExcelComplete: () => void
   isPending: boolean
   error: string | null
+  /** Mirrors the excel step's internal year-prompt state up to the wizard,
+   * so OnboardingPage can render the "Continuar" button in its own footer
+   * (next to "Atrás") instead of duplicating navigation inside the card. */
+  onExcelYearPromptState?: (state: { awaiting: boolean; isPending: boolean }) => void
 }
 
-export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, onExcelComplete, error }: Props) {
+export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, onExcelComplete, error, onExcelYearPromptState }: Props) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [excelPreviewData, setExcelPreviewData] = useState<ImportPreviewResponseDto | null>(null)
   const [approvedFunds, setApprovedFunds] = useState<Set<string>>(new Set())
@@ -61,6 +67,10 @@ export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, onExc
   const [awaitingYear, setAwaitingYear] = useState(false)
   const previewMutation = useImportPreview()
   const commitMutation = useImportCommit()
+
+  useEffect(() => {
+    onExcelYearPromptState?.({ awaiting: awaitingYear, isPending: previewMutation.isPending })
+  }, [awaitingYear, previewMutation.isPending, onExcelYearPromptState])
 
   function handleExcelFileReady(file: File) {
     setPendingFile(file)
@@ -134,6 +144,8 @@ export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, onExc
               isPending={previewMutation.isPending}
               error={previewMutation.error?.message ?? null}
               onSubmit={handleExcelYearSubmit}
+              showActions={false}
+              formId={EXCEL_YEAR_FORM_ID}
             />
           ) : !excelPreviewData ? (
             <UploadStep
