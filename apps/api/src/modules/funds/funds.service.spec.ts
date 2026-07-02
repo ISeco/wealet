@@ -5,11 +5,14 @@ import { DataSource, Repository } from 'typeorm';
 import { FundsService } from './funds.service';
 import { Fund, FundClassification } from './entities/fund.entity';
 import { FundPresetType } from './enums/fund-preset.enum';
+import { HealthService } from '../health/health.service';
+import { HealthFramework } from '../health/entities/health-profile.entity';
 
 describe('FundsService', () => {
   let fundsService: FundsService;
   let fundsRepository: jest.Mocked<Repository<Fund>>;
   let dataSource: jest.Mocked<DataSource>;
+  let healthService: { provisionFrameworkFunds: jest.Mock };
 
   const buildFund = (overrides: Partial<Fund> = {}): Fund =>
     ({
@@ -28,6 +31,8 @@ describe('FundsService', () => {
     }) as Fund;
 
   beforeEach(async () => {
+    healthService = { provisionFrameworkFunds: jest.fn() };
+
     const module = await Test.createTestingModule({
       providers: [
         FundsService,
@@ -48,6 +53,7 @@ describe('FundsService', () => {
             transaction: jest.fn(),
           },
         },
+        { provide: HealthService, useValue: healthService },
       ],
     }).compile();
 
@@ -132,28 +138,19 @@ describe('FundsService', () => {
   });
 
   describe('createPreset', () => {
-    it('creates all preset funds inside a single transaction', async () => {
-      const createdFunds = [buildFund({ name: 'Necesidades' })];
-      type TransactionCallback = (manager: {
-        create: jest.Mock;
-        save: jest.Mock;
-      }) => Promise<unknown>;
-      (dataSource.transaction as jest.Mock).mockImplementation(
-        (cb: TransactionCallback) => {
-          const manager = {
-            create: jest.fn((_entity: unknown, data: unknown) => data),
-            save: jest.fn().mockResolvedValue(createdFunds),
-          };
-          return cb(manager);
-        },
-      );
+    it('delegates to HealthService.provisionFrameworkFunds with the mapped framework', async () => {
+      const provisionedFunds = [buildFund({ name: 'Necesidades' })];
+      healthService.provisionFrameworkFunds.mockResolvedValue(provisionedFunds);
 
       const result = await fundsService.createPreset('user-1', {
         preset: FundPresetType.RULE_50_30_20,
       });
 
-      expect(dataSource.transaction).toHaveBeenCalled();
-      expect(result).toEqual(createdFunds);
+      expect(healthService.provisionFrameworkFunds).toHaveBeenCalledWith(
+        'user-1',
+        HealthFramework.FIFTY_THIRTY_TWENTY,
+      );
+      expect(result).toEqual(provisionedFunds);
     });
   });
 });
