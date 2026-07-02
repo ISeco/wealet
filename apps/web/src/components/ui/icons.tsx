@@ -169,6 +169,22 @@ export function EditIcon({ color = 'currentColor', size = 14 }: IconProps) {
   )
 }
 
+export function CheckIcon({ color = 'currentColor', size = 15 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" stroke={color} {...base}>
+      <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+  )
+}
+
+export function ArrowRightIcon({ color = 'currentColor', size = 16 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" stroke={color} {...base}>
+      <path d="M5 12h14M13 6l6 6-6 6"></path>
+    </svg>
+  )
+}
+
 export function LockIcon({ color = 'currentColor', size = 11 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" stroke={color} {...base}>

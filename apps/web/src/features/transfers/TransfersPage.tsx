@@ -1,27 +1,18 @@
 // apps/web/src/features/transfers/TransfersPage.tsx
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Button } from '../../components/ui/Button'
 import { DateInput } from '../../components/ui/DateInput'
+import { ArrowRightIcon, CheckIcon } from '../../components/ui/icons'
+import { formatMoney, formatThousands } from '../../lib/money'
 import { useFundsAll } from '../funds'
 import { FundPicker } from './components/FundPicker'
 import { useCreateTransfer, useTransfers } from './hooks'
 import type { Transfer } from './types'
-
-const fmt = new Intl.NumberFormat('es-CL', {
-  style: 'currency',
-  currency: 'CLP',
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-})
+import { computeQuickAmounts, formatDateLabel, validateTransferAmount } from './utils'
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10)
-}
-
-function formatDateLabel(iso: string): string {
-  const [, m, d] = iso.split('-')
-  const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
-  return `${parseInt(d, 10)} ${MONTHS[parseInt(m, 10) - 1]}`
 }
 
 export function TransfersPage() {
@@ -67,14 +58,7 @@ export function TransfersPage() {
   const fromProjected = parsedAmount > 0n && fromFund ? Number(fromBalance - parsedAmount) : null
   const toProjected = parsedAmount > 0n && toFund ? Number(toBalance + parsedAmount) : null
 
-  const quickAmounts = fromFund
-    ? [
-        { label: '25%', value: fromBalance / 4n },
-        { label: '50%', value: fromBalance / 2n },
-        { label: '75%', value: fromBalance * 3n / 4n },
-        { label: 'Todo', value: fromBalance },
-      ]
-    : []
+  const quickAmounts = fromFund ? computeQuickAmounts(fromBalance) : []
 
   const totalNetWorth = funds.reduce((sum, f) => sum + BigInt(f.balance), 0n)
   const canSubmit = !!fromFundId && !!toFundId && parsedAmount > 0n && parsedAmount <= fromBalance && !isPending
@@ -92,12 +76,9 @@ export function TransfersPage() {
 
   function handleSubmit() {
     if (!fromFundId || !toFundId) return
-    if (parsedAmount <= 0n) {
-      setAmountError('El monto debe ser mayor a cero')
-      return
-    }
-    if (parsedAmount > fromBalance) {
-      setAmountError('El monto supera el saldo disponible')
+    const error = validateTransferAmount(parsedAmount, fromBalance)
+    if (error) {
+      setAmountError(error)
       return
     }
     doTransfer(
@@ -137,20 +118,15 @@ export function TransfersPage() {
       <div style={{ maxWidth: 660, margin: '0 auto' }}>
         <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, boxShadow: 'var(--shadow)', padding: 40, textAlign: 'center' }}>
           <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--card-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
+            <ArrowRightIcon color="var(--muted)" size={26} />
           </div>
           <div style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-.01em' }}>Necesitas al menos dos fondos</div>
           <div style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 8, maxWidth: 340, margin: '8px auto 0', lineHeight: 1.55 }}>
             Las transferencias mueven saldo entre fondos. Crea al menos dos fondos para empezar.
           </div>
-          <button
-            onClick={() => navigate('/fondos')}
-            style={{ marginTop: 22, height: 42, padding: '0 22px', border: 'none', borderRadius: 9, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow)' }}
-          >
+          <Button onClick={() => navigate('/fondos')} style={{ marginTop: 22, height: 42, padding: '0 22px' }}>
             Ir a Fondos
-          </button>
+          </Button>
         </div>
       </div>
     )
@@ -163,9 +139,7 @@ export function TransfersPage() {
         <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, boxShadow: 'var(--shadow)', padding: 24 }}>
           <div style={{ textAlign: 'center', padding: '14px 6px' }}>
             <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--pos-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--pos)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
+              <CheckIcon color="var(--pos)" size={32} />
             </div>
             <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-.02em' }}>Transferencia realizada</div>
             <div style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 6 }}>
@@ -176,40 +150,32 @@ export function TransfersPage() {
               <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: 14, background: 'var(--card-2)', textAlign: 'left' }}>
                 <div style={{ fontSize: 11.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.04em', fontWeight: 600 }}>Desde</div>
                 <div style={{ fontSize: 14, fontWeight: 600, marginTop: 6 }}>{fromFund.name}</div>
-                <div style={{ fontSize: 13, color: 'var(--neg)', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{fmt.format(Number(successFromBalance))}</div>
+                <div style={{ fontSize: 13, color: 'var(--neg)', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{formatMoney(successFromBalance.toString(), 'CLP')}</div>
               </div>
               <span style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--grad)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
+                <ArrowRightIcon color="#fff" size={17} />
               </span>
               <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: 14, background: 'var(--card-2)', textAlign: 'left' }}>
                 <div style={{ fontSize: 11.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.04em', fontWeight: 600 }}>Hacia</div>
                 <div style={{ fontSize: 14, fontWeight: 600, marginTop: 6 }}>{toFund.name}</div>
-                <div style={{ fontSize: 13, color: 'var(--pos)', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{fmt.format(Number(successToBalance))}</div>
+                <div style={{ fontSize: 13, color: 'var(--pos)', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{formatMoney(successToBalance.toString(), 'CLP')}</div>
               </div>
             </div>
 
             <div style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-.02em', fontVariantNumeric: 'tabular-nums', marginTop: 20 }}>
-              {fmt.format(Number(parsedAmount))}
+              {formatMoney(parsedAmount.toString(), 'CLP')}
             </div>
             <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 2 }}>
               {formatDateLabel(lastTransfer.occurredOn)}{lastTransfer.note ? ` · ${lastTransfer.note}` : ''}
             </div>
 
             <div style={{ display: 'flex', gap: 10, marginTop: 24, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
-              <button
-                onClick={reset}
-                style={{ flex: 1, height: 46, border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
-              >
+              <Button variant="secondary" onClick={reset} style={{ flex: 1, borderRadius: 10 }}>
                 Hacer otra
-              </button>
-              <button
-                onClick={() => navigate('/fondos/' + toFund.id)}
-                style={{ flex: 1.4, height: 46, border: 'none', borderRadius: 10, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow)' }}
-              >
+              </Button>
+              <Button onClick={() => navigate('/fondos/' + toFund.id)} style={{ flex: 1.4, borderRadius: 10 }}>
                 Ver {toFund.name}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -244,9 +210,7 @@ export function TransfersPage() {
           />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--grad)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow)' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
+              <ArrowRightIcon color="#fff" size={20} />
             </span>
           </div>
           <FundPicker
@@ -269,7 +233,7 @@ export function TransfersPage() {
             <input
               type="text"
               inputMode="numeric"
-              value={rawAmount ? parseInt(rawAmount, 10).toLocaleString('es-CL') : ''}
+              value={formatThousands(rawAmount)}
               onChange={handleAmountChange}
               placeholder="0"
               style={{ flex: 1, border: 'none', background: 'none', outline: 'none', fontFamily: 'inherit', fontSize: 28, fontWeight: 600, color: 'var(--text)', marginLeft: 8, fontVariantNumeric: 'tabular-nums' }}
@@ -299,7 +263,7 @@ export function TransfersPage() {
                       cursor: 'pointer',
                     }}
                   >
-                    {label === 'Todo' ? 'Todo' : `${fmt.format(Number(value))}`}
+                    {label === 'Todo' ? 'Todo' : formatMoney(value.toString(), 'CLP')}
                   </span>
                 )
               })}
@@ -332,33 +296,26 @@ export function TransfersPage() {
         {/* Net worth banner */}
         {fromFundId && toFundId && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '12px 14px', background: 'var(--pos-bg)', borderRadius: 10, marginTop: 18 }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--pos)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-              <path d="M20 6L9 17l-5-5" />
-            </svg>
+            <CheckIcon color="var(--pos)" size={17} />
             <div style={{ fontSize: 12.5, color: 'var(--text)' }}>
-              Patrimonio total intacto: <b>{fmt.format(Number(totalNetWorth))}</b>. Solo cambia cómo está repartido.
+              Patrimonio total intacto: <b>{formatMoney(totalNetWorth.toString(), 'CLP')}</b>. Solo cambia cómo está repartido.
             </div>
           </div>
         )}
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-          <button
-            onClick={reset}
-            style={{ flex: 1, height: 46, border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
-          >
+          <Button variant="secondary" onClick={reset} style={{ flex: 1, borderRadius: 10 }}>
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            style={{ flex: 1.6, height: 46, border: 'none', borderRadius: 10, background: canSubmit ? 'var(--grad)' : 'var(--border)', color: canSubmit ? '#fff' : 'var(--muted)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: canSubmit ? 'pointer' : 'not-allowed', boxShadow: canSubmit ? 'var(--shadow)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all .15s' }}
+            style={{ flex: 1.6, borderRadius: 10 }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-            {isPending ? 'Transfiriendo…' : parsedAmount > 0n ? `Transferir ${fmt.format(Number(parsedAmount))}` : 'Transferir'}
-          </button>
+            <ArrowRightIcon size={16} />
+            {isPending ? 'Transfiriendo…' : parsedAmount > 0n ? `Transferir ${formatMoney(parsedAmount.toString(), 'CLP')}` : 'Transferir'}
+          </Button>
         </div>
       </div>
 
