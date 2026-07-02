@@ -20,6 +20,7 @@ describe('FundsService', () => {
       color: null,
       isOperative: true,
       countsForRunway: false,
+      frameworkSlot: null,
       archivedAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),

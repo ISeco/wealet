@@ -41,6 +41,7 @@ export class FundsService {
       where: includeArchived ? { userId } : { userId, archivedAt: IsNull() },
       order: { createdAt: 'ASC' },
     });
+
     if (funds.length === 0) {
       return [];
     }

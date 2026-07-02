@@ -1,16 +1,9 @@
 import { useState } from 'react'
 import { useFunds } from '../../funds/hooks'
 import { useHealthProfile } from '../../health/hooks'
-import type { HealthFramework } from '../../health/types'
+import { fundMatchesFramework } from '../../health/utils'
 import { useToggleFundRunway } from '../hooks'
 import { card } from '../styles'
-
-function matchesFramework(slot: string | null, framework: HealthFramework): boolean {
-  if (framework === 'fondos') return slot === null
-  if (framework === 'jars_eker') return slot?.startsWith('jars_') ?? false
-  if (framework === '50_30_20') return slot?.startsWith('50_30_20_') ?? false
-  return false
-}
 
 export function RunwayCard() {
   const { data: funds = [] } = useFunds()
@@ -18,7 +11,7 @@ export function RunwayCard() {
   const { mutate: toggleRunway } = useToggleFundRunway()
 
   const activeFramework = profile?.framework ?? 'fondos'
-  const visibleFunds = funds.filter((f) => matchesFramework(f.frameworkSlot, activeFramework))
+  const visibleFunds = funds.filter((f) => fundMatchesFramework(f.frameworkSlot, activeFramework))
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
 
   function handleToggle(fundId: string, current: boolean) {

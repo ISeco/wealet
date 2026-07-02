@@ -2,8 +2,10 @@ import { apiFetch } from '../../lib/api/client'
 import type { CreateFundPayload, Fund, FundHistoryPoint, UpdateFundPayload } from './types'
 
 export function listFunds(includeArchived = false): Promise<Fund[]> {
-  const qs = includeArchived ? '?includeArchived=true' : ''
-  return apiFetch<Fund[]>(`/funds${qs}`)
+  const params = new URLSearchParams()
+  if (includeArchived) params.set('includeArchived', 'true')
+  const qs = params.toString()
+  return apiFetch<Fund[]>(`/funds${qs ? `?${qs}` : ''}`)
 }
 
 export function getFund(id: string): Promise<Fund> {

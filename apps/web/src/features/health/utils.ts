@@ -31,6 +31,12 @@ export function isSlotFramework(framework: HealthFramework): boolean {
   return framework in FRAMEWORK_SLOT_PREFIX
 }
 
+/** Whether a fund's slot belongs to the given framework (`fondos` = no slot). */
+export function fundMatchesFramework(slot: string | null, framework: HealthFramework): boolean {
+  if (!isSlotFramework(framework)) return slot === null
+  return slot !== null && slot.startsWith(frameworkSlotPrefix(framework) as string)
+}
+
 export const FRAMEWORK_ACTIVATE_WARNING: Record<HealthFramework, string> = {
   '50_30_20':    'Se crearán 3 fondos: Necesidades, Deseos y Ahorro. Tus fondos actuales se mantienen pero no serán evaluados en este framework.',
   'jars_eker':   'Se crearán 6 fondos basados en el sistema de T. Harv Eker. Tus fondos actuales se mantienen pero no serán evaluados en este framework.',
