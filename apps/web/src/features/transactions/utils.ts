@@ -1,5 +1,6 @@
 import { MONTH_NAMES } from '../dashboard/utils'
-import type { ActivityItem } from './types'
+import type { TabValue } from './TransactionsTabs'
+import type { ActivityItem, ActivityQuery, TransactionFilters } from './types'
 import type { TableRow } from './TransactionsTable'
 
 export function formatChipDate(from?: string, to?: string): string | null {
@@ -11,6 +12,33 @@ export function formatChipDate(from?: string, to?: string): string | null {
     return `${from} – ${to}`
   }
   return from ?? to ?? null
+}
+
+export function buildActivityQuery(
+  tab: TabValue,
+  filters: TransactionFilters,
+  search: string,
+  page: number,
+  limit: number,
+): ActivityQuery {
+  const query: ActivityQuery = {
+    from: filters.from,
+    to: filters.to,
+    fundId: filters.fundId,
+    categoryId: filters.categoryId,
+    q: search || undefined,
+    page,
+    limit,
+  }
+
+  if (tab === 'transfers') {
+    query.type = 'transfer'
+  } else if (tab === 'income' || tab === 'expense') {
+    query.type = 'transaction'
+    query.subtype = tab
+  }
+
+  return query
 }
 
 export function toTableRow(item: ActivityItem): TableRow {

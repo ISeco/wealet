@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Modal } from '../../../components/ui/Modal'
+import { SegmentedTabs } from '../../../components/ui/SegmentedTabs'
 import { useCreateCategory, useUpdateCategory } from '../hooks'
 import type { Category, CategoryType } from '../types'
 
@@ -86,28 +87,35 @@ export function CategoryFormDrawer({ category, onClose }: CategoryFormDrawerProp
 
         <div>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Tipo</div>
-          <div style={{ display: 'flex', padding: 3, background: 'var(--card-2)', border: '1px solid var(--border)', borderRadius: 10, gap: 3 }}>
-            <TypeTab
-              active={type === 'expense'}
-              onClick={() => setType('expense')}
-              label="Gasto"
-              icon={
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" />
-                </svg>
-              }
-            />
-            <TypeTab
-              active={type === 'income'}
-              onClick={() => setType('income')}
-              label="Ingreso"
-              icon={
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" />
-                </svg>
-              }
-            />
-          </div>
+          <SegmentedTabs
+            fullWidth
+            value={type}
+            onChange={setType}
+            options={[
+              {
+                value: 'expense',
+                label: (
+                  <>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" />
+                    </svg>
+                    Gasto
+                  </>
+                ),
+              },
+              {
+                value: 'income',
+                label: (
+                  <>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" />
+                    </svg>
+                    Ingreso
+                  </>
+                ),
+              },
+            ]}
+          />
         </div>
 
         <div>
@@ -146,23 +154,5 @@ export function CategoryFormDrawer({ category, onClose }: CategoryFormDrawerProp
         )}
       </div>
     </Modal>
-  )
-}
-
-function TypeTab({ active, onClick, label, icon }: { active: boolean; onClick: () => void; label: string; icon: React.ReactNode }) {
-  return (
-    <div
-      onClick={onClick}
-      style={{
-        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-        padding: 9, borderRadius: 7, fontSize: 13.5, cursor: 'pointer', transition: 'all .15s',
-        background: active ? 'var(--card)' : 'transparent',
-        boxShadow: active ? 'var(--shadow)' : undefined,
-        color: active ? 'var(--text)' : 'var(--muted)',
-        fontWeight: active ? 600 : 400,
-      }}
-    >
-      {icon}{label}
-    </div>
   )
 }

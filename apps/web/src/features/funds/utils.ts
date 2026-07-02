@@ -21,6 +21,10 @@ export function getFundChip(fund: Fund) {
   return { color: cls.color, bg: cls.bg }
 }
 
+export function activeFunds(funds: Fund[]): Fund[] {
+  return funds.filter((fund) => !fund.archivedAt)
+}
+
 export function getInitials(name: string): string {
   const words = name.trim().split(/\s+/)
   if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase()

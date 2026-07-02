@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { classColor, getFundChip, getInitials } from './utils'
+import { activeFunds, classColor, getFundChip, getInitials } from './utils'
 import type { Fund } from './types'
 
 function buildFund(overrides: Partial<Fund> = {}): Fund {
@@ -20,6 +20,18 @@ function buildFund(overrides: Partial<Fund> = {}): Fund {
     ...overrides,
   }
 }
+
+describe('activeFunds', () => {
+  it('excludes archived funds', () => {
+    const funds = [buildFund({ id: 'a', archivedAt: null }), buildFund({ id: 'b', archivedAt: new Date().toISOString() })]
+    expect(activeFunds(funds).map((f) => f.id)).toEqual(['a'])
+  })
+
+  it('returns all funds when none are archived', () => {
+    const funds = [buildFund({ id: 'a' }), buildFund({ id: 'b' })]
+    expect(activeFunds(funds)).toHaveLength(2)
+  })
+})
 
 describe('getInitials', () => {
   it('returns first letters of the first two words in uppercase', () => {

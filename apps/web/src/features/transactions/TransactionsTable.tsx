@@ -3,7 +3,7 @@ import type { Fund } from '../funds'
 import type { Category } from '../categories'
 import type { Transaction } from './types'
 import type { Transfer } from '../transfers/types'
-import { TransfersIcon } from '../../components/ui/icons'
+import { ChevronDownIcon, TransfersIcon } from '../../components/ui/icons'
 
 export type TableRow =
   | { kind: 'transaction'; data: Transaction }
@@ -197,9 +197,9 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
                 <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {fund?.name ?? '—'}
                 </span>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ flex: 'none', opacity: 0.6 }}>
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
+                <span style={{ flex: 'none', opacity: 0.6, display: 'flex' }}>
+                  <ChevronDownIcon size={13} color="currentColor" />
+                </span>
               </span>
 
               {isReassignOpen && (
@@ -223,7 +223,7 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
                     </svg>
                     Mover a otro fondo
                   </div>
-                  {funds.filter((f) => !f.archivedAt).map((f) => {
+                  {funds.map((f) => {
                     const isCurrent = f.id === t.fundId
                     return (
                       <div
