@@ -15,6 +15,14 @@ const CLASS_DESC: Record<FundClassification, string> = {
   committed: 'Gastos futuros programados',
 }
 
+type Scope = 'all' | 'slotted' | 'own'
+
+const SCOPE_TABS: { value: Scope; label: string }[] = [
+  { value: 'all', label: 'Todas' },
+  { value: 'slotted', label: 'Del framework' },
+  { value: 'own', label: 'Propios' },
+]
+
 export function FundsPage() {
   const navigate = useNavigate()
   const [showForm, setShowForm] = useState(false)
@@ -23,14 +31,21 @@ export function FundsPage() {
   useEffect(() => {
     if (searchParams.get('action') === 'new') {
       setShowForm(true) // eslint-disable-line react-hooks/set-state-in-effect
-      setSearchParams(  
+      setSearchParams(
         prev => { const n = new URLSearchParams(prev); n.delete('action'); return n },
         { replace: true },
       )
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const { data: funds = [], isLoading } = useFunds()
+  const { data: allFunds = [], isLoading } = useFunds()
+  const [scope, setScope] = useState<Scope>('all')
+
+  const slottedFunds = allFunds.filter((f) => f.frameworkSlot !== null)
+  const ownFunds = allFunds.filter((f) => f.frameworkSlot === null)
+  const scopeCounts = { all: allFunds.length, slotted: slottedFunds.length, own: ownFunds.length }
+
+  const funds = scope === 'slotted' ? slottedFunds : scope === 'own' ? ownFunds : allFunds
 
   const totalBalance = funds.reduce((sum, f) => sum + BigInt(f.balance), 0n)
 
@@ -42,6 +57,31 @@ export function FundsPage() {
 
   return (
     <div>
+      <div style={{ display: 'inline-flex', padding: 3, background: 'var(--card-2)', border: '1px solid var(--border)', borderRadius: 10, gap: 3, marginBottom: 18 }}>
+        {SCOPE_TABS.map((tab) => {
+          const active = scope === tab.value
+          return (
+            <div
+              key={tab.value}
+              onClick={() => setScope(tab.value)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7, padding: '6px 13px', borderRadius: 7,
+                fontSize: 13, cursor: 'pointer', transition: 'all .15s',
+                background: active ? 'var(--card)' : 'transparent',
+                color: active ? 'var(--text)' : 'var(--muted)',
+                boxShadow: active ? 'var(--shadow)' : undefined,
+                fontWeight: active ? 600 : 400,
+              }}
+            >
+              {tab.label}
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', background: 'var(--bg)', borderRadius: 20, padding: '1px 7px', fontVariantNumeric: 'tabular-nums' }}>
+                {scopeCounts[tab.value]}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+
       {/* Classification summary */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 22 }}>
         {classGroups.map(({ cls, group, total }) => {
