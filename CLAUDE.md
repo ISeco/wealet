@@ -32,6 +32,15 @@ Personal finance app built on an envelope/fund system. Full-stack portfolio proj
 - Transfers between funds are atomic — single DB transaction, both sides or neither.
 - Use 2-space indentation. Prefer named exports.
 
+## Standardization applies to new code too
+
+The "Standardization pass on a feature" rule (`docs/conventions.md`) isn't just a retroactive cleanup exercise — it applies while writing new code, not only when auditing old code. Covers both:
+
+- **UI primitives**: when adding a button, modal, icon, money format, or color to *any* file, check `components/ui/` and `lib/money.ts` first, the same way you would during an audit pass.
+- **Logic organization**: when adding new service/hook/util logic, check whether an existing service, repository method, hook, or util already owns that responsibility before writing a parallel implementation. Keep Controller → Service → Repository delegation (see Code Style above) and the section-extraction criteria (`docs/conventions.md`) in mind for new code, not just when refactoring an existing god component.
+
+Don't hand-roll or duplicate something next to code you just finished migrating/extracting in the same session — write new code against the shared pattern from the start.
+
 ## After every implementation
 
 After completing any feature, endpoint, or significant refactor, add a bullet to `docs/estado-actual.md` describing what was added, what changed behavior, and what remains pending. Keep it concise — it's a snapshot for the next session, not a changelog.
