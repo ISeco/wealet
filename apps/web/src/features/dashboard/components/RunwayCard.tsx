@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { ChevronRightIcon } from '../../../components/ui/icons'
 import { formatMoney } from '../../../lib/money'
 import { useFunds } from '../../funds/hooks'
+import { activeFunds } from '../../funds/utils'
 import { useCashFlow, useRunway } from '../hooks'
 import { RunwayFundsDrawer } from './RunwayFundsDrawer'
 
@@ -14,7 +16,7 @@ export function RunwayCard() {
   const cushion = runway?.cushion ?? '0'
   const monthlyBurn = runway?.monthlyBurn ?? '0'
 
-  const runwayFundCount = funds.filter((f) => f.countsForRunway && f.archivedAt === null).length
+  const runwayFundCount = activeFunds(funds).filter((f) => f.countsForRunway).length
 
   const sparkHeights = cashFlow.map((p) => {
     const expense = Number(p.expense)
@@ -89,9 +91,7 @@ export function RunwayCard() {
             }}
           >
             Ver fondos colchón ({runwayFundCount})
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
+            <ChevronRightIcon size={13} />
           </button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatMonthLabel, formatMonthShort, monthName, prevMonthName } from './utils'
+import { formatMonthLabel, formatMonthShort, monthName, prevMonthName, sortCategoriesByAmountDesc } from './utils'
 
 describe('monthName', () => {
   it('returns the full month name for a YYYY-MM string', () => {
@@ -27,5 +27,25 @@ describe('prevMonthName', () => {
   it('returns previous month name in lowercase', () => {
     expect(prevMonthName('2026-02')).toBe('enero')
     expect(prevMonthName('2026-01')).toBe('diciembre') // wraps to December
+  })
+})
+
+describe('sortCategoriesByAmountDesc', () => {
+  const cat = (categoryId: string, amount: string) => ({ categoryId, categoryName: categoryId, color: null, amount })
+
+  it('sorts by amount descending', () => {
+    const result = sortCategoriesByAmountDesc([cat('a', '100'), cat('b', '300'), cat('c', '200')])
+    expect(result.map((c) => c.categoryId)).toEqual(['b', 'c', 'a'])
+  })
+
+  it('does not mutate the input array', () => {
+    const input = [cat('a', '100'), cat('b', '300')]
+    sortCategoriesByAmountDesc(input)
+    expect(input.map((c) => c.categoryId)).toEqual(['a', 'b'])
+  })
+
+  it('handles amounts beyond Number precision correctly via BigInt comparison', () => {
+    const result = sortCategoriesByAmountDesc([cat('small', '9007199254740993'), cat('big', '9007199254740994')])
+    expect(result.map((c) => c.categoryId)).toEqual(['big', 'small'])
   })
 })

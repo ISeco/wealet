@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Button } from '../../components/ui/Button'
 import { useAuth } from '../auth/useAuth'
 import { CategoryChart } from './components/CategoryChart'
 import { HealthCard } from './components/HealthCard'
@@ -73,27 +74,20 @@ function DashboardEmptyState({ onboardingCompleted }: { onboardingCompleted: boo
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
           {content.secondary && (
-            <button
+            <Button
+              variant="secondary"
               onClick={() => navigate(content.secondary!.path)}
-              style={{
-                padding: '9px 18px', borderRadius: 9, border: '1px solid var(--border-strong)',
-                background: 'var(--card)', color: 'var(--text)',
-                fontSize: 13.5, fontWeight: 600, cursor: 'pointer',
-              }}
+              style={{ height: 36, padding: '0 18px', fontSize: 13.5 }}
             >
               {content.secondary.label}
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             onClick={() => navigate(content.primary.path)}
-            style={{
-              padding: '9px 18px', borderRadius: 9, border: 'none',
-              background: 'var(--grad)', color: '#fff',
-              fontSize: 13.5, fontWeight: 600, cursor: 'pointer',
-            }}
+            style={{ height: 36, padding: '0 18px', fontSize: 13.5 }}
           >
             {content.primary.label}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

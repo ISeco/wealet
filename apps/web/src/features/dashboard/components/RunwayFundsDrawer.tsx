@@ -3,12 +3,7 @@ import { Modal } from '../../../components/ui/Modal'
 import { formatMoney } from '../../../lib/money'
 import { useFunds, useUpdateFund } from '../../funds/hooks'
 import type { Fund } from '../../funds/types'
-
-const CLASS_STYLES: Record<string, { label: string; color: string; bg: string }> = {
-  available: { label: 'Disponible',   color: 'var(--disp)', bg: 'var(--disp-bg)' },
-  reserve:   { label: 'Reserva',      color: 'var(--res)',  bg: 'var(--res-bg)'  },
-  committed: { label: 'Comprometido', color: 'var(--comp)', bg: 'var(--comp-bg)' },
-}
+import { activeFunds, classColor } from '../../funds/utils'
 
 interface RunwayFundsDrawerProps {
   onClose: () => void
@@ -19,8 +14,7 @@ export function RunwayFundsDrawer({ onClose }: RunwayFundsDrawerProps) {
   const update = useUpdateFund()
   const qc = useQueryClient()
 
-  const funds = allFunds
-    .filter((f) => f.archivedAt === null)
+  const funds = activeFunds(allFunds)
     .sort((a, b) => Number(b.countsForRunway) - Number(a.countsForRunway))
 
   const cushionTotal = funds
@@ -49,7 +43,7 @@ export function RunwayFundsDrawer({ onClose }: RunwayFundsDrawerProps) {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {funds.map((fund) => {
-          const cls = CLASS_STYLES[fund.classification]
+          const cls = classColor(fund.classification)
           return (
             <div
               key={fund.id}
