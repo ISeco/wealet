@@ -10,8 +10,8 @@ import { isPasswordStrong } from './components/passwordRules'
 import { SubmitButton } from './components/SubmitButton'
 import { TextField } from './components/TextField'
 import { useAuth } from './useAuth'
+import { isValidEmail } from './utils'
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const FIELDS = ['displayName', 'email', 'password'] as const
 
 export function RegisterForm() {
@@ -35,7 +35,7 @@ export function RegisterForm() {
 
     const trimmedDisplayName = displayName.trim()
     const nameInvalid = trimmedDisplayName.length === 0
-    const emailInvalid = !EMAIL_REGEX.test(email)
+    const emailInvalid = !isValidEmail(email)
     const passwordInvalid = !passwordValid
 
     setDisplayNameError(nameInvalid ? 'Ingresa tu nombre.' : null)
@@ -73,7 +73,7 @@ export function RegisterForm() {
         ref={registerField('email')}
         value={email}
         onChange={setEmail}
-        onBlur={() => setEmailError(email.length > 0 && !EMAIL_REGEX.test(email) ? 'Ingresa un correo válido.' : null)}
+        onBlur={() => setEmailError(email.length > 0 && !isValidEmail(email) ? 'Ingresa un correo válido.' : null)}
         error={emailError}
       />
 
