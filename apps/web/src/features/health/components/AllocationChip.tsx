@@ -23,9 +23,9 @@ export function AllocationChip({ allocation, onOpen }: Props) {
         gap: 7,
         padding: '6px 12px',
         borderRadius: 20,
-        border: '1px solid rgba(22,168,154,0.25)',
-        background: 'rgba(22,168,154,0.10)',
-        color: isDone ? 'rgba(22,168,154,0.65)' : '#16A89A',
+        border: '1px solid var(--disp)',
+        background: 'var(--disp-bg)',
+        color: 'var(--disp)',
         fontSize: 12.5,
         fontWeight: 500,
         cursor: 'pointer',
@@ -35,10 +35,10 @@ export function AllocationChip({ allocation, onOpen }: Props) {
       }}
     >
       {isDone ? (
-        <>
+        <span style={{ opacity: 0.65 }}>
           <span style={{ fontSize: 11 }}>✓</span>
           {monthName} distribuido · <span style={{ fontWeight: 600 }}>Redistribuir →</span>
-        </>
+        </span>
       ) : (
         <>
           <span
@@ -46,7 +46,7 @@ export function AllocationChip({ allocation, onOpen }: Props) {
               width: 7,
               height: 7,
               borderRadius: '50%',
-              background: '#16A89A',
+              background: 'var(--disp)',
               flexShrink: 0,
             }}
           />

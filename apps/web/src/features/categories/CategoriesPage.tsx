@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { EditIcon, LockIcon, PlusIcon, TrashIcon } from '../../app/icons'
+import { EditIcon, LockIcon, PlusIcon, TrashIcon } from '../../components/ui/icons'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { CategoryFormDrawer } from './components/CategoryFormDrawer'
 import { useCategories, useDeleteCategory } from './hooks'

@@ -1,15 +1,13 @@
 import { useState } from 'react'
 import type { HealthFramework } from '../types'
-import { FRAMEWORK_ACTIVATE_WARNING, FRAMEWORK_LABELS } from '../utils'
+import { FRAMEWORK_ACTIVATE_WARNING, FRAMEWORK_LABELS, isSlotFramework } from '../utils'
 
-const GRAD = 'linear-gradient(120deg,#1FA9E0 0%,#16A89A 52%,#6BBF3F 100%)'
 const SCORE_GRAD = 'linear-gradient(120deg,#7FD4FF,#5DE0C8 52%,#A7E07A)'
-const SLOT_FRAMEWORKS: HealthFramework[] = ['50_30_20', 'jars_eker', 'profit_first']
 
 const fmtIncome = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 })
 
 interface Props {
-  score: number
+  score: number | null
   description: string
   selectedFramework: HealthFramework
   activeFramework: HealthFramework
@@ -20,7 +18,7 @@ interface Props {
 
 export function ScoreCard({ score, description, selectedFramework, activeFramework, monthlyIncome, onActivate, onUpdateIncome }: Props) {
   const isActive = selectedFramework === activeFramework
-  const isSlot = SLOT_FRAMEWORKS.includes(activeFramework)
+  const isSlot = isSlotFramework(activeFramework)
   const title = FRAMEWORK_LABELS[selectedFramework]
   const [confirming, setConfirming] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -58,9 +56,9 @@ export function ScoreCard({ score, description, selectedFramework, activeFramewo
   return (
     <div style={{ background: '#0F2240', borderRadius: 14, padding: 24, position: 'relative', overflow: 'hidden', minHeight: 220, boxShadow: 'var(--shadow)' }}>
       {/* Gradient overlay */}
-      <div style={{ position: 'absolute', inset: 0, background: GRAD, opacity: 0.16, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'var(--grad)', opacity: 0.16, pointerEvents: 'none' }} />
       {/* Blob */}
-      <div style={{ position: 'absolute', left: -30, bottom: -40, width: 160, height: 160, borderRadius: '50%', background: GRAD, opacity: 0.22, filter: 'blur(8px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', left: -30, bottom: -40, width: 160, height: 160, borderRadius: '50%', background: 'var(--grad)', opacity: 0.22, filter: 'blur(8px)', pointerEvents: 'none' }} />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         <div style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(255,255,255,.72)', marginBottom: 10 }}>
@@ -78,7 +76,7 @@ export function ScoreCard({ score, description, selectedFramework, activeFramewo
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
           }}>
-            {score}
+            {score === null ? '—' : score}
           </span>
           <span style={{ fontSize: 24, fontWeight: 500, color: 'rgba(255,255,255,.8)' }}>/100</span>
         </div>

@@ -3,7 +3,7 @@ import type { Fund } from '../funds'
 import type { Category } from '../categories'
 import type { Transaction } from './types'
 import type { Transfer } from '../transfers/types'
-import { TransfersIcon } from '../../app/icons'
+import { TransfersIcon } from '../../components/ui/icons'
 
 export type TableRow =
   | { kind: 'transaction'; data: Transaction }

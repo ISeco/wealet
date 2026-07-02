@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
-import { CloseIcon } from '../../app/icons'
+import { CloseIcon } from './icons'
 
 interface ModalProps {
   title: string

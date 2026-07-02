@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useFunds } from '../features/funds/hooks'
 import type { Fund } from '../features/funds/types'
 import { isMacPlatform } from '../lib/platform'
-import { CategoriesIcon, FundsIcon, SearchIcon, TransactionsIcon, TransfersIcon } from './icons'
+import { CategoriesIcon, FundsIcon, SearchIcon, TransactionsIcon, TransfersIcon } from '../components/ui/icons'
 
 export const OPEN_COMMAND_PALETTE_EVENT = 'wealet:open-command-palette'
 

@@ -38,6 +38,23 @@ Extract a section into its own component when **all three** are true:
 - Two sections share mutable state (e.g., one section opens a modal that another section triggers) — keep them together or lift state to the page
 - Extraction would require passing props back down just to reconnect what was co-located — prop drilling as a result of extraction is a signal the boundary is wrong
 
+---
+
+### Standardization pass on a feature
+
+Rule: **once a feature works end-to-end, do a pass to find where it silently diverged from the rest of the app** — before adding more on top of it. This is how the onboarding + import cleanup (see `estado-actual.md`) and the health feature audit (2026-07) came about: functional code that grew its own local answer to a problem the codebase already solved elsewhere. It's cheap to fix right after a feature stabilizes; expensive once three more features have copied the divergent version.
+
+When to run it: after a feature's first end-to-end implementation, or before extending an existing feature with meaningful new UI/logic — not on every small fix.
+
+What to check, concretely:
+- **Hand-rolled UI that duplicates a shared primitive.** Before writing a backdrop + panel + close button, check `components/ui/Modal.tsx`. Before a `<button style={{...}}>`, check `components/ui/Button.tsx`. A component that reimplements what `ui/` already offers is the clearest signal — grep for the shared component's name across sibling features to confirm it's the established pattern, then migrate.
+- **Domain formatting reimplemented locally.** `formatMoney`/`formatThousands`/`parseMoney` (`lib/money.ts`) are the only sanctioned way to format `bigint` amounts. A local `'$' + something` helper is a duplicate, not a new pattern.
+- **Hardcoded hex colors instead of theme CSS variables.** If a literal hex (`#16A89A`, `#D97706`, etc.) matches a `var(--disp)` / `var(--res)` / `var(--comp)` value in light mode, it silently breaks in dark mode (the var remaps, the literal doesn't). Grep the hex against `index.css` before assuming it's a one-off brand color.
+- **The same domain fact encoded in more than one place.** Example: a framework → slot-prefix mapping duplicated across three components instead of imported from one place. If two features (or two components in the same feature) each hardcode the same enum/mapping, one of them will drift — this already happened once with jars_eker fund names between `fund-presets.ts` and `framework-funds.ts`.
+- **God components per the extraction criteria above** — apply the same 40+ lines / independent-state test to older features, not just new ones.
+
+Fix only what has a **confirmed second occurrence** (an existing shared component, an existing util, an existing CSS var) — this is deduplication against something that already exists, not speculative abstraction. If nothing already exists to converge on, that's a `decisions.md` conversation, not a silent refactor.
+
 ### What we deliberately do NOT do
 - No microservices, CQRS/event-sourcing, or hexagonal ports-and-adapters
 - No abstractions without a concrete benefit today

@@ -1,7 +1,5 @@
 import type { HealthFramework } from '../types'
-import { FRAMEWORK_LABELS } from '../utils'
-
-const FRAMEWORKS: HealthFramework[] = ['50_30_20', 'jars_eker', 'profit_first', 'fondos']
+import { ALL_FRAMEWORKS, FRAMEWORK_LABELS } from '../utils'
 
 interface Props {
   active: HealthFramework
@@ -12,7 +10,7 @@ interface Props {
 export function FrameworkTabs({ active, activeFramework, onChange }: Props) {
   return (
     <div style={{ display: 'inline-flex', padding: 3, background: 'var(--card-2)', border: '1px solid var(--border)', borderRadius: 10, gap: 3 }}>
-      {FRAMEWORKS.map((fw) => {
+      {ALL_FRAMEWORKS.map((fw) => {
         const isSelected = fw === active
         const isLive = fw === activeFramework
         return (
