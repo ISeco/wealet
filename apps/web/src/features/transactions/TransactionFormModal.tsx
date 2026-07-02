@@ -3,8 +3,10 @@ import { Modal } from '../../components/ui/Modal'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { Select } from '../../components/ui/Select'
 import { DateInput } from '../../components/ui/DateInput'
+import { SegmentedTabs } from '../../components/ui/SegmentedTabs'
+import { Button } from '../../components/ui/Button'
 import { TrashIcon } from '../../components/ui/icons'
-import { useFunds } from '../funds'
+import { activeFunds, useFunds } from '../funds'
 import { useCategories } from '../categories'
 import { formatThousands, parseMoney } from '../../lib/money'
 import { useFormFieldErrors } from '../../lib/useFormFieldErrors'
@@ -130,98 +132,40 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
       footer={
         <div style={{ display: 'flex', gap: 10 }}>
           {isEditing && (
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => setShowConfirmDelete(true)}
               aria-label="Eliminar"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 42,
-                height: 42,
-                border: '1px solid var(--border)',
-                borderRadius: 9,
-                background: 'var(--card)',
-                color: 'var(--neg)',
-                cursor: 'pointer',
-              }}
+              style={{ width: 42, height: 42, padding: 0 }}
             >
               <TrashIcon color="var(--neg)" />
-            </button>
+            </Button>
           )}
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              flex: 1,
-              height: 42,
-              border: '1px solid var(--border)',
-              borderRadius: 9,
-              background: 'var(--card)',
-              color: 'var(--text)',
-              fontFamily: 'inherit',
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: 'pointer',
-            }}
-          >
+          <Button type="button" variant="secondary" onClick={onClose} style={{ flex: 1, height: 42 }}>
             Cancelar
-          </button>
-          <button
-            type="submit"
-            form="tx-form"
-            disabled={isSaving}
-            style={{
-              flex: 1.4,
-              height: 42,
-              border: 'none',
-              borderRadius: 9,
-              background: 'var(--grad)',
-              color: '#fff',
-              fontFamily: 'inherit',
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow)',
-              opacity: isSaving ? 0.7 : 1,
-            }}
-          >
+          </Button>
+          <Button type="submit" form="tx-form" disabled={isSaving} style={{ flex: 1.4, height: 42 }}>
             {isSaving ? 'Guardando…' : 'Guardar transacción'}
-          </button>
+          </Button>
         </div>
       }
     >
       <form id="tx-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <div>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Tipo</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, padding: 4, background: 'var(--card-2)', border: '1px solid var(--border)', borderRadius: 10 }}>
-            {(['expense', 'income'] as const).map((value) => {
-              const active = type === value
-              return (
-                <div
-                  key={value}
-                  onClick={() => {
-                    setType(value)
-                    setCategoryId('')
-                  }}
-                  style={{
-                    textAlign: 'center',
-                    padding: 8,
-                    borderRadius: 7,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                    background: active ? 'var(--card)' : 'transparent',
-                    color: active ? (value === 'expense' ? 'var(--neg)' : 'var(--pos)') : 'var(--muted)',
-                    boxShadow: active ? 'var(--shadow)' : 'none',
-                    fontWeight: active ? 600 : 500,
-                  }}
-                >
-                  {value === 'expense' ? 'Gasto' : 'Ingreso'}
-                </div>
-              )
-            })}
-          </div>
+          <SegmentedTabs
+            fullWidth
+            value={type}
+            onChange={(value) => {
+              setType(value)
+              setCategoryId('')
+            }}
+            options={[
+              { value: 'expense', label: 'Gasto', activeColor: 'var(--neg)' },
+              { value: 'income', label: 'Ingreso', activeColor: 'var(--pos)' },
+            ]}
+          />
         </div>
 
         <div>
@@ -263,7 +207,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
             setFundId(event.target.value)
             clearFieldError('fundId')
           }}
-          options={(funds ?? []).filter((fund) => !fund.archivedAt).map((fund) => ({ value: fund.id, label: fund.name }))}
+          options={activeFunds(funds ?? []).map((fund) => ({ value: fund.id, label: fund.name }))}
           required
           error={fieldErrors.fundId}
           style={{ height: 44, borderRadius: 10 }}

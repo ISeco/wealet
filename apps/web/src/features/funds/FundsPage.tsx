@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
+import { SegmentedTabs } from '../../components/ui/SegmentedTabs'
 import { formatMoney } from '../../lib/money'
 import { FundFormDrawer } from './components/FundFormDrawer'
 import { useFunds } from './hooks'
@@ -56,29 +57,22 @@ export function FundsPage() {
 
   return (
     <div>
-      <div style={{ display: 'inline-flex', padding: 3, background: 'var(--card-2)', border: '1px solid var(--border)', borderRadius: 10, gap: 3, marginBottom: 18 }}>
-        {SCOPE_TABS.map((tab) => {
-          const active = scope === tab.value
-          return (
-            <div
-              key={tab.value}
-              onClick={() => setScope(tab.value)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 7, padding: '6px 13px', borderRadius: 7,
-                fontSize: 13, cursor: 'pointer', transition: 'all .15s',
-                background: active ? 'var(--card)' : 'transparent',
-                color: active ? 'var(--text)' : 'var(--muted)',
-                boxShadow: active ? 'var(--shadow)' : undefined,
-                fontWeight: active ? 600 : 400,
-              }}
-            >
-              {tab.label}
-              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', background: 'var(--bg)', borderRadius: 20, padding: '1px 7px', fontVariantNumeric: 'tabular-nums' }}>
-                {scopeCounts[tab.value]}
-              </span>
-            </div>
-          )
-        })}
+      <div style={{ marginBottom: 18 }}>
+        <SegmentedTabs
+          value={scope}
+          onChange={setScope}
+          options={SCOPE_TABS.map((tab) => ({
+            value: tab.value,
+            label: (
+              <>
+                {tab.label}
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', background: 'var(--bg)', borderRadius: 20, padding: '1px 7px', fontVariantNumeric: 'tabular-nums' }}>
+                  {scopeCounts[tab.value]}
+                </span>
+              </>
+            ),
+          }))}
+        />
       </div>
 
       {/* Classification summary */}

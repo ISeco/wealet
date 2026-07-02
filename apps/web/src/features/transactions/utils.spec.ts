@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { formatChipDate, toTableRow } from './utils'
-import type { ActivityItem } from './types'
+import { buildActivityQuery, formatChipDate, toTableRow } from './utils'
+import type { ActivityItem, TransactionFilters } from './types'
 
 describe('formatChipDate', () => {
   it('returns null when both arguments are undefined', () => {
@@ -40,6 +40,44 @@ function buildItem(overrides: Partial<ActivityItem> = {}): ActivityItem {
     ...overrides,
   } as ActivityItem
 }
+
+describe('buildActivityQuery', () => {
+  const filters: TransactionFilters = { fundId: 'fund-1', categoryId: 'cat-1', from: '2026-06-01', to: '2026-06-30' }
+
+  it('leaves type/subtype undefined for the "all" tab', () => {
+    const query = buildActivityQuery('all', filters, '', 1, 20)
+    expect(query.type).toBeUndefined()
+    expect(query.subtype).toBeUndefined()
+  })
+
+  it('sets type="transfer" for the "transfers" tab', () => {
+    const query = buildActivityQuery('transfers', filters, '', 1, 20)
+    expect(query.type).toBe('transfer')
+    expect(query.subtype).toBeUndefined()
+  })
+
+  it('sets type="transaction" and subtype for "income"/"expense" tabs', () => {
+    expect(buildActivityQuery('income', filters, '', 1, 20)).toMatchObject({ type: 'transaction', subtype: 'income' })
+    expect(buildActivityQuery('expense', filters, '', 1, 20)).toMatchObject({ type: 'transaction', subtype: 'expense' })
+  })
+
+  it('carries filters, search and pagination through', () => {
+    const query = buildActivityQuery('all', filters, 'gasolina', 3, 20)
+    expect(query).toMatchObject({
+      from: '2026-06-01',
+      to: '2026-06-30',
+      fundId: 'fund-1',
+      categoryId: 'cat-1',
+      q: 'gasolina',
+      page: 3,
+      limit: 20,
+    })
+  })
+
+  it('omits q when search is empty', () => {
+    expect(buildActivityQuery('all', filters, '', 1, 20).q).toBeUndefined()
+  })
+})
 
 describe('toTableRow', () => {
   it('maps a transaction item to kind="transaction"', () => {

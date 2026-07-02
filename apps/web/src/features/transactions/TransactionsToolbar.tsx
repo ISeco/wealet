@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { PlusIcon, SearchIcon } from '../../components/ui/icons'
+import { CloseIcon, PlusIcon, SearchIcon } from '../../components/ui/icons'
 import { DateInput } from '../../components/ui/DateInput'
+import { Button } from '../../components/ui/Button'
 import type { Fund } from '../funds'
 import type { Category } from '../categories'
 import type { TransactionFilters } from './types'
@@ -84,25 +85,7 @@ export function TransactionsToolbar({
 
       {/* filtros button + popover */}
       <div style={{ position: 'relative' }}>
-        <button
-          type="button"
-          onClick={openPopover}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            height: 38,
-            padding: '0 13px',
-            border: '1px solid var(--border)',
-            borderRadius: 9,
-            background: 'var(--card)',
-            color: 'var(--text)',
-            fontFamily: 'inherit',
-            fontSize: 13,
-            fontWeight: 500,
-            cursor: 'pointer',
-          }}
-        >
+        <Button type="button" variant="secondary" onClick={openPopover} style={{ height: 38, padding: '0 13px', fontSize: 13 }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 5h18M6 12h12M10 19h4" />
           </svg>
@@ -112,7 +95,7 @@ export function TransactionsToolbar({
               {filtersActive}
             </span>
           )}
-        </button>
+        </Button>
 
         {popoverOpen && (
           <>
@@ -138,9 +121,7 @@ export function TransactionsToolbar({
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Filtrar movimientos</span>
                 <span onClick={() => setPopoverOpen(false)} style={{ display: 'flex', cursor: 'pointer', color: 'var(--muted)' }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round">
-                    <path d="M18 6 6 18M6 6l12 12" />
-                  </svg>
+                  <CloseIcon size={17} />
                 </span>
               </div>
 
@@ -221,42 +202,12 @@ export function TransactionsToolbar({
               </div>
 
               <div style={{ display: 'flex', gap: 9, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  style={{
-                    flex: 1,
-                    height: 38,
-                    border: '1px solid var(--border-strong)',
-                    borderRadius: 8,
-                    background: 'var(--card)',
-                    color: 'var(--text)',
-                    fontFamily: 'inherit',
-                    fontSize: 13,
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                  }}
-                >
+                <Button type="button" variant="secondary" onClick={clearFilters} style={{ flex: 1, height: 38, fontSize: 13 }}>
                   Limpiar
-                </button>
-                <button
-                  type="button"
-                  onClick={applyFilters}
-                  style={{
-                    flex: 1,
-                    height: 38,
-                    border: 'none',
-                    borderRadius: 8,
-                    background: 'var(--grad)',
-                    color: '#fff',
-                    fontFamily: 'inherit',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
+                </Button>
+                <Button type="button" onClick={applyFilters} style={{ flex: 1, height: 38, fontSize: 13 }}>
                   Aplicar
-                </button>
+                </Button>
               </div>
             </div>
           </>
@@ -264,58 +215,19 @@ export function TransactionsToolbar({
       </div>
 
       {/* exportar */}
-      <button
-        type="button"
-        onClick={isExporting ? undefined : onExport}
-        disabled={isExporting}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          height: 38,
-          padding: '0 13px',
-          border: '1px solid var(--border)',
-          borderRadius: 9,
-          background: 'var(--card)',
-          color: isExporting ? 'var(--muted)' : 'var(--text)',
-          fontFamily: 'inherit',
-          fontSize: 13,
-          fontWeight: 500,
-          cursor: isExporting ? 'not-allowed' : 'pointer',
-          opacity: isExporting ? 0.7 : 1,
-        }}
-      >
+      <Button type="button" variant="secondary" onClick={onExport} disabled={isExporting} style={{ height: 38, padding: '0 13px', fontSize: 13 }}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 14V3M12 14l4-4M12 14l-4-4" />
           <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
         </svg>
         {isExporting ? 'Exportando…' : 'Exportar'}
-      </button>
+      </Button>
 
       {/* nueva */}
-      <button
-        type="button"
-        onClick={onNew}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 7,
-          height: 38,
-          padding: '0 14px',
-          border: 'none',
-          borderRadius: 9,
-          background: 'var(--grad)',
-          color: '#fff',
-          fontFamily: 'inherit',
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: 'pointer',
-          boxShadow: 'var(--shadow)',
-        }}
-      >
+      <Button type="button" onClick={onNew} style={{ height: 38, padding: '0 14px', fontSize: 13 }}>
         <PlusIcon />
         Nueva
-      </button>
+      </Button>
     </div>
   )
 }
