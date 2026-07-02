@@ -1,5 +1,7 @@
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConflictException } from '@nestjs/common';
+import { QueryFailedError } from 'typeorm';
 import { HealthService } from './health.service';
 import {
   HealthProfile,
@@ -213,7 +215,11 @@ describe('HealthService', () => {
           '50_30_20_reserve',
         ]),
       );
-      expect(txFundRepo.save).toHaveBeenCalledWith(
+      // archive batch (empty here) then create/reactivate batch, as two
+      // separate sequential save() calls
+      expect(txFundRepo.save).toHaveBeenNthCalledWith(1, []);
+      expect(txFundRepo.save).toHaveBeenNthCalledWith(
+        2,
         expect.arrayContaining([
           expect.objectContaining({ frameworkSlot: '50_30_20_committed' }),
         ]),
@@ -307,6 +313,103 @@ describe('HealthService', () => {
 
       expect(result).toHaveLength(0);
       expect(active.archivedAt).toBeInstanceOf(Date);
+    });
+
+    it('archives the outgoing fund before creating/reactivating the incoming fund with the same name (regression guard)', async () => {
+      // both 50_30_20 and jars_eker have a "Necesidades" slot fund
+      const outgoing = buildFund({
+        id: 'outgoing-1',
+        name: 'Necesidades',
+        frameworkSlot: 'jars_nec',
+        archivedAt: null,
+      });
+      mockDataSource.transaction.mockImplementationOnce(
+        (cb: (manager: unknown) => unknown) => {
+          txFundRepo = {
+            find: jest.fn().mockResolvedValue([outgoing]),
+            create: jest.fn((data: Partial<Fund>) => data as Fund),
+            save: jest.fn((funds: Fund[]) => Promise.resolve(funds)),
+          };
+          return cb({ getRepository: jest.fn(() => txFundRepo) });
+        },
+      );
+
+      await service.provisionFrameworkFunds(
+        'user-1',
+        HealthFramework.FIFTY_THIRTY_TWENTY,
+      );
+
+      expect(txFundRepo.save).toHaveBeenCalledTimes(2);
+      const [archiveCallArgs] = txFundRepo.save.mock.calls[0];
+      const [createCallArgs] = txFundRepo.save.mock.calls[1];
+      expect(archiveCallArgs).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: 'outgoing-1' })]),
+      );
+      expect(createCallArgs).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ frameworkSlot: '50_30_20_committed' }),
+        ]),
+      );
+      // archive batch must be persisted strictly before the create/reactivate batch
+      const archiveOrder = txFundRepo.save.mock.invocationCallOrder[0];
+      const createOrder = txFundRepo.save.mock.invocationCallOrder[1];
+      expect(archiveOrder).toBeLessThan(createOrder);
+    });
+
+    it('translates a unique-violation on save into a ConflictException', async () => {
+      const uniqueViolationError = Object.assign(
+        Object.create(QueryFailedError.prototype),
+        { code: '23505', message: 'duplicate key value' },
+      );
+      mockDataSource.transaction.mockImplementationOnce(
+        (cb: (manager: unknown) => unknown) => {
+          txFundRepo = {
+            find: jest.fn().mockResolvedValue([]),
+            create: jest.fn((data: Partial<Fund>) => data as Fund),
+            save: jest.fn().mockRejectedValue(uniqueViolationError),
+          };
+          return cb({ getRepository: jest.fn(() => txFundRepo) });
+        },
+      );
+
+      await expect(
+        service.provisionFrameworkFunds(
+          'user-1',
+          HealthFramework.FIFTY_THIRTY_TWENTY,
+        ),
+      ).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it('restores isOperative from the template when reactivating an archived fund', async () => {
+      // jars_ffa ("Rico") has isOperative: true in the template, but the
+      // archive step force-clears isOperative on any fund it archives
+      const archived = buildFund({
+        id: 'existing-ffa',
+        name: 'Mi Fondo Rico', // user-customized name, must still be preserved
+        frameworkSlot: 'jars_ffa',
+        isOperative: false,
+        archivedAt: new Date('2026-01-01'),
+      });
+      mockDataSource.transaction.mockImplementationOnce(
+        (cb: (manager: unknown) => unknown) => {
+          txFundRepo = {
+            find: jest.fn().mockResolvedValue([archived]),
+            create: jest.fn((data: Partial<Fund>) => data as Fund),
+            save: jest.fn((funds: Fund[]) => Promise.resolve(funds)),
+          };
+          return cb({ getRepository: jest.fn(() => txFundRepo) });
+        },
+      );
+
+      const result = await service.provisionFrameworkFunds(
+        'user-1',
+        HealthFramework.JARS_EKER,
+      );
+
+      const reactivated = result.find((f) => f.frameworkSlot === 'jars_ffa');
+      expect(reactivated).toBe(archived);
+      expect(reactivated?.isOperative).toBe(true);
+      expect(reactivated?.name).toBe('Mi Fondo Rico'); // still preserved
     });
   });
 });

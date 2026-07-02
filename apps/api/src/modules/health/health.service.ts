@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, IsNull, Not, Repository } from 'typeorm';
+import { DataSource, IsNull, Not, QueryFailedError, Repository } from 'typeorm';
 import { assignDefined } from '../../common/utils/assign-defined';
 import { Fund } from '../funds/entities/fund.entity';
 import { AssessmentResponseDto } from './dto/assessment-response.dto';
@@ -14,6 +14,8 @@ import {
   FRAMEWORK_FUND_TEMPLATES,
   frameworkSlotPrefix,
 } from './framework-funds';
+
+const UNIQUE_VIOLATION = '23505';
 
 interface FundFlowRow {
   fund_id: string;
@@ -168,6 +170,7 @@ export class HealthService {
           const existing = bySlot.get(template.slot);
           if (existing) {
             existing.archivedAt = null;
+            existing.isOperative = template.isOperative;
             return existing;
           }
           return fundsRepo.create({
@@ -182,7 +185,24 @@ export class HealthService {
         },
       );
 
-      await fundsRepo.save([...toArchive, ...result]);
+      try {
+        // Archive first, then create/reactivate: the partial unique index
+        // UQ_funds_user_name_active is checked per-statement, and save()
+        // runs all inserts before all updates regardless of array order.
+        // Archiving the outgoing fund first frees its name before the
+        // incoming fund's row is inserted or reactivated.
+        await fundsRepo.save(toArchive);
+        await fundsRepo.save(result);
+      } catch (error) {
+        if (
+          error instanceof QueryFailedError &&
+          (error as QueryFailedError & { code?: string }).code ===
+            UNIQUE_VIOLATION
+        ) {
+          throw new ConflictException('A fund with this name already exists');
+        }
+        throw error;
+      }
       return result;
     });
   }
