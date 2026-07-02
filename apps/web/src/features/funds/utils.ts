@@ -1,13 +1,15 @@
 import type { Fund, FundClassification } from './types'
 
+export const CLASS_ORDER: FundClassification[] = ['available', 'reserve', 'committed']
+
 export function classColor(cls: FundClassification) {
   switch (cls) {
     case 'available':
-      return { color: 'var(--disp)', bg: 'var(--disp-bg)', label: 'Disponible', cssColor: '#16A89A' }
+      return { color: 'var(--disp)', bg: 'var(--disp-bg)', label: 'Disponible' }
     case 'reserve':
-      return { color: 'var(--res)', bg: 'var(--res-bg)', label: 'Reserva', cssColor: '#2563EB' }
+      return { color: 'var(--res)', bg: 'var(--res-bg)', label: 'Reserva' }
     case 'committed':
-      return { color: 'var(--comp)', bg: 'var(--comp-bg)', label: 'Comprometido', cssColor: '#D97706' }
+      return { color: 'var(--comp)', bg: 'var(--comp-bg)', label: 'Comprometido' }
   }
 }
 

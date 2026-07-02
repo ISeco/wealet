@@ -1,13 +1,12 @@
 // apps/web/src/features/funds/FundsPage.tsx
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Button } from '../../components/ui/Button'
 import { formatMoney } from '../../lib/money'
 import { FundFormDrawer } from './components/FundFormDrawer'
 import { useFunds } from './hooks'
 import type { Fund, FundClassification } from './types'
-import { classColor, getFundChip, getInitials } from './utils'
-
-const CLASS_ORDER: FundClassification[] = ['available', 'reserve', 'committed']
+import { CLASS_ORDER, classColor, getFundChip, getInitials } from './utils'
 
 const CLASS_DESC: Record<FundClassification, string> = {
   available: 'Para uso diario y gastos operativos',
@@ -110,15 +109,12 @@ export function FundsPage() {
           Tus fondos{' '}
           <span style={{ color: 'var(--muted)', fontWeight: 500 }}>· {funds.length}</span>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, height: 36, padding: '0 14px', border: 'none', borderRadius: 9, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow)' }}
-        >
+        <Button size="sm" onClick={() => setShowForm(true)}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
             <path d="M12 5v14M5 12h14" />
           </svg>
           Nuevo fondo
-        </button>
+        </Button>
       </div>
 
       {/* Fund grid */}
@@ -208,12 +204,9 @@ function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--muted)' }}>
       <div style={{ fontSize: 14, marginBottom: 12 }}>Todavía no tienes fondos creados.</div>
-      <button
-        onClick={onNew}
-        style={{ height: 36, padding: '0 16px', border: 'none', borderRadius: 9, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-      >
+      <Button size="sm" onClick={onNew}>
         Crear el primer fondo
-      </button>
+      </Button>
     </div>
   )
 }

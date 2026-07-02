@@ -1,25 +1,18 @@
 import { useState } from 'react'
-import { ConfirmDialog } from '../../../components/ui/ConfirmDialog'
+import { Button } from '../../../components/ui/Button'
 import { Modal } from '../../../components/ui/Modal'
-import { TrashIcon } from '../../../components/ui/icons'
-import { useCreateFund, useDeleteFund, useUpdateFund } from '../hooks'
+import { useCreateFund, useUpdateFund } from '../hooks'
 import type { Fund, FundClassification } from '../types'
+import { CLASS_ORDER, classColor } from '../utils'
 
 const PRESET_COLORS = ['#16A89A', '#2563EB', '#D97706', '#6BBF3F', '#8B5CF6', '#DC2626']
-
-const CLASSIFICATIONS: { value: FundClassification; label: string; cssColor: string; cssBg: string }[] = [
-  { value: 'available', label: 'Disponible', cssColor: 'var(--disp)', cssBg: 'var(--disp-bg)' },
-  { value: 'reserve', label: 'Reserva', cssColor: 'var(--res)', cssBg: 'var(--res-bg)' },
-  { value: 'committed', label: 'Comprometido', cssColor: 'var(--comp)', cssBg: 'var(--comp-bg)' },
-]
 
 interface FundFormDrawerProps {
   fund?: Fund
   onClose: () => void
-  onDelete?: () => void
 }
 
-export function FundFormDrawer({ fund, onClose, onDelete }: FundFormDrawerProps) {
+export function FundFormDrawer({ fund, onClose }: FundFormDrawerProps) {
   const isEditing = fund !== undefined
 
   const [name, setName] = useState(fund?.name ?? '')
@@ -30,11 +23,9 @@ export function FundFormDrawer({ fund, onClose, onDelete }: FundFormDrawerProps)
     fund?.targetPercentage != null ? String(fund.targetPercentage) : ''
   )
   const [error, setError] = useState<string | null>(null)
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
 
   const createMutation = useCreateFund()
   const updateMutation = useUpdateFund()
-  const deleteMutation = useDeleteFund()
 
   const isSaving = createMutation.isPending || updateMutation.isPending
 
@@ -61,49 +52,18 @@ export function FundFormDrawer({ fund, onClose, onDelete }: FundFormDrawerProps)
     }
   }
 
-  async function handleDelete() {
-    if (!fund) return
-    try {
-      await deleteMutation.mutateAsync(fund.id)
-      onDelete?.()
-    } catch {
-      setShowConfirmDelete(false)
-      setError('Error al eliminar el fondo. Intenta nuevamente.')
-    }
-  }
-
   const footer = (
     <div style={{ display: 'flex', gap: 10 }}>
-      {isEditing && (
-        <button
-          type="button"
-          onClick={() => setShowConfirmDelete(true)}
-          aria-label="Eliminar"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 42, height: 42, border: '1px solid var(--border)', borderRadius: 9, background: 'var(--card)', color: 'var(--neg)', cursor: 'pointer' }}
-        >
-          <TrashIcon color="var(--neg)" />
-        </button>
-      )}
-      <button
-        type="button"
-        onClick={onClose}
-        style={{ flex: 1, height: 42, border: '1px solid var(--border)', borderRadius: 9, background: 'var(--card)', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
-      >
+      <Button type="button" variant="secondary" onClick={onClose} style={{ flex: 1 }}>
         Cancelar
-      </button>
-      <button
-        type="button"
-        onClick={handleSubmit}
-        disabled={isSaving}
-        style={{ flex: 1.4, height: 42, border: 'none', borderRadius: 9, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow)', opacity: isSaving ? 0.7 : 1 }}
-      >
+      </Button>
+      <Button type="button" onClick={handleSubmit} disabled={isSaving} style={{ flex: 1.4 }}>
         {isSaving ? (isEditing ? 'Guardando…' : 'Creando…') : (isEditing ? 'Guardar cambios' : 'Crear fondo')}
-      </button>
+      </Button>
     </div>
   )
 
   return (
-    <>
     <Modal title={isEditing ? 'Editar fondo' : 'Nuevo fondo'} onClose={onClose} position="right" width={440} footer={footer}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <div>
@@ -123,22 +83,23 @@ export function FundFormDrawer({ fund, onClose, onDelete }: FundFormDrawerProps)
         <div>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Clasificación</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
-            {CLASSIFICATIONS.map((c) => {
-              const active = classification === c.value
+            {CLASS_ORDER.map((value) => {
+              const c = classColor(value)
+              const active = classification === value
               return (
                 <div
-                  key={c.value}
-                  onClick={() => setClassification(c.value)}
+                  key={value}
+                  onClick={() => setClassification(value)}
                   style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7,
                     padding: '12px 6px', borderRadius: 10, cursor: 'pointer',
                     border: active ? 'none' : '1px solid var(--border-strong)',
-                    background: active ? c.cssBg : 'var(--card)',
-                    boxShadow: active ? `0 0 0 1.5px ${c.cssColor}` : undefined,
+                    background: active ? c.bg : 'var(--card)',
+                    boxShadow: active ? `0 0 0 1.5px ${c.color}` : undefined,
                   }}
                 >
-                  <span style={{ width: 9, height: 9, borderRadius: 3, background: c.cssColor }} />
-                  <span style={{ fontSize: 12.5, fontWeight: active ? 600 : 500, color: active ? c.cssColor : 'var(--muted)' }}>
+                  <span style={{ width: 9, height: 9, borderRadius: 3, background: c.color }} />
+                  <span style={{ fontSize: 12.5, fontWeight: active ? 600 : 500, color: active ? c.color : 'var(--muted)' }}>
                     {c.label}
                   </span>
                 </div>
@@ -207,16 +168,5 @@ export function FundFormDrawer({ fund, onClose, onDelete }: FundFormDrawerProps)
         )}
       </div>
     </Modal>
-
-    {showConfirmDelete && fund && (
-      <ConfirmDialog
-        title={`Eliminar «${fund.name}»`}
-        description="El fondo se eliminará de tu lista. Si tiene movimientos registrados, se archivará en lugar de borrarse permanentemente."
-        isPending={deleteMutation.isPending}
-        onConfirm={handleDelete}
-        onClose={() => setShowConfirmDelete(false)}
-      />
-    )}
-    </>
   )
 }
