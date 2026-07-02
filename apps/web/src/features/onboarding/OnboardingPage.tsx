@@ -231,12 +231,20 @@ export function OnboardingPage() {
             <ConfirmDialog
               title="Vas a cambiar de framework"
               description={
-                <>
-                  Los fondos de <strong>{FRAMEWORK_LABEL[healthProfile.framework]}</strong> se archivarán: tu
-                  historial y saldo se conservan, pero dejarán de verse en Fondos y Salud financiera. Si vuelves a{' '}
-                  <strong>{FRAMEWORK_LABEL[healthProfile.framework]}</strong> más adelante, se reactivan
-                  automáticamente con su historial intacto.
-                </>
+                healthProfile.framework === 'fondos' ? (
+                  <>
+                    Tus fondos propios no se ven afectados. Se activarán los fondos de{' '}
+                    <strong>{FRAMEWORK_LABEL[targetFramework]}</strong> y se mostrarán junto a los tuyos en Fondos y
+                    Salud financiera.
+                  </>
+                ) : (
+                  <>
+                    Los fondos de <strong>{FRAMEWORK_LABEL[healthProfile.framework]}</strong> se archivarán: tu
+                    historial y saldo se conservan, pero dejarán de verse en Fondos y Salud financiera. Si vuelves a{' '}
+                    <strong>{FRAMEWORK_LABEL[healthProfile.framework]}</strong> más adelante, se reactivan
+                    automáticamente con su historial intacto.
+                  </>
+                )
               }
               confirmLabel="Continuar"
               onConfirm={() => {

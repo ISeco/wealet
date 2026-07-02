@@ -74,12 +74,20 @@ export function PreferencesCard() {
         <ConfirmDialog
           title="Vas a cambiar de framework"
           description={
-            <>
-              Los fondos de <strong>{FRAMEWORK_LABEL[currentFramework]}</strong> se archivarán: tu historial y saldo
-              se conservan, pero dejarán de verse en Fondos y Salud financiera. Si vuelves a{' '}
-              <strong>{FRAMEWORK_LABEL[currentFramework]}</strong> más adelante, se reactivan automáticamente con su
-              historial intacto.
-            </>
+            currentFramework === 'fondos' ? (
+              <>
+                Tus fondos propios no se ven afectados. Se activarán los fondos de{' '}
+                <strong>{FRAMEWORK_LABEL[pendingFramework]}</strong> y se mostrarán junto a los tuyos en Fondos y
+                Salud financiera.
+              </>
+            ) : (
+              <>
+                Los fondos de <strong>{FRAMEWORK_LABEL[currentFramework]}</strong> se archivarán: tu historial y
+                saldo se conservan, pero dejarán de verse en Fondos y Salud financiera. Si vuelves a{' '}
+                <strong>{FRAMEWORK_LABEL[currentFramework]}</strong> más adelante, se reactivan automáticamente con
+                su historial intacto.
+              </>
+            )
           }
           confirmLabel="Cambiar framework"
           isPending={isPending}
