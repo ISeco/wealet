@@ -19,7 +19,7 @@ type Scope = 'all' | 'slotted' | 'own'
 
 const SCOPE_TABS: { value: Scope; label: string }[] = [
   { value: 'all', label: 'Todas' },
-  { value: 'slotted', label: 'Con slot' },
+  { value: 'slotted', label: 'Del framework' },
   { value: 'own', label: 'Propios' },
 ]
 
