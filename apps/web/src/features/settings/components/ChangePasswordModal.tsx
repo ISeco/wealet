@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Button } from '../../../components/ui/Button'
 import { Modal } from '../../../components/ui/Modal'
 import { useAuth } from '../../auth'
 import { ApiError } from '../../../lib/api/client'
@@ -84,43 +85,22 @@ export function ChangePasswordModal({ onClose }: Props) {
       width={420}
       footer={
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={onClose}
-            style={{
-              height: 38,
-              padding: '0 16px',
-              borderRadius: 8,
-              border: '1px solid var(--border)',
-              background: 'var(--card)',
-              fontSize: 13.5,
-              color: 'var(--text)',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-            }}
+            style={{ height: 38, padding: '0 16px', fontSize: 13.5 }}
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             form="change-password-form"
             disabled={isPending}
-            style={{
-              height: 38,
-              padding: '0 16px',
-              borderRadius: 8,
-              border: 'none',
-              background: 'var(--grad)',
-              fontSize: 13.5,
-              fontWeight: 600,
-              color: '#fff',
-              cursor: isPending ? 'default' : 'pointer',
-              opacity: isPending ? 0.7 : 1,
-              fontFamily: 'inherit',
-            }}
+            style={{ height: 38, padding: '0 16px', fontSize: 13.5 }}
           >
             {isPending ? 'Guardando…' : submitLabel}
-          </button>
+          </Button>
         </div>
       }
     >

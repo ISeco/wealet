@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Button } from '../../../components/ui/Button'
 import { useAuth } from '../../auth'
 import { card, settingsRow } from '../styles'
 import { ChangePasswordModal } from './ChangePasswordModal'
@@ -20,35 +21,29 @@ export function SecurityCard() {
               {user?.hasPassword ? 'Última actualización desconocida' : 'No tienes contraseña configurada'}
             </div>
           </div>
-          <button onClick={() => setShowModal(true)} style={rowBtn}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowModal(true)}
+            style={{ height: 38, fontSize: 13.5, whiteSpace: 'nowrap' }}
+          >
             {passwordLabel}
-          </button>
+          </Button>
         </div>
         <div style={settingsRow}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 500 }}>Correo electrónico</div>
             <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>{user?.email}</div>
           </div>
-          <button disabled style={{ ...rowBtn, opacity: 0.5, cursor: 'not-allowed' }}>
+          <Button
+            variant="secondary"
+            disabled
+            style={{ height: 38, fontSize: 13.5, whiteSpace: 'nowrap' }}
+          >
             Próximamente
-          </button>
+          </Button>
         </div>
       </div>
       {showModal && <ChangePasswordModal onClose={() => setShowModal(false)} />}
     </>
   )
-}
-
-const rowBtn: React.CSSProperties = {
-  height: 38,
-  padding: '0 14px',
-  border: '1px solid var(--border)',
-  borderRadius: 9,
-  background: 'var(--card)',
-  fontSize: 13.5,
-  fontWeight: 500,
-  color: 'var(--text)',
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-  whiteSpace: 'nowrap',
 }

@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../features/auth'
+import { getUserInitials, useAuth } from '../features/auth'
 import { WealetIcon } from '../components/ui/WealetIcon'
 import { navMain, navSys, type NavItem } from './navConfig'
 import { ChevronRightIcon } from '../components/ui/icons'
@@ -82,12 +82,7 @@ export function Sidebar() {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const initials = (user?.displayName ?? user?.email ?? '?')
-    .split(' ')
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
+  const initials = getUserInitials(user)
 
   const { data: allocation } = useAllocation()
   const allocationPending = allocation === null

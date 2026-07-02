@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Button } from '../../../components/ui/Button'
 import { useAuth } from '../../auth'
 import { exportAll } from '../api'
 import { card } from '../styles'
@@ -31,18 +32,23 @@ export function DataAccountGrid() {
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
       <div style={{ ...card, marginBottom: 0 }}>
         <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 14 }}>Datos</div>
-        <button onClick={() => navigate('/import')} style={actionBtn}>
+        <Button
+          variant="secondary"
+          onClick={() => navigate('/import')}
+          style={{ ...actionBtnStyle, marginBottom: 10 }}
+        >
           <UploadIcon />
           Importar desde Excel
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="secondary"
           onClick={handleExport}
           disabled={isExporting}
-          style={{ ...actionBtn, marginBottom: 0, opacity: isExporting ? 0.7 : 1 }}
+          style={actionBtnStyle}
         >
           <DownloadIcon />
-          {isExporting ? 'Exportando…' : 'Exportar todo (.csv)'}
-        </button>
+          {isExporting ? 'Exportando…' : 'Exportar todo (.xlsx)'}
+        </Button>
         {exportError && (
           <p style={{ fontSize: 12.5, color: 'var(--neg)', marginTop: 8, marginBottom: 0 }}>
             {exportError}
@@ -52,14 +58,18 @@ export function DataAccountGrid() {
 
       <div style={{ ...card, marginBottom: 0 }}>
         <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 14 }}>Cuenta</div>
-        <button onClick={() => navigate('/onboarding?from=settings')} style={actionBtn}>
+        <Button
+          variant="secondary"
+          onClick={() => navigate('/onboarding?from=settings')}
+          style={{ ...actionBtnStyle, marginBottom: 10 }}
+        >
           Reconfigurar fondos
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="secondary"
           onClick={handleLogout}
           style={{
-            ...actionBtn,
-            marginBottom: 0,
+            ...actionBtnStyle,
             color: 'var(--neg)',
             background: 'var(--neg-bg)',
             border: '1px solid var(--neg)',
@@ -67,30 +77,18 @@ export function DataAccountGrid() {
           }}
         >
           Cerrar sesión
-        </button>
+        </Button>
       </div>
     </div>
   )
 }
 
-const actionBtn: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
+const actionBtnStyle: React.CSSProperties = {
   gap: 10,
   height: 42,
-  padding: '0 14px',
-  border: '1px solid var(--border)',
-  borderRadius: 9,
-  background: 'var(--card)',
   fontSize: 13.5,
-  fontWeight: 500,
-  color: 'var(--text)',
-  cursor: 'pointer',
-  fontFamily: 'inherit',
   width: '100%',
-  marginBottom: 10,
-  transition: 'border-color .15s',
+  marginBottom: 0,
 }
 
 function UploadIcon() {
