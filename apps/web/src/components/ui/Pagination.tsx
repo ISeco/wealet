@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { ChevronLeftIcon, ChevronRightIcon } from '../../app/icons'
+import { ChevronLeftIcon, ChevronRightIcon } from './icons'
 
 interface PaginationProps {
   page: number

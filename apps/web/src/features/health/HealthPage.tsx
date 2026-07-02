@@ -30,9 +30,11 @@ export function HealthPage() {
 
   const framework = selectedFramework ?? activeFramework
 
+  const hasData = !!assessment && assessment.funds.length > 0 && assessment.totalBase !== '0'
+
   const score = useMemo(
-    () => computeScore(assessment?.funds ?? []),
-    [assessment],
+    () => (hasData ? computeScore(assessment!.funds) : null),
+    [assessment, hasData],
   )
 
   async function handleActivate() {
@@ -80,10 +82,10 @@ export function HealthPage() {
           {assessment && assessment.funds.length === 0 && (
             <HealthEmptyState variant="no-funds" />
           )}
-          {assessment && assessment.funds.length > 0 && assessment.totalBase === '0' && (
+          {assessment && assessment.funds.length > 0 && !hasData && (
             <HealthEmptyState variant="no-income" />
           )}
-          {assessment && assessment.funds.length > 0 && assessment.totalBase !== '0' && (
+          {hasData && assessment && (
             <AdherenceChart
               funds={assessment.funds}
               totalBase={assessment.totalBase}

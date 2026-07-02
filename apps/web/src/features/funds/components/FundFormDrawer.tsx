@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ConfirmDialog } from '../../../components/ui/ConfirmDialog'
 import { Modal } from '../../../components/ui/Modal'
-import { TrashIcon } from '../../../app/icons'
+import { TrashIcon } from '../../../components/ui/icons'
 import { useCreateFund, useDeleteFund, useUpdateFund } from '../hooks'
 import type { Fund, FundClassification } from '../types'
 

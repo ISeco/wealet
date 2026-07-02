@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth'
 import { WealetIcon } from '../components/ui/WealetIcon'
 import { navMain, navSys, type NavItem } from './navConfig'
-import { ChevronRightIcon } from './icons'
+import { ChevronRightIcon } from '../components/ui/icons'
 import { useAllocation } from '../features/health/hooks'
 
 function NavRow({

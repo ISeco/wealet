@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router-dom'
 import { useTheme } from './theme'
 import { pageTitles } from './navConfig'
-import { MoonIcon, SearchIcon, SunIcon } from './icons'
+import { MoonIcon, SearchIcon, SunIcon } from '../components/ui/icons'
 import { OPEN_COMMAND_PALETTE_EVENT } from './CommandPalette'
 import { isMacPlatform } from '../lib/platform'
 

@@ -7,8 +7,8 @@ const CLS_COLOR: Record<FundClassification, string> = {
   committed: 'var(--comp)',
 }
 
-const STATUS_TEAL = '#16A89A'
-const STATUS_AMBER = '#D97706'
+const STATUS_TEAL = 'var(--disp)'
+const STATUS_AMBER = 'var(--comp)'
 
 function statusTag(diff: number): { label: string; color: string } {
   if (diff < -5) return { label: 'Bajo', color: STATUS_AMBER }

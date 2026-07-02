@@ -14,6 +14,23 @@ export const FRAMEWORK_FUND_COUNT: Record<HealthFramework, number> = {
   'fondos':      0,
 }
 
+export const ALL_FRAMEWORKS = Object.keys(FRAMEWORK_LABELS) as HealthFramework[]
+
+/** Prefix of `Fund.frameworkSlot` for frameworks that tag funds by slot. `fondos` has none. */
+const FRAMEWORK_SLOT_PREFIX: Partial<Record<HealthFramework, string>> = {
+  '50_30_20':    '50_30_20_',
+  'jars_eker':   'jars_',
+  'profit_first': 'profit_first:',
+}
+
+export function frameworkSlotPrefix(framework: HealthFramework): string | null {
+  return FRAMEWORK_SLOT_PREFIX[framework] ?? null
+}
+
+export function isSlotFramework(framework: HealthFramework): boolean {
+  return framework in FRAMEWORK_SLOT_PREFIX
+}
+
 export const FRAMEWORK_ACTIVATE_WARNING: Record<HealthFramework, string> = {
   '50_30_20':    'Se crearán 3 fondos: Necesidades, Deseos y Ahorro. Tus fondos actuales se mantienen pero no serán evaluados en este framework.',
   'jars_eker':   'Se crearán 6 fondos basados en el sistema de T. Harv Eker. Tus fondos actuales se mantienen pero no serán evaluados en este framework.',

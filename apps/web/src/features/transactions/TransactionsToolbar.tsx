@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { PlusIcon, SearchIcon } from '../../app/icons'
+import { PlusIcon, SearchIcon } from '../../components/ui/icons'
 import { DateInput } from '../../components/ui/DateInput'
 import type { Fund } from '../funds'
 import type { Category } from '../categories'

@@ -8,7 +8,7 @@ import {
   SettingsIcon,
   TransfersIcon,
   TransactionsIcon,
-} from './icons'
+} from '../components/ui/icons'
 
 export interface NavItem {
   key: string
