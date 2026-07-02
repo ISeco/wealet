@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { Select } from '../../../components/ui/Select'
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog'
 import { useActivateFramework, useHealthProfile } from '../../health/hooks'
 import { card, settingsRow } from '../styles'
 import type { HealthFramework } from '../../health/types'
@@ -10,9 +12,25 @@ const FRAMEWORKS = [
   { value: 'fondos', label: 'Fondos' },
 ]
 
+const FRAMEWORK_LABEL: Record<HealthFramework, string> = {
+  '50_30_20': 'Regla 50 / 30 / 20',
+  jars_eker: 'Jars of Eker',
+  profit_first: 'Profit First',
+  fondos: 'Fondos',
+}
+
 export function PreferencesCard() {
   const { data: healthProfile } = useHealthProfile()
-  const { mutate: activateFramework } = useActivateFramework()
+  const { mutate: activateFramework, isPending } = useActivateFramework()
+  const [pendingFramework, setPendingFramework] = useState<HealthFramework | null>(null)
+
+  const currentFramework = healthProfile?.framework ?? 'fondos'
+
+  function handleConfirm() {
+    if (!pendingFramework) return
+    activateFramework(pendingFramework)
+    setPendingFramework(null)
+  }
 
   return (
     <div style={card}>
@@ -24,8 +42,8 @@ export function PreferencesCard() {
         </div>
         <Select
           options={FRAMEWORKS}
-          value={healthProfile?.framework ?? 'fondos'}
-          onChange={(e) => activateFramework(e.target.value as HealthFramework)}
+          value={currentFramework}
+          onChange={(e) => setPendingFramework(e.target.value as HealthFramework)}
           style={{ width: 190 }}
         />
       </div>
@@ -51,6 +69,32 @@ export function PreferencesCard() {
           CLP · $1.234.567
         </div>
       </div>
+
+      {pendingFramework && (
+        <ConfirmDialog
+          title="Vas a cambiar de framework"
+          description={
+            currentFramework === 'fondos' ? (
+              <>
+                Tus fondos propios no se ven afectados. Se activarán los fondos de{' '}
+                <strong>{FRAMEWORK_LABEL[pendingFramework]}</strong> y se mostrarán junto a los tuyos en Fondos y
+                Salud financiera.
+              </>
+            ) : (
+              <>
+                Los fondos de <strong>{FRAMEWORK_LABEL[currentFramework]}</strong> se archivarán: tu historial y
+                saldo se conservan, pero dejarán de verse en Fondos y Salud financiera. Si vuelves a{' '}
+                <strong>{FRAMEWORK_LABEL[currentFramework]}</strong> más adelante, se reactivan automáticamente con
+                su historial intacto.
+              </>
+            )
+          }
+          confirmLabel="Cambiar framework"
+          isPending={isPending}
+          onConfirm={handleConfirm}
+          onClose={() => setPendingFramework(null)}
+        />
+      )}
     </div>
   )
 }

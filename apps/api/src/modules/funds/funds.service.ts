@@ -6,14 +6,22 @@ import {
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, IsNull, QueryFailedError, Repository } from 'typeorm';
 import { assignDefined } from '../../common/utils/assign-defined';
+import { HealthFramework } from '../health/entities/health-profile.entity';
+import { HealthService } from '../health/health.service';
 import { CreateFundDto } from './dto/create-fund.dto';
 import { CreatePresetFundsDto } from './dto/create-preset-funds.dto';
 import { FundHistoryPointDto } from './dto/fund-history-point.dto';
 import { UpdateFundDto } from './dto/update-fund.dto';
 import { Fund } from './entities/fund.entity';
-import { FUND_PRESETS } from './presets/fund-presets';
+import { FundPresetType } from './enums/fund-preset.enum';
 
 const UNIQUE_VIOLATION = '23505';
+
+const PRESET_TO_FRAMEWORK: Record<FundPresetType, HealthFramework> = {
+  [FundPresetType.JARS_EKER]: HealthFramework.JARS_EKER,
+  [FundPresetType.RULE_50_30_20]: HealthFramework.FIFTY_THIRTY_TWENTY,
+  [FundPresetType.PROFIT_FIRST]: HealthFramework.PROFIT_FIRST,
+};
 
 export interface FundWithBalance {
   fund: Fund;
@@ -31,6 +39,7 @@ export class FundsService {
     @InjectRepository(Fund)
     private readonly fundsRepository: Repository<Fund>,
     @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly healthService: HealthService,
   ) {}
 
   async findAllWithBalances(
@@ -164,24 +173,8 @@ export class FundsService {
     userId: string,
     dto: CreatePresetFundsDto,
   ): Promise<Fund[]> {
-    const entries = FUND_PRESETS[dto.preset];
-    try {
-      return await this.dataSource.transaction(async (manager) => {
-        const funds = entries.map((entry) =>
-          manager.create(Fund, { ...entry, userId }),
-        );
-        return manager.save(funds);
-      });
-    } catch (error) {
-      if (
-        error instanceof QueryFailedError &&
-        (error as QueryFailedError & { code?: string }).code ===
-          UNIQUE_VIOLATION
-      ) {
-        throw new ConflictException('A fund with this name already exists');
-      }
-      throw error;
-    }
+    const framework = PRESET_TO_FRAMEWORK[dto.preset];
+    return this.healthService.provisionFrameworkFunds(userId, framework);
   }
 
   private async save(fund: Fund): Promise<Fund> {

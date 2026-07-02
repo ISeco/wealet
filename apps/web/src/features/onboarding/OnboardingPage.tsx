@@ -11,6 +11,9 @@ import { Step3Success } from './steps/Step3Success'
 import { Button } from '../../components/ui/Button'
 import { useExcelImportFlow } from '../import-export/useExcelImportFlow'
 import type { CreateFundPayload } from '../funds/types'
+import { useHealthProfile } from '../health/hooks'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
+import type { HealthFramework } from '../health/types'
 
 const SLOT_PRESETS: PresetOption[] = ['jars_eker', '50_30_20', 'profit_first']
 
@@ -25,6 +28,35 @@ export function OnboardingPage() {
   const [addFundError, setAddFundError] = useState<string | null>(null)
   const [incomeAmount, setIncomeAmount] = useState('')
   const excelFlow = useExcelImportFlow()
+  const { data: healthProfile } = useHealthProfile()
+  const [showFrameworkWarning, setShowFrameworkWarning] = useState(false)
+
+  const FRAMEWORK_LABEL: Record<HealthFramework, string> = {
+    '50_30_20': 'Regla 50 / 30 / 20',
+    jars_eker: 'Jars of Eker',
+    profit_first: 'Profit First',
+    fondos: 'Fondos',
+  }
+
+  // 'excel' doesn't pick a framework directly, but completing it implicitly
+  // sets 'fondos' (see useCompleteOnboarding) — treat it the same way here.
+  const targetFramework: HealthFramework | null =
+    selected === 'excel' ? 'fondos' : (selected as HealthFramework | null)
+
+  const willChangeFramework =
+    isReconfigure &&
+    targetFramework !== null &&
+    healthProfile !== undefined &&
+    targetFramework !== healthProfile.framework
+
+  function goToStep2() {
+    if (!selected) return
+    if (willChangeFramework) {
+      setShowFrameworkWarning(true)
+      return
+    }
+    setStep(2)
+  }
 
   const { complete, isPending, error } = useCompleteOnboarding()
 
@@ -149,7 +181,7 @@ export function OnboardingPage() {
 
               {/* Siguiente (step 1) */}
               {step === 1 && (
-                <Button onClick={() => selected && setStep(2)} disabled={!selected}>
+                <Button onClick={goToStep2} disabled={!selected}>
                   Siguiente
                 </Button>
               )}
@@ -193,6 +225,34 @@ export function OnboardingPage() {
 
               </div>
             </div>
+          )}
+
+          {showFrameworkWarning && healthProfile && targetFramework && (
+            <ConfirmDialog
+              title="Vas a cambiar de framework"
+              description={
+                healthProfile.framework === 'fondos' ? (
+                  <>
+                    Tus fondos propios no se ven afectados. Se activarán los fondos de{' '}
+                    <strong>{FRAMEWORK_LABEL[targetFramework]}</strong> y se mostrarán junto a los tuyos en Fondos y
+                    Salud financiera.
+                  </>
+                ) : (
+                  <>
+                    Los fondos de <strong>{FRAMEWORK_LABEL[healthProfile.framework]}</strong> se archivarán: tu
+                    historial y saldo se conservan, pero dejarán de verse en Fondos y Salud financiera. Si vuelves a{' '}
+                    <strong>{FRAMEWORK_LABEL[healthProfile.framework]}</strong> más adelante, se reactivan
+                    automáticamente con su historial intacto.
+                  </>
+                )
+              }
+              confirmLabel="Continuar"
+              onConfirm={() => {
+                setShowFrameworkWarning(false)
+                setStep(2)
+              }}
+              onClose={() => setShowFrameworkWarning(false)}
+            />
           )}
         </div>
       </div>

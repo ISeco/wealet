@@ -153,7 +153,7 @@ export class ReportsService {
            UNION ALL
            SELECT from_fund_id AS fund_id, -amount FROM transfers WHERE user_id = $1
          ) m ON m.fund_id = f.id
-         WHERE f.user_id = $1 AND f.counts_for_runway = true`,
+         WHERE f.user_id = $1 AND f.counts_for_runway = true AND f.archived_at IS NULL`,
         [userId],
       );
 
