@@ -66,6 +66,8 @@ Registro cronológico de cambios significativos, bugs corregidos y pendientes. C
 
 - **`app/icons.tsx` movido a `components/ui/icons.tsx` (2026-07-01)**: primer paso de estandarizar los íconos SVG hardcodeados bajo `components/ui/`, junto a `Button`/`Modal`/etc. Solo relocate (sin cambios de comportamiento) — 11 archivos importadores actualizados. Los íconos locales de `features/auth/components/icons.tsx` no se tocaron (son propios de ese feature, no del set compartido). Consolidar el resto del SVG inline disperso por otras features queda pendiente, a hacerse de forma incremental solo cuando se confirme una duplicación real, según la regla de `conventions.md`.
 
+- **Release v1.1.2 (2026-07-02)**: agrupa las tres entradas de arriba (fix de score falso 100/100 en `/salud`, auditoría de estandarización de `features/health/`, relocate de `app/icons.tsx`). PR [#6](https://github.com/ISeco/wealet/pull/6) `dev → main`, aprobado por `ISeco-agsbyte`, CI en verde, mergeado en `1b683e7`. Tag `v1.1.2` sobre el merge commit.
+
 ---
 
 ## Pendientes documentados
