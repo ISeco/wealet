@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, IsNull, Not, Repository } from 'typeorm';
 import { assignDefined } from '../../common/utils/assign-defined';
 import { Fund } from '../funds/entities/fund.entity';
 import { AssessmentResponseDto } from './dto/assessment-response.dto';
@@ -29,8 +29,6 @@ export class HealthService {
   constructor(
     @InjectRepository(HealthProfile)
     private readonly healthProfileRepository: Repository<HealthProfile>,
-    @InjectRepository(Fund)
-    private readonly fundsRepository: Repository<Fund>,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
@@ -57,7 +55,7 @@ export class HealthService {
     const saved = await this.healthProfileRepository.save(profile);
 
     if (dto.framework) {
-      await this.seedFrameworkFunds(userId, dto.framework);
+      await this.provisionFrameworkFunds(userId, dto.framework);
     }
 
     return saved;
@@ -141,35 +139,51 @@ export class HealthService {
     return `f.framework_slot LIKE '${prefix}%'`;
   }
 
-  private async seedFrameworkFunds(
+  async provisionFrameworkFunds(
     userId: string,
     framework: HealthFramework,
-  ): Promise<void> {
-    const templates = FRAMEWORK_FUND_TEMPLATES[framework];
-    if (templates.length === 0) return;
+  ): Promise<Fund[]> {
+    return this.dataSource.transaction(async (manager) => {
+      const fundsRepo = manager.getRepository(Fund);
+      const prefix = frameworkSlotPrefix(framework);
 
-    const existingSlots = await this.fundsRepository
-      .createQueryBuilder('f')
-      .select('f.frameworkSlot')
-      .where('f.userId = :userId', { userId })
-      .andWhere('f.frameworkSlot IS NOT NULL')
-      .getMany()
-      .then((funds) => new Set(funds.map((f) => f.frameworkSlot)));
+      const slotFunds = await fundsRepo.find({
+        where: { userId, frameworkSlot: Not(IsNull()) },
+      });
 
-    const toCreate = templates.filter((t) => !existingSlots.has(t.slot));
-    if (toCreate.length === 0) return;
+      const toArchive = slotFunds.filter(
+        (f) =>
+          f.archivedAt === null &&
+          (framework === HealthFramework.FONDOS ||
+            !f.frameworkSlot!.startsWith(prefix)),
+      );
+      toArchive.forEach((fund) => {
+        fund.archivedAt = new Date();
+        fund.isOperative = false;
+      });
 
-    const funds = toCreate.map((t) =>
-      this.fundsRepository.create({
-        userId,
-        name: t.name,
-        classification: t.classification,
-        frameworkSlot: t.slot,
-        targetPercentage: t.targetPercentage,
-        isOperative: false,
-        countsForRunway: false,
-      }),
-    );
-    await this.fundsRepository.save(funds);
+      const bySlot = new Map(slotFunds.map((f) => [f.frameworkSlot, f]));
+      const result: Fund[] = FRAMEWORK_FUND_TEMPLATES[framework].map(
+        (template) => {
+          const existing = bySlot.get(template.slot);
+          if (existing) {
+            existing.archivedAt = null;
+            return existing;
+          }
+          return fundsRepo.create({
+            userId,
+            name: template.name,
+            classification: template.classification,
+            frameworkSlot: template.slot,
+            targetPercentage: template.targetPercentage,
+            isOperative: template.isOperative,
+            countsForRunway: template.countsForRunway,
+          });
+        },
+      );
+
+      await fundsRepo.save([...toArchive, ...result]);
+      return result;
+    });
   }
 }
