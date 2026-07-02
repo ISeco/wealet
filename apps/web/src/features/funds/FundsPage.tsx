@@ -1,8 +1,6 @@
 // apps/web/src/features/funds/FundsPage.tsx
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useHealthProfile } from '../health/hooks'
-import { fundMatchesFramework } from '../health/utils'
 import { formatMoney } from '../../lib/money'
 import { FundFormDrawer } from './components/FundFormDrawer'
 import { useFunds } from './hooks'
@@ -17,11 +15,11 @@ const CLASS_DESC: Record<FundClassification, string> = {
   committed: 'Gastos futuros programados',
 }
 
-type Scope = 'all' | 'framework' | 'own'
+type Scope = 'all' | 'slotted' | 'own'
 
 const SCOPE_TABS: { value: Scope; label: string }[] = [
   { value: 'all', label: 'Todas' },
-  { value: 'framework', label: 'Del framework' },
+  { value: 'slotted', label: 'Con slot' },
   { value: 'own', label: 'Propios' },
 ]
 
@@ -41,15 +39,13 @@ export function FundsPage() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: allFunds = [], isLoading } = useFunds()
-  const { data: profile } = useHealthProfile()
   const [scope, setScope] = useState<Scope>('all')
 
-  const activeFramework = profile?.framework ?? 'fondos'
-  const frameworkFunds = allFunds.filter((f) => fundMatchesFramework(f.frameworkSlot, activeFramework))
+  const slottedFunds = allFunds.filter((f) => f.frameworkSlot !== null)
   const ownFunds = allFunds.filter((f) => f.frameworkSlot === null)
-  const scopeCounts = { all: allFunds.length, framework: frameworkFunds.length, own: ownFunds.length }
+  const scopeCounts = { all: allFunds.length, slotted: slottedFunds.length, own: ownFunds.length }
 
-  const funds = scope === 'framework' ? frameworkFunds : scope === 'own' ? ownFunds : allFunds
+  const funds = scope === 'slotted' ? slottedFunds : scope === 'own' ? ownFunds : allFunds
 
   const totalBalance = funds.reduce((sum, f) => sum + BigInt(f.balance), 0n)
 
