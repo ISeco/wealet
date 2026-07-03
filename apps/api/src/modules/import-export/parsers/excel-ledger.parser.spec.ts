@@ -357,4 +357,32 @@ describe('parseLedgerWorkbook', () => {
     );
     expect(total).toBe(-50); // matches Febrero's real "Total c/u"
   });
+
+  it('rounds a "Saldo inicial" opening balance with a floating-point cell value to an integer', () => {
+    // Excel formulas can leave a fund's opening cell as e.g. 92878.1 due to
+    // float rounding drift. Unlike the preview-only `openingBalances` list
+    // (which rounds via Math.round at capture time), the "Saldo inicial" row
+    // built from `openingByFundMonth` used the raw unrounded value, producing
+    // a non-integer amount string that Postgres' bigint column rejects.
+    const data: unknown[][] = [
+      [],
+      [null, null, null, null, 'Fondo Libre'],
+      [null, null, null, null, 92878.1],
+      [null, null, null, null, -500],
+    ];
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    worksheet['!ref'] = 'A1:E4';
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Enero 2026');
+    const buffer = XLSX.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx',
+    }) as Buffer;
+
+    const result = parseLedgerWorkbook(buffer);
+
+    const opening = result.rows.find((row) => row.sheet === 'opening_balance')!;
+    expect(opening.amount).toBe('92878');
+    expect(Number.isInteger(Number(opening.amount))).toBe(true);
+  });
 });

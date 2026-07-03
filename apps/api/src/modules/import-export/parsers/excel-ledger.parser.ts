@@ -300,19 +300,21 @@ export function parseLedgerWorkbook(
     if (amount === 0) {
       continue; // fund genuinely started at 0 — no transaction needed
     }
+    const roundedAmount = Math.round(amount);
     rows.push({
       sheet: 'opening_balance',
       cell: `${fundName}|${year}-${String(month).padStart(2, '0')}`,
       fundName,
-      amount: String(Math.abs(amount)),
-      type: amount >= 0 ? TransactionType.INCOME : TransactionType.EXPENSE,
+      amount: String(Math.abs(roundedAmount)),
+      type:
+        roundedAmount >= 0 ? TransactionType.INCOME : TransactionType.EXPENSE,
       description: 'Saldo inicial',
       occurredOn: toIsoDate(year, month, 1),
       dedupeHash: computeDedupeHash(
         'opening_balance',
         fundName,
         `${year}-${String(month).padStart(2, '0')}`,
-        amount,
+        roundedAmount,
       ),
     });
   }
