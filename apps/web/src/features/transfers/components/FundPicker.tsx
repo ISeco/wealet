@@ -1,5 +1,7 @@
 // apps/web/src/features/transfers/components/FundPicker.tsx
 import { useEffect, useRef, useState } from 'react'
+import { ChevronDownIcon, PlusIcon } from '../../../components/ui/icons'
+import { formatMoney } from '../../../lib/money'
 import type { Fund } from '../../funds/types'
 import { classColor, getFundChip, getInitials } from '../../funds/utils'
 
@@ -13,13 +15,6 @@ interface FundPickerProps {
   projectedBalance: number | null
   disabled?: boolean
 }
-
-const fmt = new Intl.NumberFormat('es-CL', {
-  style: 'currency',
-  currency: 'CLP',
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-})
 
 export function FundPicker({ label, direction, funds, selectedId, onChange, exclude, projectedBalance, disabled }: FundPickerProps) {
   const [open, setOpen] = useState(false)
@@ -60,7 +55,7 @@ export function FundPicker({ label, direction, funds, selectedId, onChange, excl
           </span>
         ) : (
           <span style={{ width: 36, height: 36, borderRadius: 9, flexShrink: 0, background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+            <PlusIcon color="var(--muted)" size={16} />
           </span>
         )}
 
@@ -73,12 +68,9 @@ export function FundPicker({ label, direction, funds, selectedId, onChange, excl
           </div>
         </div>
 
-        <svg
-          width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
-          style={{ marginLeft: 'auto', flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
+        <span style={{ marginLeft: 'auto', flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s', display: 'flex' }}>
+          <ChevronDownIcon />
+        </span>
       </div>
 
       {selected && (
@@ -87,7 +79,7 @@ export function FundPicker({ label, direction, funds, selectedId, onChange, excl
           <div style={{ fontSize: 16, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{selected.balanceFormatted}</div>
           {projectedBalance !== null && (
             <div style={{ fontSize: 12, color: projectedColor, marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>
-              → {fmt.format(projectedBalance)} después
+              → {formatMoney(String(projectedBalance), 'CLP')} después
             </div>
           )}
         </div>

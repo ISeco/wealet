@@ -1,6 +1,12 @@
 import { useTheme } from '../../../app/theme'
+import { SegmentedTabs } from '../../../components/ui/SegmentedTabs'
 import { updateProfile } from '../api'
 import { card } from '../styles'
+
+const THEME_OPTIONS = [
+  { value: 'light' as const, label: 'Claro' },
+  { value: 'dark' as const, label: 'Oscuro' },
+]
 
 export function AppearanceCard() {
   const { theme, toggleTheme } = useTheme()
@@ -19,39 +25,7 @@ export function AppearanceCard() {
             El navy de marca es la superficie en modo oscuro.
           </div>
         </div>
-        <div
-          style={{
-            display: 'inline-flex',
-            padding: 3,
-            background: 'var(--card-2)',
-            border: '1px solid var(--border)',
-            borderRadius: 9,
-            gap: 3,
-          }}
-        >
-          {(['light', 'dark'] as const).map((t) => {
-            const active = theme === t
-            return (
-              <div
-                key={t}
-                onClick={() => handleTheme(t)}
-                style={{
-                  padding: '7px 16px',
-                  borderRadius: 6,
-                  fontSize: 13,
-                  fontWeight: active ? 600 : 400,
-                  cursor: 'pointer',
-                  background: active ? 'var(--card)' : 'transparent',
-                  color: active ? 'var(--text)' : 'var(--muted)',
-                  boxShadow: active ? '0 1px 3px rgba(0,0,0,.12)' : 'none',
-                  transition: 'all .15s',
-                }}
-              >
-                {t === 'light' ? 'Claro' : 'Oscuro'}
-              </div>
-            )
-          })}
-        </div>
+        <SegmentedTabs options={THEME_OPTIONS} value={theme} onChange={handleTheme} />
       </div>
     </div>
   )

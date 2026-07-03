@@ -1,22 +1,13 @@
 import { useNavigate } from 'react-router-dom'
+import { classColor } from '../../funds/utils'
 import { formatMoney } from '../../../lib/money'
 import { useHealthAssessment, useHealthProfile } from '../../health/hooks'
-import type { FundClassification } from '../../health/types'
 import { FRAMEWORK_LABELS } from '../../health/utils'
 
-const CLS_COLOR: Record<FundClassification, string> = {
-  available: 'var(--disp)',
-  reserve: 'var(--res)',
-  committed: 'var(--comp)',
-}
-
-const STATUS_TEAL = '#16A89A'
-const STATUS_AMBER = '#D97706'
-
 function statusTag(diff: number): { label: string; color: string } {
-  if (diff < -5) return { label: 'Bajo', color: STATUS_AMBER }
-  if (diff > 5)  return { label: `+${Math.round(diff)} pts`, color: STATUS_TEAL }
-  return { label: 'En meta', color: STATUS_TEAL }
+  if (diff < -5) return { label: 'Bajo', color: 'var(--comp)' }
+  if (diff > 5)  return { label: `+${Math.round(diff)} pts`, color: 'var(--disp)' }
+  return { label: 'En meta', color: 'var(--disp)' }
 }
 
 interface Props {
@@ -74,7 +65,7 @@ export function HealthCard({ month }: Props) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {funds.map((fund) => {
             const diff = fund.actualPercentage - fund.targetPercentage
-            const color = CLS_COLOR[fund.classification]
+            const color = classColor(fund.classification).color
             const tag = statusTag(diff)
             const realW = `${Math.min(fund.actualPercentage, 100).toFixed(1)}%`
             const targetW = `${Math.min(fund.targetPercentage, 100).toFixed(1)}%`

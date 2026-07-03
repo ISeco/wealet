@@ -30,8 +30,8 @@ app mide qué tan bien se está cumpliendo ese plan mes a mes.
 - **Transferencias atómicas** entre fondos, transacciones con categorías, y un timeline
   unificado de actividad.
 - **Reportes**: patrimonio total, runway sin ingreso, flujo neto mensual, gasto por categoría.
-- **Importar/exportar** movimientos desde Excel.
-- Autenticación con email/contraseña o Google, recuperación de contraseña por email.
+- **Importar/exportar** movimientos desde Excel, con detección tolerante de plantillas.
+- **Autenticación** con email/contraseña o Google, recuperación de contraseña por email.
 
 ## Screenshots
 

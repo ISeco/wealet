@@ -1,3 +1,5 @@
+import { CheckIcon, ArrowRightIcon } from '../../../components/ui/icons'
+
 export type PresetOption = 'jars_eker' | '50_30_20' | 'profit_first' | 'fondos' | 'excel'
 
 interface PresetCard {
@@ -108,7 +110,7 @@ export function Step1Preset({ selected, onSelect }: Props) {
                   {card.icon}
                 </span>
                 <span style={{ width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--disp)', opacity: isSelected ? 1 : 0, transition: 'opacity .15s' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  <CheckIcon color="#fff" size={13} />
                 </span>
               </div>
               <div style={{ fontSize: 16.5, fontWeight: 600, color: 'var(--text)' }}>{card.name}</div>
@@ -149,9 +151,7 @@ export function Step1Preset({ selected, onSelect }: Props) {
           <polyline points="10 9 9 9 8 9" />
         </svg>
         <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>Importar desde Excel</span>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 2 }}>
-          <path d="M5 12h14M13 6l6 6-6 6" />
-        </svg>
+        <ArrowRightIcon color="var(--muted)" size={15} />
       </div>
     </div>
   )

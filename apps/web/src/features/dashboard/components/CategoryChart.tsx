@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { formatMoney } from '../../../lib/money'
 import { useByCategory } from '../hooks'
+import { monthName, sortCategoriesByAmountDesc } from '../utils'
 import { CategoryChartDrawer } from './CategoryChartDrawer'
 
-const PALETTE = ['#16A89A', '#2563EB', '#D97706', '#DC2626', '#7C3AED', '#0891B2']
-
-const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+const PALETTE = ['var(--disp)', 'var(--info)', 'var(--warn)', 'var(--neg)', '#7C3AED', '#0891B2']
 
 interface Props {
   month: string
@@ -15,21 +14,16 @@ export function CategoryChart({ month }: Props) {
   const { data = [] } = useByCategory(month)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  const sorted = [...data].sort((a, b) =>
-    BigInt(b.amount) > BigInt(a.amount) ? 1 : BigInt(b.amount) < BigInt(a.amount) ? -1 : 0
-  )
+  const sorted = sortCategoriesByAmountDesc(data)
   const top6 = sorted.slice(0, 6)
   const maxAmount = top6.length > 0 ? Number(top6[0].amount) : 1
-
-  const m = month.split('-')[1]
-  const monthName = MONTH_NAMES[Number(m) - 1]
 
   return (
     <>
       <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', padding: '20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div style={{ fontSize: 14.5, fontWeight: 600 }}>Gasto por categoría</div>
-          <span style={{ fontSize: 12, color: 'var(--muted)' }}>{monthName}</span>
+          <span style={{ fontSize: 12, color: 'var(--muted)' }}>{monthName(month)}</span>
         </div>
 
         {top6.length === 0 ? (

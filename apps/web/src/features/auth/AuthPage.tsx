@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useGoogleLogin } from '@react-oauth/google'
+import { Button } from '../../components/ui/Button'
 import { WealetIcon } from '../../components/ui/WealetIcon'
 import { LoginForm } from './LoginForm'
 import { RegisterForm } from './RegisterForm'
@@ -39,7 +40,7 @@ export function AuthPage({ mode }: AuthPageProps) {
       <div
         style={{
           flex: 1.05,
-          background: '#12294A',
+          background: 'var(--navy)',
           color: '#fff',
           display: 'flex',
           flexDirection: 'column',
@@ -128,25 +129,11 @@ export function AuthPage({ mode }: AuthPageProps) {
             </Link>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => handleGoogleLogin()}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              height: 44,
-              border: '1px solid var(--border-strong)',
-              borderRadius: 9,
-              background: 'var(--card)',
-              color: 'var(--text)',
-              fontFamily: 'inherit',
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: 'pointer',
-            }}
+            style={{ width: '100%', height: 44, border: '1px solid var(--border-strong)', fontWeight: 500 }}
           >
             <svg width="17" height="17" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.2-4.8 3.2-7.8z" />
@@ -155,7 +142,7 @@ export function AuthPage({ mode }: AuthPageProps) {
               <path fill="#EA4335" d="M12 5.5c1.6 0 3 .5 4.1 1.6l3.1-3.1A11 11 0 0 0 2.3 7.3L6 10.1c.9-2.6 3.2-4.6 6-4.6z" />
             </svg>
             Continuar con Google
-          </button>
+          </Button>
           {googleError && (
             <p style={{ fontSize: 13, color: 'var(--neg)', margin: '8px 0 0', textAlign: 'center' }}>
               {googleError}

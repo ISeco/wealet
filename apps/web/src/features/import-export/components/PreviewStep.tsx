@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { Button } from '../../../components/ui/Button'
+import { Pagination } from '../../../components/ui/Pagination'
 import { formatMoney } from '../../../lib/money'
-import type { ImportPreviewResponseDto, ImportRowDto } from '../types'
+import type { ImportPreviewResponseDto } from '../types'
+import { rowBadge, rowOpacity } from '../importFlow.utils'
 import { UnknownFundsSection } from './UnknownFundsSection'
 
 const PAGE_SIZE = 25
@@ -14,24 +16,6 @@ interface Props {
   onConfirm: () => void
   isPending: boolean
   error?: string | null
-}
-
-function rowBadge(
-  row: ImportRowDto,
-  unknownFunds: string[],
-  approvedFunds: Set<string>,
-): { label: string; bg: string; color: string } {
-  if (row.duplicate) return { label: 'Duplicada', bg: 'var(--warn-bg)', color: 'var(--warn)' }
-  if (unknownFunds.includes(row.fundName) && !approvedFunds.has(row.fundName)) {
-    return { label: 'Se omitirá', bg: 'var(--card-2)', color: 'var(--muted)' }
-  }
-  return { label: 'Válida', bg: 'var(--pos-bg)', color: 'var(--pos)' }
-}
-
-function rowOpacity(row: ImportRowDto, unknownFunds: string[], approvedFunds: Set<string>): number {
-  if (row.duplicate) return 0.6
-  if (unknownFunds.includes(row.fundName) && !approvedFunds.has(row.fundName)) return 0.5
-  return 1
 }
 
 export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, onConfirm, isPending, error }: Props) {
@@ -160,47 +144,10 @@ export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, 
       {/* Pagination */}
       {totalPages > 1 && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
-          <button
-            onClick={() => setPage((p) => p - 1)}
-            disabled={page === 0}
-            style={{
-              height: 34,
-              padding: '0 14px',
-              border: '1px solid var(--border)',
-              borderRadius: 8,
-              background: 'var(--card)',
-              color: page === 0 ? 'var(--muted)' : 'var(--text)',
-              fontFamily: 'inherit',
-              fontSize: 13,
-              fontWeight: 500,
-              cursor: page === 0 ? 'default' : 'pointer',
-              opacity: page === 0 ? 0.5 : 1,
-            }}
-          >
-            ← Anterior
-          </button>
           <span style={{ fontSize: 13, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>
             Página {page + 1} de {totalPages} · {rows.length} filas
           </span>
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            disabled={page >= totalPages - 1}
-            style={{
-              height: 34,
-              padding: '0 14px',
-              border: '1px solid var(--border)',
-              borderRadius: 8,
-              background: 'var(--card)',
-              color: page >= totalPages - 1 ? 'var(--muted)' : 'var(--text)',
-              fontFamily: 'inherit',
-              fontSize: 13,
-              fontWeight: 500,
-              cursor: page >= totalPages - 1 ? 'default' : 'pointer',
-              opacity: page >= totalPages - 1 ? 0.5 : 1,
-            }}
-          >
-            Siguiente →
-          </button>
+          <Pagination page={page + 1} totalPages={totalPages} onPageChange={(p) => setPage(p - 1)} />
         </div>
       )}
 

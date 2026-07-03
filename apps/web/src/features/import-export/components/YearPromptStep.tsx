@@ -32,7 +32,10 @@ export function YearPromptStep({ fileName, value, onChange, isPending, error }: 
           width: 120,
           height: 40,
           textAlign: 'center',
+          fontFamily: 'inherit',
           fontSize: 15,
+          color: 'var(--text)',
+          background: 'var(--field)',
           border: '1px solid var(--border)',
           borderRadius: 9,
         }}

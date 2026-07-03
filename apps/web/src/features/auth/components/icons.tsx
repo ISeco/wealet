@@ -1,3 +1,5 @@
+import { CheckIcon } from '../../../components/ui/icons'
+
 interface IconProps {
   onClick?: () => void
 }
@@ -50,9 +52,10 @@ export function AlertCircleIcon() {
 }
 
 export function RuleStatusIcon({ met }: { met: boolean }) {
+  if (met) return <CheckIcon color="currentColor" size={14} />
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flex: 'none' }}>
-      {met ? <path d="M20 6L9 17l-5-5"></path> : <circle cx="12" cy="12" r="9"></circle>}
+      <circle cx="12" cy="12" r="9"></circle>
     </svg>
   )
 }

@@ -1,3 +1,5 @@
+import type { CategorySpend } from './types'
+
 export const MONTH_NAMES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
@@ -28,4 +30,11 @@ export function prevMonthName(yyyyMM: string): string {
   const [year, month] = yyyyMM.split('-').map(Number)
   const prevDate = new Date(year, month - 2, 1)
   return MONTH_NAMES[prevDate.getMonth()].toLowerCase()
+}
+
+/** Sorts categories by spent amount, highest first. */
+export function sortCategoriesByAmountDesc(categories: CategorySpend[]): CategorySpend[] {
+  return [...categories].sort((a, b) =>
+    BigInt(b.amount) > BigInt(a.amount) ? 1 : BigInt(b.amount) < BigInt(a.amount) ? -1 : 0
+  )
 }

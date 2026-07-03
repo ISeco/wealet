@@ -1,113 +1,52 @@
-import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
-import { createFund } from './api'
-import { useCompleteOnboarding } from './hooks/useCompleteOnboarding'
-import { Step1Preset, type PresetOption } from './steps/Step1Preset'
+import { useOnboardingFlow } from './hooks/useOnboardingFlow'
+import { Step1Preset } from './steps/Step1Preset'
 import { Step2Funds } from './steps/Step2Funds'
 import { Step2Excel } from './steps/Step2Excel'
 import { Step3Income } from './steps/Step3Income'
 import { Step3Success } from './steps/Step3Success'
 import { Button } from '../../components/ui/Button'
-import { useExcelImportFlow } from '../import-export/useExcelImportFlow'
-import type { CreateFundPayload } from '../funds/types'
-import { useHealthProfile } from '../health/hooks'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
-import type { HealthFramework } from '../health/types'
-
-const SLOT_PRESETS: PresetOption[] = ['jars_eker', '50_30_20', 'profit_first']
+import { FRAMEWORK_LABELS } from '../health/utils'
 
 export function OnboardingPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isReconfigure = searchParams.get('from') === 'settings'
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
-  const [selected, setSelected] = useState<PresetOption | null>(null)
-  const [customFunds, setCustomFunds] = useState<CreateFundPayload[]>([])
-  const [addFundError, setAddFundError] = useState<string | null>(null)
-  const [incomeAmount, setIncomeAmount] = useState('')
-  const excelFlow = useExcelImportFlow()
-  const { data: healthProfile } = useHealthProfile()
-  const [showFrameworkWarning, setShowFrameworkWarning] = useState(false)
 
-  const FRAMEWORK_LABEL: Record<HealthFramework, string> = {
-    '50_30_20': 'Regla 50 / 30 / 20',
-    jars_eker: 'Jars of Eker',
-    profit_first: 'Profit First',
-    fondos: 'Fondos',
-  }
+  const flow = useOnboardingFlow(isReconfigure)
+  const {
+    step,
+    selected,
+    setSelected,
+    customFunds,
+    addFundError,
+    incomeAmount,
+    setIncomeAmount,
+    excelFlow,
+    healthProfile,
+    showFrameworkWarning,
+    targetFramework,
+    dots,
+    isPending,
+    error,
+    goToStep2,
+    goBack,
+    confirmFrameworkChange,
+    closeFrameworkWarning,
+    handleAddFund,
+    handleRemoveFund,
+    handleConfirmStep2,
+    handleConfirmIncome,
+    handleExcelComplete,
+  } = flow
 
-  // 'excel' doesn't pick a framework directly, but completing it implicitly
-  // sets 'fondos' (see useCompleteOnboarding) — treat it the same way here.
-  const targetFramework: HealthFramework | null =
-    selected === 'excel' ? 'fondos' : (selected as HealthFramework | null)
-
-  const willChangeFramework =
-    isReconfigure &&
-    targetFramework !== null &&
-    healthProfile !== undefined &&
-    targetFramework !== healthProfile.framework
-
-  function goToStep2() {
-    if (!selected) return
-    if (willChangeFramework) {
-      setShowFrameworkWarning(true)
-      return
-    }
-    setStep(2)
-  }
-
-  const { complete, isPending, error } = useCompleteOnboarding()
-
-  const isSlotPreset = selected ? SLOT_PRESETS.includes(selected) : false
-  const totalSteps = isSlotPreset ? 4 : 3
-
-  // Map internal step (1-4) to dot position (1-totalSteps)
-  const dotStep = isSlotPreset ? step : step === 4 ? 3 : step
-
-  const dots = Array.from({ length: totalSteps }, (_, i) => ({
-    active: i + 1 === dotStep,
-    width: i + 1 === dotStep ? 24 : 8,
-  }))
-
-  async function handleAddFund(fund: CreateFundPayload) {
-    setAddFundError(null)
-    try {
-      await createFund(fund)
-      setCustomFunds((prev) => [...prev, fund])
-    } catch (err) {
-      setAddFundError(err instanceof Error ? err.message : 'No se pudo crear el fondo.')
-    }
-  }
-
-  function handleRemoveFund(index: number) {
-    setCustomFunds((prev) => prev.filter((_, i) => i !== index))
-  }
-
-  async function handleConfirmStep2() {
-    if (!selected) return
-    if (isSlotPreset) {
-      setStep(3)
-    } else {
-      const ok = await complete(selected, undefined, isReconfigure)
-      if (ok) setStep(4)
-    }
-  }
-
-  async function handleConfirmIncome(income?: string) {
-    if (!selected) return
-    const ok = await complete(selected, income, isReconfigure)
-    if (ok) setStep(4)
-  }
-
-  async function handleExcelComplete() {
-    if (!selected) return
-    const ok = await complete(selected, undefined, isReconfigure)
-    if (ok) setStep(4)
-  }
-
-  const showNavFooter = step !== 4
+  // PreviewStep already renders its own Volver/Confirmar footer — the generic
+  // nav footer would otherwise show a redundant "Atrás" alongside it.
+  const isExcelPreview = selected === 'excel' && excelFlow.phase === 'preview'
+  const showNavFooter = step !== 4 && !isExcelPreview
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
@@ -173,7 +112,7 @@ export function OnboardingPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {/* Atrás */}
               {(step === 2 || step === 3) && (
-                <Button variant="secondary" onClick={() => setStep(step === 3 ? 2 : 1)}>
+                <Button variant="secondary" onClick={goBack}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
                   Atrás
                 </Button>
@@ -234,24 +173,21 @@ export function OnboardingPage() {
                 healthProfile.framework === 'fondos' ? (
                   <>
                     Tus fondos propios no se ven afectados. Se activarán los fondos de{' '}
-                    <strong>{FRAMEWORK_LABEL[targetFramework]}</strong> y se mostrarán junto a los tuyos en Fondos y
+                    <strong>{FRAMEWORK_LABELS[targetFramework]}</strong> y se mostrarán junto a los tuyos en Fondos y
                     Salud financiera.
                   </>
                 ) : (
                   <>
-                    Los fondos de <strong>{FRAMEWORK_LABEL[healthProfile.framework]}</strong> se archivarán: tu
+                    Los fondos de <strong>{FRAMEWORK_LABELS[healthProfile.framework]}</strong> se archivarán: tu
                     historial y saldo se conservan, pero dejarán de verse en Fondos y Salud financiera. Si vuelves a{' '}
-                    <strong>{FRAMEWORK_LABEL[healthProfile.framework]}</strong> más adelante, se reactivan
+                    <strong>{FRAMEWORK_LABELS[healthProfile.framework]}</strong> más adelante, se reactivan
                     automáticamente con su historial intacto.
                   </>
                 )
               }
               confirmLabel="Continuar"
-              onConfirm={() => {
-                setShowFrameworkWarning(false)
-                setStep(2)
-              }}
-              onClose={() => setShowFrameworkWarning(false)}
+              onConfirm={confirmFrameworkChange}
+              onClose={closeFrameworkWarning}
             />
           )}
         </div>

@@ -3,6 +3,9 @@ import type { PresetOption } from './Step1Preset'
 import { FundRow } from '../components/FundRow'
 import { AddFundForm } from '../components/AddFundForm'
 import type { CreateFundPayload, FundClassification } from '../../funds/types'
+import { FRAMEWORK_LABELS } from '../../health/utils'
+import { Button } from '../../../components/ui/Button'
+import { PlusIcon } from '../../../components/ui/icons'
 
 interface PresetFundDef {
   name: string
@@ -31,12 +34,6 @@ const PRESET_FUNDS: Record<Exclude<PresetOption, 'fondos' | 'excel'>, PresetFund
   ],
 }
 
-const PRESET_NAMES: Record<Exclude<PresetOption, 'fondos' | 'excel'>, string> = {
-  jars_eker: 'Jars of Eker',
-  '50_30_20': 'Regla 50/30/20',
-  profit_first: 'Profit First',
-}
-
 interface Props {
   preset: Exclude<PresetOption, 'excel'>
   customFunds: CreateFundPayload[]
@@ -50,7 +47,7 @@ export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, error
 
   const isPreset = preset !== 'fondos'
   const presetFunds = isPreset ? PRESET_FUNDS[preset as Exclude<PresetOption, 'fondos' | 'excel'>] : []
-  const presetName = isPreset ? PRESET_NAMES[preset as Exclude<PresetOption, 'fondos' | 'excel'>] : ''
+  const presetName = isPreset ? FRAMEWORK_LABELS[preset as Exclude<PresetOption, 'fondos' | 'excel'>] : ''
 
   return (
     <div>
@@ -78,13 +75,14 @@ export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, error
         ))}
 
         {!isPreset && !showAddForm && (
-          <button
+          <Button
+            variant="secondary"
             onClick={() => setShowAddForm(true)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 13, border: '1px dashed var(--border-strong)', borderRadius: 12, color: 'var(--muted)', fontSize: 13.5, fontWeight: 500, cursor: 'pointer', background: 'none' }}
+            style={{ border: '1px dashed var(--border-strong)', background: 'none', color: 'var(--muted)', fontWeight: 500 }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+            <PlusIcon size={16} />
             Agregar fondo
-          </button>
+          </Button>
         )}
 
         {!isPreset && showAddForm && (

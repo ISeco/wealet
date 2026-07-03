@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import { useNetWorth } from '../../dashboard/hooks'
 import { formatMoney } from '../../../lib/money'
+import { FRAMEWORK_LABELS } from '../../health/utils'
+import { Button } from '../../../components/ui/Button'
+import { CheckIcon } from '../../../components/ui/icons'
 
 const PRESET_NAMES: Record<string, string> = {
-  jars_eker: 'Jars of Eker',
-  '50_30_20': 'Regla 50/30/20',
-  profit_first: 'Profit First',
-  fondos: 'Fondos propios',
+  ...FRAMEWORK_LABELS,
   excel: 'tu importación Excel',
 }
 
@@ -28,9 +28,7 @@ export function Step3Success({ preset, displayName, isReconfigure }: Props) {
   return (
     <div style={{ textAlign: 'center' }}>
       <div style={{ width: 78, height: 78, borderRadius: 22, background: 'var(--grad)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', boxShadow: 'var(--shadow-lg)' }}>
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
+        <CheckIcon color="#fff" size={40} />
       </div>
       <div style={{ fontSize: 30, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--text)' }}>
         Todo listo, {name}.
@@ -51,12 +49,9 @@ export function Step3Success({ preset, displayName, isReconfigure }: Props) {
           <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 2 }}>moneda</div>
         </div>
       </div>
-      <button
-        onClick={() => navigate(isReconfigure ? '/ajustes' : '/')}
-        style={{ marginTop: 8, height: 46, padding: '0 30px', border: 'none', borderRadius: 9, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow)' }}
-      >
+      <Button onClick={() => navigate(isReconfigure ? '/ajustes' : '/')} style={{ marginTop: 8 }}>
         {isReconfigure ? 'Volver a Ajustes' : 'Ir al dashboard'}
-      </button>
+      </Button>
     </div>
   )
 }

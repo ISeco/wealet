@@ -1,4 +1,6 @@
 import type { ImportCommitResultDto } from '../types'
+import { Button } from '../../../components/ui/Button'
+import { CheckIcon } from '../../../components/ui/icons'
 
 interface Props {
   result: ImportCommitResultDto
@@ -32,9 +34,7 @@ export function SuccessStep({ result, displayName, onImportAnother, onGoToTransa
           margin: '0 auto 18px',
         }}
       >
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--pos)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 6L9 17l-5-5" />
-        </svg>
+        <CheckIcon color="var(--pos)" size={30} />
       </div>
       <div style={{ fontSize: 20, fontWeight: 600 }}>{greeting}</div>
       <div
@@ -53,41 +53,12 @@ export function SuccessStep({ result, displayName, onImportAnother, onGoToTransa
         )} Tu patrimonio está al día.
       </div>
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 24 }}>
-        <button
-          onClick={onImportAnother}
-          style={{
-            height: 42,
-            padding: '0 18px',
-            border: '1px solid var(--border)',
-            borderRadius: 9,
-            background: 'var(--card)',
-            color: 'var(--text)',
-            fontFamily: 'inherit',
-            fontSize: 14,
-            fontWeight: 500,
-            cursor: 'pointer',
-          }}
-        >
+        <Button variant="secondary" onClick={onImportAnother}>
           Importar otro
-        </button>
-        <button
-          onClick={onGoToTransactions}
-          style={{
-            height: 42,
-            padding: '0 20px',
-            border: 'none',
-            borderRadius: 9,
-            background: 'var(--grad)',
-            color: '#fff',
-            fontFamily: 'inherit',
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: 'pointer',
-            boxShadow: 'var(--shadow)',
-          }}
-        >
+        </Button>
+        <Button onClick={onGoToTransactions}>
           Ver transacciones
-        </button>
+        </Button>
       </div>
     </div>
   )

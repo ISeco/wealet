@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useAuth } from '../../auth'
+import { Button } from '../../../components/ui/Button'
+import { getUserInitials, useAuth } from '../../auth'
 import { useUpdateProfile } from '../hooks'
 import { card } from '../styles'
 
@@ -10,12 +11,7 @@ export function ProfileCard() {
   const [nameValue, setNameValue] = useState(user?.displayName ?? '')
   const nameChanged = nameValue !== (user?.displayName ?? '')
 
-  const initials = (user?.displayName ?? user?.email ?? '?')
-    .split(' ')
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
+  const initials = getUserInitials(user)
 
   async function handleSave() {
     await mutateAsync({ displayName: nameValue })
@@ -86,42 +82,21 @@ export function ProfileCard() {
           </div>
           {nameChanged && (
             <div style={{ display: 'flex', gap: 8 }}>
-              <button
+              <Button
                 onClick={handleSave}
                 disabled={isPending}
-                style={{
-                  height: 34,
-                  padding: '0 14px',
-                  borderRadius: 7,
-                  border: 'none',
-                  background: 'var(--grad)',
-                  color: '#fff',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: isPending ? 'default' : 'pointer',
-                  opacity: isPending ? 0.7 : 1,
-                  fontFamily: 'inherit',
-                }}
+                style={{ height: 34, padding: '0 14px', fontSize: 13 }}
               >
                 {isPending ? 'Guardando…' : 'Guardar'}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={() => setNameValue(user?.displayName ?? '')}
                 disabled={isPending}
-                style={{
-                  height: 34,
-                  padding: '0 14px',
-                  borderRadius: 7,
-                  border: '1px solid var(--border)',
-                  background: 'var(--card)',
-                  color: 'var(--text)',
-                  fontSize: 13,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
+                style={{ height: 34, padding: '0 14px', fontSize: 13 }}
               >
                 Cancelar
-              </button>
+              </Button>
             </div>
           )}
         </div>
