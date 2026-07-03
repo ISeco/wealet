@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { deriveRowsToCommit, isValidYear } from './importFlow.utils'
+import { deriveRowsToCommit, isValidYear, rowBadge, rowOpacity } from './importFlow.utils'
 import type { ImportRowDto } from './types'
 
 describe('isValidYear', () => {
@@ -62,5 +62,42 @@ describe('deriveRowsToCommit', () => {
   it('includes a row whose fund is unknown but approved', () => {
     const rows = [buildRow({ fundName: 'Fondo Nuevo' })]
     expect(deriveRowsToCommit(rows, new Set(['Fondo Nuevo']), ['Fondo Nuevo'])).toEqual(rows)
+  })
+})
+
+describe('rowBadge', () => {
+  it('labels a duplicate row', () => {
+    const row = buildRow({ duplicate: true })
+    expect(rowBadge(row, [], new Set()).label).toBe('Duplicada')
+  })
+
+  it('labels a row with an unapproved unknown fund as skipped', () => {
+    const row = buildRow({ fundName: 'Fondo Nuevo' })
+    expect(rowBadge(row, ['Fondo Nuevo'], new Set()).label).toBe('Se omitirá')
+  })
+
+  it('labels a row with an approved unknown fund as valid', () => {
+    const row = buildRow({ fundName: 'Fondo Nuevo' })
+    expect(rowBadge(row, ['Fondo Nuevo'], new Set(['Fondo Nuevo'])).label).toBe('Válida')
+  })
+
+  it('labels a normal row as valid', () => {
+    const row = buildRow()
+    expect(rowBadge(row, [], new Set()).label).toBe('Válida')
+  })
+})
+
+describe('rowOpacity', () => {
+  it('dims a duplicate row', () => {
+    expect(rowOpacity(buildRow({ duplicate: true }), [], new Set())).toBe(0.6)
+  })
+
+  it('dims a row with an unapproved unknown fund', () => {
+    const row = buildRow({ fundName: 'Fondo Nuevo' })
+    expect(rowOpacity(row, ['Fondo Nuevo'], new Set())).toBe(0.5)
+  })
+
+  it('keeps full opacity for a normal row', () => {
+    expect(rowOpacity(buildRow(), [], new Set())).toBe(1)
   })
 })

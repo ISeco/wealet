@@ -1,4 +1,5 @@
 import type { FundClassification } from '../../funds/types'
+import { CloseIcon } from '../../../components/ui/icons'
 
 const CLASSIFICATION_LABEL: Record<FundClassification, string> = {
   available: 'Disponible',
@@ -37,7 +38,7 @@ export function FundRow({ name, classification, onRemove }: Props) {
           style={{ border: 'none', background: 'none', color: 'var(--muted)', cursor: 'pointer', padding: 4, lineHeight: 0 }}
           aria-label="Eliminar fondo"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          <CloseIcon size={16} />
         </button>
       )}
     </div>

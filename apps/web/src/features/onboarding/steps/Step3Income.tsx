@@ -1,6 +1,5 @@
 import { useState } from 'react'
-
-const fmt = new Intl.NumberFormat('es-CL')
+import { formatThousands } from '../../../lib/money'
 
 interface Props {
   rawAmount: string
@@ -9,7 +8,6 @@ interface Props {
 
 export function Step3Income({ rawAmount, onChange }: Props) {
   const [focused, setFocused] = useState(false)
-  const parsed = parseInt(rawAmount || '0', 10)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     onChange(e.target.value.replace(/\D/g, ''))
@@ -44,7 +42,7 @@ export function Step3Income({ rawAmount, onChange }: Props) {
             autoFocus
             type="text"
             inputMode="numeric"
-            value={rawAmount ? fmt.format(parsed) : ''}
+            value={formatThousands(rawAmount)}
             onChange={handleChange}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
