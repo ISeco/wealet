@@ -96,6 +96,33 @@ function getCell(
   return (sheet as Record<string, XLSX.CellObject | undefined>)[address];
 }
 
+const TOTALS_PER_FUND_LABEL_PATTERN = /^total\s*c\/u$/i;
+
+// Finds the "Total c/u" per-fund summary row by its label text rather than
+// assuming a blank buffer row separates it from the last real movement.
+// Sheets that are trimmed tightly (no padding to the full calendar length)
+// would otherwise let the calendar-day bound read straight into this row
+// and misparse the fund's running total as a new transaction.
+function findTotalsPerFundRowIndex(
+  sheet: XLSX.WorkSheet,
+  range: XLSX.Range,
+): number | null {
+  for (let r = range.s.r; r <= range.e.r; r++) {
+    for (let c = range.s.c; c <= range.e.c; c++) {
+      const cell = getCell(sheet, XLSX.utils.encode_cell({ r, c }));
+      if (
+        cell &&
+        cell.t === 's' &&
+        typeof cell.v === 'string' &&
+        TOTALS_PER_FUND_LABEL_PATTERN.test(cell.v.trim())
+      ) {
+        return r;
+      }
+    }
+  }
+  return null;
+}
+
 export function parseLedgerWorkbook(
   buffer: Buffer,
   options?: { year?: number },
@@ -120,6 +147,11 @@ export function parseLedgerWorkbook(
   const openingBalances: ParsedOpeningBalance[] = [];
   const errors: ParseError[] = [];
   const fundNames = new Set<string>();
+  // fund -> "YYYY-MM" -> value, for every sheet the fund appears in
+  // (unlike `openingBalances`, which only keeps non-zero entries for the
+  // preview API). Used below to compute each month's income injection.
+  const openingByFundMonth = new Map<string, Map<string, number>>();
+  const totalsByFundMonth = new Map<string, Map<string, number>>();
 
   for (const sheetName of workbook.SheetNames) {
     const sheet = workbook.Sheets[sheetName];
@@ -139,14 +171,18 @@ export function parseLedgerWorkbook(
 
     const range = XLSX.utils.decode_range(ref);
     const totalsRowIndex = range.e.r;
+    const totalsPerFundRowIndex = findTotalsPerFundRowIndex(sheet, range);
     const lastDay = daysInMonth(year, month);
-    // Bound by calendar days, not by footer position — tolerates a footer
-    // of any number of summary rows (1, 2, or more) without needing to
-    // detect "Total" labels by content.
-    const lastDataRowIndex = Math.min(
-      totalsRowIndex - 1,
-      FIRST_DATA_ROW_INDEX + lastDay - 1,
-    );
+    // Bound by the "Total c/u" row, found by label text rather than by
+    // calendar-day count: sheets sometimes have an extra row past the
+    // month's real day count (e.g. two same-day transactions split across
+    // rows), and the label is ground truth for where real data ends. The
+    // calendar-day cap is only a fallback for sheets with no "Total c/u"
+    // label to anchor on.
+    const lastDataRowIndex =
+      totalsPerFundRowIndex !== null
+        ? totalsPerFundRowIndex - 1
+        : Math.min(totalsRowIndex - 1, FIRST_DATA_ROW_INDEX + lastDay - 1);
 
     const fundColumns: Array<{ col: number; name: string }> = [];
     for (let col = range.s.c; col <= range.e.c; col++) {
@@ -173,16 +209,33 @@ export function parseLedgerWorkbook(
         c: col,
       });
       const openingCell = getCell(sheet, openingAddress);
-      if (
-        openingCell &&
-        typeof openingCell.v === 'number' &&
-        openingCell.v !== 0
-      ) {
-        openingBalances.push({
-          sheet: sheetName,
-          fundName,
-          amount: String(Math.round(openingCell.v)),
-        });
+      if (openingCell && typeof openingCell.v === 'number') {
+        if (openingCell.v !== 0) {
+          openingBalances.push({
+            sheet: sheetName,
+            fundName,
+            amount: String(Math.round(openingCell.v)),
+          });
+        }
+        const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+        if (!openingByFundMonth.has(fundName)) {
+          openingByFundMonth.set(fundName, new Map());
+        }
+        openingByFundMonth.get(fundName)!.set(monthKey, openingCell.v);
+      }
+
+      if (totalsPerFundRowIndex !== null) {
+        const totalCell = getCell(
+          sheet,
+          XLSX.utils.encode_cell({ r: totalsPerFundRowIndex, c: col }),
+        );
+        if (totalCell && typeof totalCell.v === 'number') {
+          const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+          if (!totalsByFundMonth.has(fundName)) {
+            totalsByFundMonth.set(fundName, new Map());
+          }
+          totalsByFundMonth.get(fundName)!.set(monthKey, totalCell.v);
+        }
       }
 
       for (let r = FIRST_DATA_ROW_INDEX; r <= lastDataRowIndex; r++) {
@@ -224,31 +277,29 @@ export function parseLedgerWorkbook(
 
   // Fold opening balances into rows as 'Saldo inicial' income transactions.
   // Only the earliest month per fund is used — subsequent months' opening
-  // balances are already captured by the imported transaction rows.
+  // balances are already captured by the imported transaction rows. Sourced
+  // from `openingByFundMonth` (not the zero-filtered `openingBalances`) so a
+  // fund whose first real month opens at exactly 0 is still recognized as
+  // its own anchor, instead of letting the next month's opening balance —
+  // which is really just that month's carried-over total — be mistaken for
+  // one and double-counted.
   const earliestPerFund = new Map<
     string,
     { year: number; month: number; amount: number }
   >();
-  for (const ob of openingBalances) {
-    const monthMatch = parseSheetMonth(ob.sheet);
-    if (!monthMatch) continue;
-    const year = monthMatch.year ?? options?.year;
-    if (year === undefined) continue; // unreachable: see needsYear guard above
-    const month = monthMatch.month;
-    const existing = earliestPerFund.get(ob.fundName);
-    if (
-      !existing ||
-      year < existing.year ||
-      (year === existing.year && month < existing.month)
-    ) {
-      earliestPerFund.set(ob.fundName, {
-        year,
-        month,
-        amount: Number(ob.amount),
-      });
-    }
+  for (const [fundName, monthMap] of openingByFundMonth) {
+    const earliestMonthKey = Array.from(monthMap.keys()).sort()[0];
+    const [yearStr, monthStr] = earliestMonthKey.split('-');
+    earliestPerFund.set(fundName, {
+      year: Number(yearStr),
+      month: Number(monthStr),
+      amount: monthMap.get(earliestMonthKey)!,
+    });
   }
   for (const [fundName, { year, month, amount }] of earliestPerFund) {
+    if (amount === 0) {
+      continue; // fund genuinely started at 0 — no transaction needed
+    }
     rows.push({
       sheet: 'opening_balance',
       cell: `${fundName}|${year}-${String(month).padStart(2, '0')}`,
@@ -264,6 +315,49 @@ export function parseLedgerWorkbook(
         amount,
       ),
     });
+  }
+
+  // Inject the delta between each month's opening balance and the previous
+  // month's "Total c/u" as a transaction. The sheet's fila 3 only records
+  // (leftover from the prior month + that month's newly allocated income);
+  // the leftover half is already reflected by the imported transactions,
+  // so only the delta is new money. The fund's first appearance is the
+  // anchor (already covered by the "Saldo inicial" row above) and is
+  // skipped here.
+  for (const [fundName, monthMap] of openingByFundMonth) {
+    const sortedMonthKeys = Array.from(monthMap.keys()).sort();
+    for (let i = 1; i < sortedMonthKeys.length; i++) {
+      const monthKey = sortedMonthKeys[i];
+      const previousMonthKey = sortedMonthKeys[i - 1];
+      const previousTotal = totalsByFundMonth
+        .get(fundName)
+        ?.get(previousMonthKey);
+      if (previousTotal === undefined) {
+        continue; // no "Total c/u" captured for the prior month — can't compute a delta
+      }
+      const delta = Math.round(monthMap.get(monthKey)! - previousTotal);
+      if (delta === 0) {
+        continue;
+      }
+      const [yearStr, monthStr] = monthKey.split('-');
+      const year = Number(yearStr);
+      const month = Number(monthStr);
+      rows.push({
+        sheet: 'monthly_injection',
+        cell: `${fundName}|${monthKey}`,
+        fundName,
+        amount: String(Math.abs(delta)),
+        type: delta >= 0 ? TransactionType.INCOME : TransactionType.EXPENSE,
+        description: 'Ingreso mensual asignado',
+        occurredOn: toIsoDate(year, month, 1),
+        dedupeHash: computeDedupeHash(
+          'monthly_injection',
+          fundName,
+          monthKey,
+          delta,
+        ),
+      });
+    }
   }
 
   return {

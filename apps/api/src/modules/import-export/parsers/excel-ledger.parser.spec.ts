@@ -194,4 +194,167 @@ describe('parseLedgerWorkbook', () => {
     expect(result.rows.some((row) => row.amount === '99999')).toBe(false);
     expect(result.rows).toHaveLength(2); // day-1 expense + opening balance
   });
+
+  it('excludes the "Total c/u" row when it immediately follows the last real movement (no blank buffer row)', () => {
+    // Reproduces the real-world case: a 30-day month (Abril) whose sheet
+    // only has 3 rows of actual movements, with "Total c/u" landing right
+    // after them — no blank rows in between. The calendar-day bound alone
+    // would let the parser read past the real data and into the totals
+    // row, treating the fund's running total as a new income transaction.
+    const data: unknown[][] = [
+      [],
+      [null, null, null, null, 'Fondo Test'],
+      [null, null, null, null, 0],
+      [null, null, null, null, -500],
+      [null, null, null, null, 0],
+      [null, null, null, null, 300],
+      [null, null, null, 'Total c/u', 99999],
+      [null, null, null, 'Total en la cuenta', 99999],
+    ];
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    worksheet['!ref'] = 'A1:E8';
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Abril 2026');
+    const buffer = XLSX.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx',
+    }) as Buffer;
+
+    const result = parseLedgerWorkbook(buffer);
+
+    expect(result.rows.some((row) => row.amount === '99999')).toBe(false);
+    expect(result.rows).toHaveLength(2); // day-2 expense + day-4 income
+  });
+
+  it('injects the monthly income delta between a month\'s opening balance and the previous month\'s "Total c/u"', () => {
+    const enero: unknown[][] = [
+      [],
+      [null, null, null, null, 'Fondo Test'],
+      [null, null, null, null, 1000],
+      [null, null, null, null, -200],
+      [null, null, null, 'Total c/u', 800],
+      [null, null, null, 'Total en la cuenta', 800],
+    ];
+    const febrero: unknown[][] = [
+      [],
+      [null, null, null, null, 'Fondo Test'],
+      [null, null, null, null, 900], // 800 (Enero's Total c/u) + 100 new
+      [null, null, null, null, -50],
+      [null, null, null, 'Total c/u', 850],
+      [null, null, null, 'Total en la cuenta', 850],
+    ];
+    const workbook = XLSX.utils.book_new();
+    const enSheet = XLSX.utils.aoa_to_sheet(enero);
+    enSheet['!ref'] = 'A1:E6';
+    XLSX.utils.book_append_sheet(workbook, enSheet, 'Enero 2026');
+    const febSheet = XLSX.utils.aoa_to_sheet(febrero);
+    febSheet['!ref'] = 'A1:E6';
+    XLSX.utils.book_append_sheet(workbook, febSheet, 'Febrero 2026');
+    const buffer = XLSX.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx',
+    }) as Buffer;
+
+    const result = parseLedgerWorkbook(buffer);
+
+    const injection = result.rows.find(
+      (row) => row.description === 'Ingreso mensual asignado',
+    )!;
+    expect(injection).toBeDefined();
+    expect(injection.fundName).toBe('Fondo Test');
+    expect(injection.amount).toBe('100');
+    expect(injection.type).toBe(TransactionType.INCOME);
+    expect(injection.occurredOn).toBe('2026-02-01');
+
+    // Enero (earliest month) gets no injection row — it's the anchor via "Saldo inicial".
+    expect(
+      result.rows.filter(
+        (row) => row.description === 'Ingreso mensual asignado',
+      ),
+    ).toHaveLength(1);
+  });
+
+  it('captures a real movement placed beyond the calendar-day count, before the "Total c/u" footer', () => {
+    // Reproduces a real case: the user added an extra row for a second
+    // same-day transaction, pushing it past the calendar-day bound
+    // (Marzo has 31 days, so row index 34 would be "day 32"). The old
+    // logic capped reads at `FIRST_DATA_ROW_INDEX + lastDay - 1` even
+    // when the real "Total c/u" footer (found by label) was further
+    // down, silently dropping this row instead of trusting the label.
+    const data: unknown[][] = Array.from({ length: 37 }, () => []);
+    data[1] = [null, null, null, null, 'Fondo Libre'];
+    data[2] = [null, null, null, null, 0];
+    data[3] = [null, null, null, null, -500];
+    data[34] = [null, null, null, null, 324719]; // row 35: "day 32", beyond March's 31 days
+    data[36] = [null, null, null, 'Total c/u', 99999];
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    worksheet['!ref'] = 'A1:E37';
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Marzo 2026');
+    const buffer = XLSX.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx',
+    }) as Buffer;
+
+    const result = parseLedgerWorkbook(buffer);
+
+    const extraRow = result.rows.find((row) => row.amount === '324719');
+    expect(extraRow).toBeDefined();
+    expect(extraRow!.type).toBe(TransactionType.INCOME);
+    expect(extraRow!.occurredOn).toBe('2026-03-31'); // clamped to the month's last real day
+    expect(result.rows.some((row) => row.amount === '99999')).toBe(false);
+  });
+
+  it('does not fabricate a "Saldo inicial" when a fund\'s first real month opens at exactly 0', () => {
+    // A fund created with no starting money (fila 3 = 0 in its first sheet)
+    // was being excluded from opening-balance detection (which only kept
+    // non-zero values), so the *next* month's opening balance — which is
+    // really just that month's carried-over total, not new money — got
+    // wrongly treated as the "Saldo inicial" anchor and double-counted.
+    const enero: unknown[][] = [
+      [],
+      [null, null, null, null, 'Fondo Test'],
+      [null, null, null, null, 0],
+      [null, null, null, null, -100],
+      [null, null, null, 'Total c/u', -100],
+      [null, null, null, 'Total en la cuenta', -100],
+    ];
+    const febrero: unknown[][] = [
+      [],
+      [null, null, null, null, 'Fondo Test'],
+      [null, null, null, null, -100], // just Enero's carried-over total, no new money
+      [null, null, null, null, 50],
+      [null, null, null, 'Total c/u', -50],
+      [null, null, null, 'Total en la cuenta', -50],
+    ];
+    const workbook = XLSX.utils.book_new();
+    const enSheet = XLSX.utils.aoa_to_sheet(enero);
+    enSheet['!ref'] = 'A1:E6';
+    XLSX.utils.book_append_sheet(workbook, enSheet, 'Enero 2026');
+    const febSheet = XLSX.utils.aoa_to_sheet(febrero);
+    febSheet['!ref'] = 'A1:E6';
+    XLSX.utils.book_append_sheet(workbook, febSheet, 'Febrero 2026');
+    const buffer = XLSX.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx',
+    }) as Buffer;
+
+    const result = parseLedgerWorkbook(buffer);
+
+    expect(result.rows.some((row) => row.description === 'Saldo inicial')).toBe(
+      false,
+    );
+    expect(
+      result.rows.some((row) => row.description === 'Ingreso mensual asignado'),
+    ).toBe(false);
+    expect(result.rows).toHaveLength(2); // Enero -100 expense + Febrero 50 income
+
+    const total = result.rows.reduce(
+      (sum, row) =>
+        sum +
+        (row.type === TransactionType.INCOME ? 1 : -1) * Number(row.amount),
+      0,
+    );
+    expect(total).toBe(-50); // matches Febrero's real "Total c/u"
+  });
 });
