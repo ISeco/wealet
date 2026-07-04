@@ -103,7 +103,7 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginBottom: 16 }}>
         <FundHeaderCard fund={fund} history={history} />
         <FundStatsColumn
           fund={fund}
