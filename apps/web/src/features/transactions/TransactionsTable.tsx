@@ -48,7 +48,7 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
   }
 
   return (
-    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', overflow: 'visible' }}>
+    <div className="tx-table-container" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', overflow: 'visible' }}>
       {/* header — oculto en mobile (ver .tx-table-header), las cards no lo necesitan */}
       <div
         className="tx-table-header"

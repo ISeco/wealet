@@ -78,23 +78,35 @@ body {
   }
 }
 
-/* Transacciones — tabla: grid en desktop, cards apiladas en mobile (ver media query abajo) */
+/* Transacciones — tabla: cards apiladas por defecto, grid de escritorio solo cuando el
+   CONTENEDOR (no el viewport) tiene ancho suficiente. El sidebar fijo de 252px reduce el
+   ancho real disponible aunque el viewport sea ancho (ej. 900px de viewport con sidebar
+   expandido deja ~580px de contenido) — igual que StatRow en Dashboard, una media query
+   por viewport no detecta esto; hace falta container query. */
+.tx-table-container {
+  container-type: inline-size;
+}
 .tx-table-header {
-  display: grid;
+  display: none;
   grid-template-columns: 84px 1fr 168px 150px 132px;
   gap: 12px;
 }
 .tx-row {
   display: grid;
-  grid-template-columns: 84px 1fr 168px 150px 132px;
-  grid-template-areas: "date desc fund category amount";
-  gap: 12px;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "desc date"
+    "amount amount"
+    "fund category";
+  row-gap: 6px;
+  column-gap: 10px;
   align-items: center;
 }
 .tx-row-date {
   grid-area: date;
   font-size: 12.5px;
   font-variant-numeric: tabular-nums;
+  justify-self: end;
 }
 .tx-row-desc {
   grid-area: desc;
@@ -111,9 +123,28 @@ body {
 .tx-row-amount {
   grid-area: amount;
   text-align: right;
-  font-size: 13.5px;
+  font-size: 16px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  justify-self: end;
+}
+@container (min-width: 760px) {
+  .tx-table-header {
+    display: grid;
+  }
+  .tx-row {
+    grid-template-columns: 84px 1fr 168px 150px 132px;
+    grid-template-areas: "date desc fund category amount";
+    row-gap: 0;
+    column-gap: 12px;
+  }
+  .tx-row-date {
+    justify-self: stretch;
+  }
+  .tx-row-amount {
+    justify-self: stretch;
+    font-size: 13.5px;
+  }
 }
 
 [data-theme='dark'] {
@@ -197,24 +228,5 @@ body {
   }
   .app-content {
     padding: 16px 16px 48px !important;
-  }
-  .tx-table-header {
-    display: none;
-  }
-  .tx-row {
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "desc date"
-      "amount amount"
-      "fund category";
-    row-gap: 6px;
-    column-gap: 10px;
-  }
-  .tx-row-date {
-    justify-self: end;
-  }
-  .tx-row-amount {
-    justify-self: end;
-    font-size: 16px;
   }
 }
