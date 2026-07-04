@@ -64,6 +64,20 @@ body {
 .topbar-btn { transition: border-color .15s; }
 .topbar-btn:hover { border-color: var(--border-strong) !important; }
 
+.stat-row-container {
+  container-type: inline-size;
+}
+.stat-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@container (min-width: 700px) {
+  .stat-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 [data-theme='dark'] {
   --bg: #0f2240;
   --card: #1a2f52;

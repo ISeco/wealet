@@ -57,7 +57,7 @@ export function StatRow({ month }: Props) {
   const expensePctColor = pct != null ? (pct <= 0 ? 'var(--pos)' : 'var(--neg)') : undefined
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(222px, 1fr))', gap: 16 }}>
+    <div className="stat-row">
       <div style={cardStyle}>
         <div style={labelStyle}>Balance del mes</div>
         <div style={{ ...amountStyle, color: isLoading ? 'var(--text)' : balancePositive ? 'var(--pos)' : 'var(--neg)' }}>

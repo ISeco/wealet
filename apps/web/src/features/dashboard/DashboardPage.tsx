@@ -105,7 +105,9 @@ export function DashboardPage() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <SkeletonRow minColWidth={320} heights={[160, 160]} />
-        <SkeletonRow minColWidth={222} heights={[100, 100, 100]} />
+        <div className="stat-row-container">
+          <SkeletonRow className="stat-row" heights={[100, 100, 100]} />
+        </div>
         <SkeletonRow minColWidth={320} heights={[300, 300]} />
       </div>
     )
@@ -127,7 +129,7 @@ export function DashboardPage() {
         <RunwayCard />
       </div>
 
-      <div style={{ marginBottom: 16 }}>
+      <div className="stat-row-container" style={{ marginBottom: 16 }}>
         <StatRow month={activeMonth} />
       </div>
 
@@ -145,9 +147,12 @@ export function DashboardPage() {
   )
 }
 
-function SkeletonRow({ minColWidth, heights }: { minColWidth: number; heights: number[] }) {
+function SkeletonRow({ minColWidth, className, heights }: { minColWidth?: number; className?: string; heights: number[] }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${minColWidth}px, 1fr))`, gap: 16 }}>
+    <div
+      className={className}
+      style={className ? { gap: 16 } : { display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${minColWidth}px, 1fr))`, gap: 16 }}
+    >
       {heights.map((h, i) => (
         <div key={i} style={{ height: h, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }} />
       ))}
