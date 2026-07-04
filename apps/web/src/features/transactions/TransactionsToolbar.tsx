@@ -118,97 +118,101 @@ export function TransactionsToolbar({
               left: popoverPos.left,
               zIndex: 30,
               width: POPOVER_WIDTH,
+              maxHeight: 'min(80vh, 560px)',
+              display: 'flex',
+              flexDirection: 'column',
               background: 'var(--card)',
               border: '1px solid var(--border-strong)',
               borderRadius: 13,
               boxShadow: 'var(--shadow-lg)',
-              padding: 18,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 18px 16px' }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Filtrar movimientos</span>
               <span onClick={() => setPopoverOpen(false)} style={{ display: 'flex', cursor: 'pointer', color: 'var(--muted)' }}>
                 <CloseIcon size={17} />
               </span>
             </div>
 
-            {/* date range */}
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Rango de fechas</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <div style={{ flex: 1 }}>
-                <DateInput
-                  value={draft.from ?? ''}
-                  placeholder="Desde"
-                  onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value || undefined }))}
-                  style={{ height: 36, borderRadius: 8 }}
-                  maxDate={todayISO()}
-                />
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0 18px' }}>
+              {/* date range */}
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Rango de fechas</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                <div style={{ flex: 1 }}>
+                  <DateInput
+                    value={draft.from ?? ''}
+                    placeholder="Desde"
+                    onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value || undefined }))}
+                    style={{ height: 36, borderRadius: 8 }}
+                    maxDate={todayISO()}
+                  />
+                </div>
+                <span style={{ color: 'var(--muted)', fontSize: 12 }}>→</span>
+                <div style={{ flex: 1 }}>
+                  <DateInput
+                    value={draft.to ?? ''}
+                    placeholder="Hasta"
+                    onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value || undefined }))}
+                    style={{ height: 36, borderRadius: 8 }}
+                    maxDate={todayISO()}
+                  />
+                </div>
               </div>
-              <span style={{ color: 'var(--muted)', fontSize: 12 }}>→</span>
-              <div style={{ flex: 1 }}>
-                <DateInput
-                  value={draft.to ?? ''}
-                  placeholder="Hasta"
-                  onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value || undefined }))}
-                  style={{ height: 36, borderRadius: 8 }}
-                  maxDate={todayISO()}
-                />
+
+              {/* fondos chips */}
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Fondo</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 16 }}>
+                {funds.map((fund) => {
+                  const selected = draft.fundId === fund.id
+                  return (
+                    <span
+                      key={fund.id}
+                      onClick={() => setDraft((d) => ({ ...d, fundId: selected ? undefined : fund.id }))}
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 500,
+                        padding: '5px 11px',
+                        borderRadius: 7,
+                        cursor: 'pointer',
+                        border: `1px solid ${selected ? 'var(--info)' : 'var(--border-strong)'}`,
+                        background: selected ? 'var(--info-bg)' : 'var(--card)',
+                        color: selected ? 'var(--info)' : 'var(--muted)',
+                      }}
+                    >
+                      {fund.name}
+                    </span>
+                  )
+                })}
+              </div>
+
+              {/* categorías chips */}
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Categoría</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 18 }}>
+                {categories.map((category) => {
+                  const selected = draft.categoryId === category.id
+                  return (
+                    <span
+                      key={category.id}
+                      onClick={() => setDraft((d) => ({ ...d, categoryId: selected ? undefined : category.id }))}
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 500,
+                        padding: '5px 11px',
+                        borderRadius: 7,
+                        cursor: 'pointer',
+                        border: `1px solid ${selected ? 'var(--info)' : 'var(--border-strong)'}`,
+                        background: selected ? 'var(--info-bg)' : 'var(--card)',
+                        color: selected ? 'var(--info)' : 'var(--muted)',
+                      }}
+                    >
+                      {category.name}
+                    </span>
+                  )
+                })}
               </div>
             </div>
 
-            {/* fondos chips */}
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Fondo</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 16 }}>
-              {funds.map((fund) => {
-                const selected = draft.fundId === fund.id
-                return (
-                  <span
-                    key={fund.id}
-                    onClick={() => setDraft((d) => ({ ...d, fundId: selected ? undefined : fund.id }))}
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 500,
-                      padding: '5px 11px',
-                      borderRadius: 7,
-                      cursor: 'pointer',
-                      border: `1px solid ${selected ? 'var(--info)' : 'var(--border-strong)'}`,
-                      background: selected ? 'var(--info-bg)' : 'var(--card)',
-                      color: selected ? 'var(--info)' : 'var(--muted)',
-                    }}
-                  >
-                    {fund.name}
-                  </span>
-                )
-              })}
-            </div>
-
-            {/* categorías chips */}
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Categoría</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 18 }}>
-              {categories.map((category) => {
-                const selected = draft.categoryId === category.id
-                return (
-                  <span
-                    key={category.id}
-                    onClick={() => setDraft((d) => ({ ...d, categoryId: selected ? undefined : category.id }))}
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 500,
-                      padding: '5px 11px',
-                      borderRadius: 7,
-                      cursor: 'pointer',
-                      border: `1px solid ${selected ? 'var(--info)' : 'var(--border-strong)'}`,
-                      background: selected ? 'var(--info-bg)' : 'var(--card)',
-                      color: selected ? 'var(--info)' : 'var(--muted)',
-                    }}
-                  >
-                    {category.name}
-                  </span>
-                )
-              })}
-            </div>
-
-            <div style={{ display: 'flex', gap: 9, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
+            <div style={{ flex: 'none', display: 'flex', gap: 9, padding: '14px 18px 18px', borderTop: '1px solid var(--border)' }}>
               <Button type="button" variant="secondary" onClick={clearFilters} style={{ flex: 1, height: 38, fontSize: 13 }}>
                 Limpiar
               </Button>

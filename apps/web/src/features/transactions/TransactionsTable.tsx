@@ -203,6 +203,8 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
                     left: reassignPos.left,
                     zIndex: 40,
                     width: REASSIGN_WIDTH,
+                    maxHeight: 'min(60vh, 360px)',
+                    overflowY: 'auto',
                     background: 'var(--card)',
                     border: '1px solid var(--border-strong)',
                     borderRadius: 12,
