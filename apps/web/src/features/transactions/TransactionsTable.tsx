@@ -107,12 +107,12 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
                   {t.note || 'Transferencia'}
                 </span>
               </div>
-              <div className="tx-row-fund" style={{ color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div className="tx-row-fund" style={{ fontSize: 12.5, color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {fundLabel}
               </div>
               <div className="tx-row-category" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <span style={{ width: 7, height: 7, borderRadius: 2, flex: 'none', background: 'var(--info)' }} />
-                <span style={{ color: 'var(--muted)' }}>Transferencia</span>
+                <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>Transferencia</span>
               </div>
               <div className="tx-row-amount" style={{ color: 'var(--info)' }}>
                 {t.amountFormatted}
@@ -254,7 +254,7 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
 
             <div className="tx-row-category" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
               <span style={{ width: 7, height: 7, borderRadius: 2, flex: 'none', background: category?.color ?? 'var(--muted)' }} />
-              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{category?.name ?? '—'}</span>
+              <span style={{ fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{category?.name ?? '—'}</span>
             </div>
 
             <div className="tx-row-amount" style={{ color: isIncome ? 'var(--pos)' : 'var(--neg)' }}>
