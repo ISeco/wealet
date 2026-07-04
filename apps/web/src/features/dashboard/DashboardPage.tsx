@@ -122,7 +122,7 @@ export function DashboardPage() {
         <MonthSelector months={months} value={activeMonth} onChange={setSelectedMonth} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginBottom: 16 }}>
         <PatrimonioCard month={activeMonth} />
         <RunwayCard />
       </div>
