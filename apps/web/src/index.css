@@ -96,3 +96,50 @@ body {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%       { opacity: .35; transform: scale(.65); }
 }
+.sidebar {
+  width: 252px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 30;
+  transition: transform .2s ease;
+}
+.sidebar-backdrop {
+  display: none;
+}
+.hamburger-btn {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar--open {
+    transform: translateX(0);
+  }
+  .sidebar-backdrop--visible {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 25;
+  }
+  .hamburger-btn {
+    display: flex;
+  }
+  .topbar-search-label {
+    display: none;
+  }
+  .topbar-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .app-content {
+    padding: 16px 16px 48px !important;
+  }
+}
