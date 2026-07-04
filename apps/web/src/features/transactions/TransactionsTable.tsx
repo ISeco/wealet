@@ -20,7 +20,6 @@ interface TransactionsTableProps {
   onReassign: (transactionId: string, newFundId: string) => void
 }
 
-const COLUMNS = '84px 1fr 168px 150px 132px'
 const REASSIGN_WIDTH = 228
 
 const MONTH_ABBR = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
@@ -50,12 +49,10 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
 
   return (
     <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', overflow: 'visible' }}>
-      {/* header */}
+      {/* header — oculto en mobile (ver .tx-table-header), las cards no lo necesitan */}
       <div
+        className="tx-table-header"
         style={{
-          display: 'grid',
-          gridTemplateColumns: COLUMNS,
-          gap: 12,
           padding: '11px 22px',
           borderBottom: '1px solid var(--border)',
           fontSize: 11,
@@ -86,21 +83,11 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
           const fundLabel = fromFund && toFund ? `${fromFund.name} → ${toFund.name}` : '—'
 
           return (
-            <div
-              key={t.id}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: COLUMNS,
-                gap: 12,
-                alignItems: 'center',
-                padding: '12px 22px',
-                borderBottom: '1px solid var(--border)',
-              }}
-            >
-              <div style={{ fontSize: 12.5, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>
+            <div key={t.id} className="tx-row" style={{ padding: '12px 22px', borderBottom: '1px solid var(--border)' }}>
+              <div className="tx-row-date" style={{ color: 'var(--muted)' }}>
                 {formatDate(t.occurredOn)}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
+              <div className="tx-row-desc" style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
                 <span
                   style={{
                     width: 30,
@@ -120,14 +107,14 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
                   {t.note || 'Transferencia'}
                 </span>
               </div>
-              <div style={{ fontSize: 12.5, color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div className="tx-row-fund" style={{ color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {fundLabel}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+              <div className="tx-row-category" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <span style={{ width: 7, height: 7, borderRadius: 2, flex: 'none', background: 'var(--info)' }} />
-                <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>Transferencia</span>
+                <span style={{ color: 'var(--muted)' }}>Transferencia</span>
               </div>
-              <div style={{ fontSize: 13.5, fontWeight: 600, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--info)' }}>
+              <div className="tx-row-amount" style={{ color: 'var(--info)' }}>
                 {t.amountFormatted}
               </div>
             </div>
@@ -143,22 +130,15 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
         return (
           <div
             key={t.id}
+            className="tx-row"
             onClick={() => onRowClick(t)}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: COLUMNS,
-              gap: 12,
-              alignItems: 'center',
-              padding: '12px 22px',
-              borderBottom: '1px solid var(--border)',
-              cursor: 'pointer',
-            }}
+            style={{ padding: '12px 22px', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
           >
-            <div style={{ fontSize: 12.5, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>
+            <div className="tx-row-date" style={{ color: 'var(--muted)' }}>
               {formatDate(t.occurredOn)}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
+            <div className="tx-row-desc" style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
               <span
                 style={{
                   width: 30,
@@ -190,7 +170,7 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
             </div>
 
             {/* fondo column con reassign */}
-            <div onClick={(e) => e.stopPropagation()} style={{ minWidth: 0 }}>
+            <div className="tx-row-fund" onClick={(e) => e.stopPropagation()}>
               <span
                 onClick={(e) => toggleReassign(e, t.id)}
                 style={{
@@ -272,20 +252,12 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+            <div className="tx-row-category" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
               <span style={{ width: 7, height: 7, borderRadius: 2, flex: 'none', background: category?.color ?? 'var(--muted)' }} />
-              <span style={{ fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{category?.name ?? '—'}</span>
+              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{category?.name ?? '—'}</span>
             </div>
 
-            <div
-              style={{
-                fontSize: 13.5,
-                fontWeight: 600,
-                textAlign: 'right',
-                fontVariantNumeric: 'tabular-nums',
-                color: isIncome ? 'var(--pos)' : 'var(--neg)',
-              }}
-            >
+            <div className="tx-row-amount" style={{ color: isIncome ? 'var(--pos)' : 'var(--neg)' }}>
               {isIncome ? '+' : '−'}{t.amountFormatted}
             </div>
           </div>
