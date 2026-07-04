@@ -78,6 +78,44 @@ body {
   }
 }
 
+/* Transacciones — tabla: grid en desktop, cards apiladas en mobile (ver media query abajo) */
+.tx-table-header {
+  display: grid;
+  grid-template-columns: 84px 1fr 168px 150px 132px;
+  gap: 12px;
+}
+.tx-row {
+  display: grid;
+  grid-template-columns: 84px 1fr 168px 150px 132px;
+  grid-template-areas: "date desc fund category amount";
+  gap: 12px;
+  align-items: center;
+}
+.tx-row-date {
+  grid-area: date;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.tx-row-desc {
+  grid-area: desc;
+  min-width: 0;
+}
+.tx-row-fund {
+  grid-area: fund;
+  min-width: 0;
+}
+.tx-row-category {
+  grid-area: category;
+  min-width: 0;
+}
+.tx-row-amount {
+  grid-area: amount;
+  text-align: right;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 [data-theme='dark'] {
   --bg: #0f2240;
   --card: #1a2f52;
@@ -159,5 +197,24 @@ body {
   }
   .app-content {
     padding: 16px 16px 48px !important;
+  }
+  .tx-table-header {
+    display: none;
+  }
+  .tx-row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "desc date"
+      "amount amount"
+      "fund category";
+    row-gap: 6px;
+    column-gap: 10px;
+  }
+  .tx-row-date {
+    justify-self: end;
+  }
+  .tx-row-amount {
+    justify-self: end;
+    font-size: 16px;
   }
 }
