@@ -51,6 +51,7 @@ export function MonthSelector({ months, value, onChange }: Props) {
   return (
     <div ref={ref} style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
       <button
+        className="month-nav-btn"
         style={{ ...btnBase, opacity: canPrev ? 1 : 0.4, cursor: canPrev ? 'pointer' : 'default' }}
         disabled={!canPrev}
         onClick={() => canPrev && onChange(months[idx + 1])}
@@ -68,6 +69,7 @@ export function MonthSelector({ months, value, onChange }: Props) {
       </button>
 
       <button
+        className="month-nav-btn"
         style={{ ...btnBase, opacity: canNext ? 1 : 0.4, cursor: canNext ? 'pointer' : 'default' }}
         disabled={!canNext}
         onClick={() => canNext && onChange(months[idx - 1])}

@@ -139,6 +139,10 @@ body {
     min-width: 44px;
     min-height: 44px;
   }
+  .month-nav-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
   .app-content {
     padding: 16px 16px 48px !important;
   }
