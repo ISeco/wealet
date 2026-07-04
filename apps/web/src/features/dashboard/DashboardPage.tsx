@@ -105,7 +105,7 @@ export function DashboardPage() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <SkeletonRow minColWidth={320} heights={[160, 160]} />
-        <SkeletonRow minColWidth={280} heights={[100, 100, 100]} />
+        <SkeletonRow minColWidth={222} heights={[100, 100, 100]} />
         <SkeletonRow minColWidth={320} heights={[300, 300]} />
       </div>
     )
