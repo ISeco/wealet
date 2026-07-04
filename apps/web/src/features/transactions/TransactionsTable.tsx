@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, type MouseEvent } from 'react'
+import { createPortal } from 'react-dom'
 import type { Fund } from '../funds'
 import type { Category } from '../categories'
 import type { Transaction } from './types'
 import type { Transfer } from '../transfers/types'
 import { ChevronDownIcon, TransfersIcon } from '../../components/ui/icons'
+import { computeFloatingPosition } from '../../components/ui/floatingPosition'
 
 export type TableRow =
   | { kind: 'transaction'; data: Transaction }
@@ -19,6 +21,7 @@ interface TransactionsTableProps {
 }
 
 const COLUMNS = '84px 1fr 168px 150px 132px'
+const REASSIGN_WIDTH = 228
 
 const MONTH_ABBR = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
 
@@ -29,9 +32,21 @@ function formatDate(isoDate: string): string {
 
 export function TransactionsTable({ rows, funds, allFunds, categories, onRowClick, onReassign }: TransactionsTableProps) {
   const [reassignOpenId, setReassignOpenId] = useState<string | null>(null)
+  const [reassignPos, setReassignPos] = useState({ top: 0, left: 0 })
 
   const fundsById = new Map(allFunds.map((f) => [f.id, f]))
   const categoriesById = new Map(categories.map((c) => [c.id, c]))
+
+  function toggleReassign(event: MouseEvent<HTMLSpanElement>, transactionId: string) {
+    if (reassignOpenId === transactionId) {
+      setReassignOpenId(null)
+      return
+    }
+    const rect = event.currentTarget.getBoundingClientRect()
+    const estimatedHeight = Math.min(320, 56 + funds.length * 40)
+    setReassignPos(computeFloatingPosition(rect, REASSIGN_WIDTH, estimatedHeight))
+    setReassignOpenId(transactionId)
+  }
 
   return (
     <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', overflow: 'visible' }}>
@@ -175,12 +190,9 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
             </div>
 
             {/* fondo column con reassign */}
-            <div
-              style={{ position: 'relative', minWidth: 0 }}
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div onClick={(e) => e.stopPropagation()} style={{ minWidth: 0 }}>
               <span
-                onClick={() => setReassignOpenId(isReassignOpen ? null : t.id)}
+                onClick={(e) => toggleReassign(e, t.id)}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -202,14 +214,15 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
                 </span>
               </span>
 
-              {isReassignOpen && (
+              {isReassignOpen && createPortal(
                 <div
+                  onMouseDown={(e) => e.stopPropagation()}
                   style={{
-                    position: 'absolute',
-                    top: 34,
-                    left: -8,
+                    position: 'fixed',
+                    top: reassignPos.top,
+                    left: reassignPos.left,
                     zIndex: 40,
-                    width: 228,
+                    width: REASSIGN_WIDTH,
                     background: 'var(--card)',
                     border: '1px solid var(--border-strong)',
                     borderRadius: 12,
@@ -254,7 +267,8 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
                       </div>
                     )
                   })}
-                </div>
+                </div>,
+                document.body,
               )}
             </div>
 
