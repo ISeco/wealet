@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { getUserInitials, useAuth } from '../features/auth'
 import { WealetIcon } from '../components/ui/WealetIcon'
@@ -89,6 +90,15 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
 
   const { data: allocation } = useAllocation()
   const allocationPending = allocation === null
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = ''
+      }
+    }
+  }, [isOpen])
 
   return (
     <>
