@@ -131,7 +131,7 @@ export function DashboardPage() {
         <StatRow month={activeMonth} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <NetFlowChart />
           <RecentActivity month={activeMonth} />
