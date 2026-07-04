@@ -104,9 +104,9 @@ export function DashboardPage() {
   if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <SkeletonRow cols={2} heights={[160, 160]} />
-        <SkeletonRow cols={3} heights={[100, 100, 100]} />
-        <SkeletonRow cols={2} heights={[300, 300]} />
+        <SkeletonRow minColWidth={320} heights={[160, 160]} />
+        <SkeletonRow minColWidth={280} heights={[100, 100, 100]} />
+        <SkeletonRow minColWidth={320} heights={[300, 300]} />
       </div>
     )
   }
@@ -145,9 +145,9 @@ export function DashboardPage() {
   )
 }
 
-function SkeletonRow({ cols, heights }: { cols: number; heights: number[] }) {
+function SkeletonRow({ minColWidth, heights }: { minColWidth: number; heights: number[] }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${minColWidth}px, 1fr))`, gap: 16 }}>
       {heights.map((h, i) => (
         <div key={i} style={{ height: h, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }} />
       ))}
