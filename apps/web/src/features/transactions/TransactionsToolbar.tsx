@@ -118,7 +118,7 @@ export function TransactionsToolbar({
               left: popoverPos.left,
               zIndex: 30,
               width: POPOVER_WIDTH,
-              maxHeight: 'min(80vh, 560px)',
+              maxHeight: 'min(75vh, 560px)',
               display: 'flex',
               flexDirection: 'column',
               background: 'var(--card)',
