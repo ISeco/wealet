@@ -226,6 +226,34 @@ body {
   }
 }
 
+/* Categorías — header: texto descriptivo + botón "Nueva categoría" apilados en
+   mobile, fila en desktop. Container query (no media query) por el mismo motivo
+   ya documentado arriba para StatRow/tabla de Transacciones/Transferencias. */
+.categories-header {
+  container-type: inline-size;
+  margin-bottom: 16px;
+}
+.categories-header-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.categories-header-row > button {
+  width: 100%;
+  justify-content: center;
+}
+@container (min-width: 600px) {
+  .categories-header-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .categories-header-row > button {
+    width: auto;
+  }
+}
+
 [data-theme='dark'] {
   --bg: #0f2240;
   --card: #1a2f52;

@@ -66,18 +66,20 @@ export function CategoriesPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ fontSize: 13.5, color: 'var(--muted)', maxWidth: 560 }}>
-          Las categorías son una dimensión de análisis del gasto — no reemplazan a los fondos.
+      <div className="categories-header">
+        <div className="categories-header-row">
+          <div style={{ fontSize: 13.5, color: 'var(--muted)', maxWidth: 560 }}>
+            Las categorías son una dimensión de análisis del gasto — no reemplazan a los fondos.
+          </div>
+          <button
+            type="button"
+            onClick={() => setEditing('new')}
+            style={{ display: 'flex', alignItems: 'center', gap: 7, height: 36, padding: '0 14px', border: 'none', borderRadius: 9, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow)', flexShrink: 0 }}
+          >
+            <PlusIcon />
+            Nueva categoría
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setEditing('new')}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, height: 36, padding: '0 14px', border: 'none', borderRadius: 9, background: 'var(--grad)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow)', flexShrink: 0 }}
-        >
-          <PlusIcon />
-          Nueva categoría
-        </button>
       </div>
 
       <div style={{ marginBottom: 22 }}>
