@@ -11,7 +11,6 @@ export const card: CSSProperties = {
 
 export const settingsRow: CSSProperties = {
   display: 'flex',
-  alignItems: 'center',
   justifyContent: 'space-between',
   gap: 12,
   padding: '14px 0',
