@@ -331,18 +331,21 @@ export function TransfersPage() {
             {recentTransfers.map((t, i) => (
               <div
                 key={t.id}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 18px', borderBottom: i < recentTransfers.length - 1 ? '1px solid var(--border)' : 'none' }}
+                className="transfer-recent-row"
+                style={{ padding: '13px 18px', borderBottom: i < recentTransfers.length - 1 ? '1px solid var(--border)' : 'none' }}
               >
-                <span style={{ fontSize: 12, color: 'var(--muted)', width: 56, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
-                  {formatDateLabel(t.occurredOn)}
-                </span>
-                <span style={{ fontSize: 13.5, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div className="transfer-recent-top">
+                  <span style={{ fontSize: 12, color: 'var(--muted)', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
+                    {formatDateLabel(t.occurredOn)}
+                  </span>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--info)', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                    {t.amountFormatted}
+                  </span>
+                </div>
+                <span className="transfer-recent-flow" style={{ fontSize: 13.5 }}>
                   {fundMap[t.fromFundId] ?? <span style={{ color: 'var(--muted)', fontStyle: 'italic' }}>Fondo eliminado</span>}{' '}
                   <span style={{ color: 'var(--muted)' }}>→</span>{' '}
                   {fundMap[t.toFundId] ?? <span style={{ color: 'var(--muted)', fontStyle: 'italic' }}>Fondo eliminado</span>}
-                </span>
-                <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--info)', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
-                  {t.amountFormatted}
                 </span>
               </div>
             ))}
