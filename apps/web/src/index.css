@@ -242,7 +242,7 @@ body {
   width: 100%;
   justify-content: center;
 }
-@container (max-width: 599px) {
+@container (max-width: 599.98px) {
   /* El botón declara height: 36 inline (JSX) para su fila de escritorio — en
      mobile, apilado y a ancho completo, eso incumple el touch target de 44px.
      min-height no pisa el layout de fila en desktop (regla no aplica ahí). */
