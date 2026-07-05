@@ -23,6 +23,8 @@ export function SegmentedTabs<T extends string>({ options, value, onChange, full
         border: '1px solid var(--border)',
         borderRadius: 10,
         gap: 3,
+        overflowX: 'auto',
+        maxWidth: '100%',
       }}
     >
       {options.map((option) => {
@@ -34,6 +36,7 @@ export function SegmentedTabs<T extends string>({ options, value, onChange, full
             onClick={() => onChange(option.value)}
             style={{
               flex: fullWidth ? 1 : undefined,
+              flexShrink: fullWidth ? undefined : 0,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

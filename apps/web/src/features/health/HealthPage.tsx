@@ -50,7 +50,7 @@ export function HealthPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, gap: 12 }}>
         <FrameworkTabs
           active={framework}
           activeFramework={activeFramework}
@@ -69,7 +69,7 @@ export function HealthPage() {
       {isLoading ? (
         <HealthSkeleton />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
           <ScoreCard
             score={score}
             description={FRAMEWORK_DESCRIPTIONS[framework]}
@@ -115,7 +115,7 @@ export function HealthPage() {
 
 function HealthSkeleton() {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16, marginTop: 20 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginTop: 20 }}>
       <div style={{ background: '#0F2240', borderRadius: 14, minHeight: 220, opacity: 0.6 }} />
       <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, minHeight: 220 }} />
     </div>
