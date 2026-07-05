@@ -1,5 +1,6 @@
 import { forwardRef, useRef, useImperativeHandle, useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { computeFloatingPosition } from './floatingPosition'
 
 interface DateInputProps {
   label?: string
@@ -62,11 +63,9 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
     const openCalendar = useCallback(() => {
       if (!triggerRef.current) return
       const r = triggerRef.current.getBoundingClientRect()
-      const spaceBelow = window.innerHeight - r.bottom
-      const calHeight = 300
-      const top = spaceBelow >= calHeight ? r.bottom + 6 : r.top - calHeight - 6
       const calWidth = Math.max(r.width, 260)
-      const left = r.left + calWidth > window.innerWidth - 8 ? r.right - calWidth : r.left
+      const calHeight = 300
+      const { top, left } = computeFloatingPosition(r, calWidth, calHeight)
       setPos({ top, left, width: r.width })
       setOpen(true)
     }, [])

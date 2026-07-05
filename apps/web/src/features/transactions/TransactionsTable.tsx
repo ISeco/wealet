@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, type MouseEvent } from 'react'
+import { createPortal } from 'react-dom'
 import type { Fund } from '../funds'
 import type { Category } from '../categories'
 import type { Transaction } from './types'
 import type { Transfer } from '../transfers/types'
 import { ChevronDownIcon, TransfersIcon } from '../../components/ui/icons'
+import { computeFloatingPosition } from '../../components/ui/floatingPosition'
 
 export type TableRow =
   | { kind: 'transaction'; data: Transaction }
@@ -18,7 +20,7 @@ interface TransactionsTableProps {
   onReassign: (transactionId: string, newFundId: string) => void
 }
 
-const COLUMNS = '84px 1fr 168px 150px 132px'
+const REASSIGN_WIDTH = 228
 
 const MONTH_ABBR = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
 
@@ -29,18 +31,28 @@ function formatDate(isoDate: string): string {
 
 export function TransactionsTable({ rows, funds, allFunds, categories, onRowClick, onReassign }: TransactionsTableProps) {
   const [reassignOpenId, setReassignOpenId] = useState<string | null>(null)
+  const [reassignPos, setReassignPos] = useState({ top: 0, left: 0 })
 
   const fundsById = new Map(allFunds.map((f) => [f.id, f]))
   const categoriesById = new Map(categories.map((c) => [c.id, c]))
 
+  function toggleReassign(event: MouseEvent<HTMLSpanElement>, transactionId: string) {
+    if (reassignOpenId === transactionId) {
+      setReassignOpenId(null)
+      return
+    }
+    const rect = event.currentTarget.getBoundingClientRect()
+    const estimatedHeight = Math.min(320, 56 + funds.length * 40)
+    setReassignPos(computeFloatingPosition(rect, REASSIGN_WIDTH, estimatedHeight))
+    setReassignOpenId(transactionId)
+  }
+
   return (
-    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', overflow: 'visible' }}>
-      {/* header */}
+    <div className="tx-table-container" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', overflow: 'visible' }}>
+      {/* header — oculto en mobile (ver .tx-table-header), las cards no lo necesitan */}
       <div
+        className="tx-table-header"
         style={{
-          display: 'grid',
-          gridTemplateColumns: COLUMNS,
-          gap: 12,
           padding: '11px 22px',
           borderBottom: '1px solid var(--border)',
           fontSize: 11,
@@ -71,21 +83,11 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
           const fundLabel = fromFund && toFund ? `${fromFund.name} → ${toFund.name}` : '—'
 
           return (
-            <div
-              key={t.id}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: COLUMNS,
-                gap: 12,
-                alignItems: 'center',
-                padding: '12px 22px',
-                borderBottom: '1px solid var(--border)',
-              }}
-            >
-              <div style={{ fontSize: 12.5, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>
+            <div key={t.id} className="tx-row" style={{ padding: '12px 22px', borderBottom: '1px solid var(--border)' }}>
+              <div className="tx-row-date" style={{ color: 'var(--muted)' }}>
                 {formatDate(t.occurredOn)}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
+              <div className="tx-row-desc" style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
                 <span
                   style={{
                     width: 30,
@@ -105,14 +107,14 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
                   {t.note || 'Transferencia'}
                 </span>
               </div>
-              <div style={{ fontSize: 12.5, color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div className="tx-row-fund" style={{ fontSize: 12.5, color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {fundLabel}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+              <div className="tx-row-category" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <span style={{ width: 7, height: 7, borderRadius: 2, flex: 'none', background: 'var(--info)' }} />
                 <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>Transferencia</span>
               </div>
-              <div style={{ fontSize: 13.5, fontWeight: 600, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--info)' }}>
+              <div className="tx-row-amount" style={{ color: 'var(--info)' }}>
                 {t.amountFormatted}
               </div>
             </div>
@@ -128,22 +130,15 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
         return (
           <div
             key={t.id}
+            className="tx-row"
             onClick={() => onRowClick(t)}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: COLUMNS,
-              gap: 12,
-              alignItems: 'center',
-              padding: '12px 22px',
-              borderBottom: '1px solid var(--border)',
-              cursor: 'pointer',
-            }}
+            style={{ padding: '12px 22px', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
           >
-            <div style={{ fontSize: 12.5, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>
+            <div className="tx-row-date" style={{ color: 'var(--muted)' }}>
               {formatDate(t.occurredOn)}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
+            <div className="tx-row-desc" style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
               <span
                 style={{
                   width: 30,
@@ -175,12 +170,9 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
             </div>
 
             {/* fondo column con reassign */}
-            <div
-              style={{ position: 'relative', minWidth: 0 }}
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div className="tx-row-fund" onClick={(e) => e.stopPropagation()}>
               <span
-                onClick={() => setReassignOpenId(isReassignOpen ? null : t.id)}
+                onClick={(e) => toggleReassign(e, t.id)}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -202,14 +194,17 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
                 </span>
               </span>
 
-              {isReassignOpen && (
+              {isReassignOpen && createPortal(
                 <div
+                  onMouseDown={(e) => e.stopPropagation()}
                   style={{
-                    position: 'absolute',
-                    top: 34,
-                    left: -8,
+                    position: 'fixed',
+                    top: reassignPos.top,
+                    left: reassignPos.left,
                     zIndex: 40,
-                    width: 228,
+                    width: REASSIGN_WIDTH,
+                    maxHeight: 'min(60vh, 360px)',
+                    overflowY: 'auto',
                     background: 'var(--card)',
                     border: '1px solid var(--border-strong)',
                     borderRadius: 12,
@@ -254,24 +249,17 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
                       </div>
                     )
                   })}
-                </div>
+                </div>,
+                document.body,
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+            <div className="tx-row-category" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
               <span style={{ width: 7, height: 7, borderRadius: 2, flex: 'none', background: category?.color ?? 'var(--muted)' }} />
               <span style={{ fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{category?.name ?? '—'}</span>
             </div>
 
-            <div
-              style={{
-                fontSize: 13.5,
-                fontWeight: 600,
-                textAlign: 'right',
-                fontVariantNumeric: 'tabular-nums',
-                color: isIncome ? 'var(--pos)' : 'var(--neg)',
-              }}
-            >
+            <div className="tx-row-amount" style={{ color: isIncome ? 'var(--pos)' : 'var(--neg)' }}>
               {isIncome ? '+' : '−'}{t.amountFormatted}
             </div>
           </div>
