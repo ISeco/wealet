@@ -64,7 +64,7 @@ export function HealthEmptyState({ variant }: Props) {
       <div style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 8, maxWidth: 340, lineHeight: 1.55 }}>
         {description}
       </div>
-      <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
+      <div style={{ display: 'flex', gap: 10, marginTop: 22, flexWrap: 'wrap' }}>
         {actions.map((action) => (
           <Button
             key={action.to}
