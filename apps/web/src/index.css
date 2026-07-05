@@ -147,6 +147,85 @@ body {
   }
 }
 
+/* Transferencias — bloque Desde/Hacia: stack vertical con flecha rotada en mobile,
+   container query (no media query) por el mismo motivo que StatRow/tabla de
+   Transacciones: el sidebar fijo reduce el ancho real de contenido en desktop
+   aunque el viewport sea ancho. */
+.transfer-page {
+  container-type: inline-size;
+}
+.transfer-fund-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.transfer-fund-row > * {
+  min-width: 0;
+}
+.transfer-fund-arrow {
+  transform: rotate(90deg);
+}
+@container (min-width: 520px) {
+  .transfer-fund-row {
+    grid-template-columns: 1fr auto 1fr;
+  }
+  .transfer-fund-arrow {
+    transform: none;
+  }
+}
+
+.transfer-date-note-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@container (min-width: 420px) {
+  .transfer-date-note-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.transfer-recent-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+.transfer-recent-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+.transfer-recent-flow {
+  width: 100%;
+}
+@container (min-width: 520px) {
+  .transfer-recent-row {
+    flex-wrap: nowrap;
+  }
+  .transfer-recent-top {
+    display: contents;
+  }
+  .transfer-recent-top > span:first-child {
+    order: 1;
+  }
+  .transfer-recent-top > span:last-child {
+    order: 3;
+  }
+  .transfer-recent-flow {
+    order: 2;
+    width: auto;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 [data-theme='dark'] {
   --bg: #0f2240;
   --card: #1a2f52;
