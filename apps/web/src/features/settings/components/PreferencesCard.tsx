@@ -24,7 +24,10 @@ export function PreferencesCard() {
   return (
     <div style={card}>
       <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 4 }}>Preferencias</div>
-      <div style={{ ...settingsRow, borderBottom: '1px solid var(--border)' }}>
+      <div
+        className="settings-row--stack-narrow"
+        style={{ ...settingsRow, borderBottom: '1px solid var(--border)' }}
+      >
         <div>
           <div style={{ fontSize: 14, fontWeight: 500 }}>Framework por defecto</div>
           <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>El que se muestra en Salud financiera</div>
@@ -36,7 +39,7 @@ export function PreferencesCard() {
           style={{ width: 190 }}
         />
       </div>
-      <div style={settingsRow}>
+      <div className="settings-row--stack-narrow" style={settingsRow}>
         <div>
           <div style={{ fontSize: 14, fontWeight: 500 }}>Moneda</div>
           <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>Peso chileno · sin decimales</div>
