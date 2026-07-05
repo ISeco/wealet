@@ -262,6 +262,17 @@ body {
   }
 }
 
+/* Ajustes — container de página para las container queries de esta feature
+   (mismo motivo que StatRow/tabla de Transacciones/Transferencias/Categorías:
+   el sidebar fijo del shell reduce el ancho real de contenido en desktop
+   aunque el viewport sea ancho). */
+.settings-page {
+  container-type: inline-size;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 8px 0 32px;
+}
+
 [data-theme='dark'] {
   --bg: #0f2240;
   --card: #1a2f52;
