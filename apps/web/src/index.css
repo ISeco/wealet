@@ -273,6 +273,19 @@ body {
   padding: 8px 0 32px;
 }
 
+/* Ajustes — ProfileCard: los campos Nombre/Email pasan de 2 columnas fijas a
+   1 columna en contenedores angostos (evita inputs ilegibles en mobile). */
+.profile-name-email {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@container (min-width: 480px) {
+  .profile-name-email {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 [data-theme='dark'] {
   --bg: #0f2240;
   --card: #1a2f52;
