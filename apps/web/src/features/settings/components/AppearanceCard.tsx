@@ -18,7 +18,7 @@ export function AppearanceCard() {
 
   return (
     <div style={card}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div>
           <div style={{ fontSize: 14.5, fontWeight: 600 }}>Apariencia</div>
           <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 2 }}>
