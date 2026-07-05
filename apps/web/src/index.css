@@ -204,9 +204,16 @@ body {
     flex-wrap: nowrap;
   }
   .transfer-recent-top {
-    width: auto;
+    display: contents;
+  }
+  .transfer-recent-top > span:first-child {
+    order: 1;
+  }
+  .transfer-recent-top > span:last-child {
+    order: 3;
   }
   .transfer-recent-flow {
+    order: 2;
     width: auto;
     flex: 1;
     min-width: 0;
