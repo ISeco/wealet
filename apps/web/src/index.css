@@ -172,6 +172,17 @@ body {
   }
 }
 
+.transfer-date-note-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@container (min-width: 420px) {
+  .transfer-date-note-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 [data-theme='dark'] {
   --bg: #0f2240;
   --card: #1a2f52;

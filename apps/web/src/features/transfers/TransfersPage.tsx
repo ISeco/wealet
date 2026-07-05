@@ -135,7 +135,7 @@ export function TransfersPage() {
   // ─── Success state ───────────────────────────────────────────────────────────
   if (step === 'success' && lastTransfer && toFund && fromFund) {
     return (
-      <div style={{ maxWidth: 660, margin: '0 auto' }}>
+      <div className="transfer-page" style={{ maxWidth: 660, margin: '0 auto' }}>
         <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, boxShadow: 'var(--shadow)', padding: 24 }}>
           <div style={{ textAlign: 'center', padding: '14px 6px' }}>
             <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--pos-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
@@ -146,16 +146,16 @@ export function TransfersPage() {
               Moviste dinero entre tus fondos. El movimiento ya aparece en tu historial.
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, margin: '22px auto 0', maxWidth: 420 }}>
-              <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: 14, background: 'var(--card-2)', textAlign: 'left' }}>
+            <div className="transfer-fund-row" style={{ margin: '22px auto 0', maxWidth: 420 }}>
+              <div style={{ border: '1px solid var(--border)', borderRadius: 12, padding: 14, background: 'var(--card-2)', textAlign: 'left' }}>
                 <div style={{ fontSize: 11.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.04em', fontWeight: 600 }}>Desde</div>
                 <div style={{ fontSize: 14, fontWeight: 600, marginTop: 6 }}>{fromFund.name}</div>
                 <div style={{ fontSize: 13, color: 'var(--neg)', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{formatMoney(successFromBalance.toString(), 'CLP')}</div>
               </div>
-              <span style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--grad)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span className="transfer-fund-arrow" style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--grad)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <ArrowRightIcon color="#fff" size={17} />
               </span>
-              <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: 14, background: 'var(--card-2)', textAlign: 'left' }}>
+              <div style={{ border: '1px solid var(--border)', borderRadius: 12, padding: 14, background: 'var(--card-2)', textAlign: 'left' }}>
                 <div style={{ fontSize: 11.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.04em', fontWeight: 600 }}>Hacia</div>
                 <div style={{ fontSize: 14, fontWeight: 600, marginTop: 6 }}>{toFund.name}</div>
                 <div style={{ fontSize: 13, color: 'var(--pos)', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{formatMoney(successToBalance.toString(), 'CLP')}</div>
@@ -272,7 +272,7 @@ export function TransfersPage() {
         </div>
 
         {/* Date + Note */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 18 }}>
+        <div className="transfer-date-note-row" style={{ marginTop: 18 }}>
           <DateInput
             label="Fecha"
             value={occurredOn}
