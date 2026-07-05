@@ -14,7 +14,10 @@ export function SecurityCard() {
     <>
       <div style={card}>
         <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 4 }}>Seguridad</div>
-        <div style={{ ...settingsRow, borderBottom: '1px solid var(--border)' }}>
+        <div
+          className="settings-row--stack-narrow"
+          style={{ ...settingsRow, borderBottom: '1px solid var(--border)' }}
+        >
           <div>
             <div style={{ fontSize: 14, fontWeight: 500 }}>Contraseña</div>
             <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>
@@ -29,7 +32,7 @@ export function SecurityCard() {
             {passwordLabel}
           </Button>
         </div>
-        <div style={settingsRow}>
+        <div className="settings-row--stack-narrow" style={settingsRow}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 500 }}>Correo electrónico</div>
             <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>{user?.email}</div>
