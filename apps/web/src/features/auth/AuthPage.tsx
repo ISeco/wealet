@@ -36,21 +36,8 @@ export function AuthPage({ mode }: AuthPageProps) {
   })
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex' }}>
-      <div
-        style={{
-          flex: 1.05,
-          background: 'var(--navy)',
-          color: '#fff',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: '52px 56px',
-          position: 'relative',
-          overflow: 'hidden',
-          minWidth: 380,
-        }}
-      >
+    <div className="auth-split">
+      <div className="auth-brand-panel">
         <div
           style={{
             position: 'absolute',

@@ -399,3 +399,27 @@ body {
     padding: 16px 16px 48px !important;
   }
 }
+
+.auth-split {
+  min-height: 100vh;
+  display: flex;
+}
+
+.auth-brand-panel {
+  flex: 1.05;
+  background: var(--navy);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 52px 56px;
+  position: relative;
+  overflow: hidden;
+  min-width: 380px;
+}
+
+@media (max-width: 767px) {
+  .auth-brand-panel {
+    display: none;
+  }
+}
