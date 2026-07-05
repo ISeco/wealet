@@ -160,6 +160,9 @@ body {
   gap: 14px;
   align-items: center;
 }
+.transfer-fund-row > * {
+  min-width: 0;
+}
 .transfer-fund-arrow {
   transform: rotate(90deg);
 }
