@@ -50,7 +50,7 @@ export function HealthPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, gap: 12 }}>
         <FrameworkTabs
           active={framework}
           activeFramework={activeFramework}
