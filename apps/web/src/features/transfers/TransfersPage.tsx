@@ -185,7 +185,7 @@ export function TransfersPage() {
 
   // ─── Form state ──────────────────────────────────────────────────────────────
   return (
-    <div style={{ maxWidth: 660, margin: '0 auto' }}>
+    <div className="transfer-page" style={{ maxWidth: 660, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: 6 }}>
         <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-.02em' }}>Mover dinero entre fondos</div>
@@ -198,7 +198,7 @@ export function TransfersPage() {
       <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, boxShadow: 'var(--shadow)', padding: 24, marginTop: 22 }}>
 
         {/* From / To pickers */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 48px 1fr', alignItems: 'center', gap: 8 }}>
+        <div className="transfer-fund-row">
           <FundPicker
             label="Desde"
             direction="from"
@@ -208,7 +208,7 @@ export function TransfersPage() {
             exclude={toFundId}
             projectedBalance={fromProjected}
           />
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="transfer-fund-arrow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--grad)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow)' }}>
               <ArrowRightIcon color="#fff" size={20} />
             </span>

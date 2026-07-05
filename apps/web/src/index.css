@@ -147,6 +147,31 @@ body {
   }
 }
 
+/* Transferencias — bloque Desde/Hacia: stack vertical con flecha rotada en mobile,
+   container query (no media query) por el mismo motivo que StatRow/tabla de
+   Transacciones: el sidebar fijo reduce el ancho real de contenido en desktop
+   aunque el viewport sea ancho. */
+.transfer-page {
+  container-type: inline-size;
+}
+.transfer-fund-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.transfer-fund-arrow {
+  transform: rotate(90deg);
+}
+@container (min-width: 520px) {
+  .transfer-fund-row {
+    grid-template-columns: 1fr auto 1fr;
+  }
+  .transfer-fund-arrow {
+    transform: none;
+  }
+}
+
 [data-theme='dark'] {
   --bg: #0f2240;
   --card: #1a2f52;
