@@ -72,12 +72,10 @@ export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, 
       </div>
 
       {/* Table */}
-      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
+      <div className="import-table-container" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
         <div
+          className="import-table-header"
           style={{
-            display: 'grid',
-            gridTemplateColumns: '90px 1fr 140px 150px 110px',
-            gap: 12,
             padding: '11px 20px',
             borderBottom: '1px solid var(--border)',
             fontSize: 11,
@@ -101,30 +99,27 @@ export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, 
           return (
             <div
               key={`${row.sheet}-${row.cell}`}
+              className="import-row"
               style={{
-                display: 'grid',
-                gridTemplateColumns: '90px 1fr 140px 150px 110px',
-                gap: 12,
-                alignItems: 'center',
                 padding: '11px 20px',
                 borderBottom: '1px solid var(--border)',
                 background: row.duplicate ? 'var(--warn-bg)' : 'transparent',
                 opacity,
               }}
             >
-              <div style={{ fontSize: 12.5, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>
+              <div className="import-row-date" style={{ color: 'var(--muted)' }}>
                 {row.occurredOn}
               </div>
-              <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div className="import-row-desc" style={{ fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {row.description ?? '—'}
               </div>
-              <div style={{ fontSize: 13, fontWeight: 600, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: amtColor }}>
+              <div className="import-row-amount" style={{ color: amtColor }}>
                 {prefix}{formatMoney(row.amount, 'CLP')}
               </div>
-              <div style={{ fontSize: 12.5, color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div className="import-row-fund" style={{ fontSize: 12.5, color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {row.fundName}
               </div>
-              <div>
+              <div className="import-row-status">
                 <span
                   style={{
                     fontSize: 11,
