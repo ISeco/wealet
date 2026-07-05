@@ -46,7 +46,8 @@ export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, 
   return (
     <div>
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 16 }}>
+      <div className="stat-row-container" style={{ marginBottom: 16 }}>
+        <div className="stat-row">
         {statCards.map((card) => (
           <div
             key={card.label}
@@ -67,6 +68,7 @@ export function PreviewStep({ previewData, approvedFunds, onToggleFund, onBack, 
             </div>
           </div>
         ))}
+        </div>
       </div>
 
       {/* Table */}
