@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { computeProposed, drawerReducer, getFrameworkFunds } from './allocationDrawer.utils'
+import { buildInitialState, computeProposed, drawerReducer, getFrameworkFunds } from './allocationDrawer.utils'
 import type { Fund } from '../funds/types'
+import type { CurrentAllocation, HealthProfile } from './types'
 
 function buildFund(overrides: Partial<Fund> = {}): Fund {
   return {
@@ -63,6 +64,43 @@ describe('computeProposed', () => {
 
   it('returns an empty object for no active funds', () => {
     expect(computeProposed([], 1000n)).toEqual({})
+  })
+})
+
+describe('buildInitialState', () => {
+  const profile: HealthProfile = { id: 'p1', framework: 'jars_eker', monthlyIncome: '999' }
+
+  it('goes to distribution step and keeps distributions when funds match', () => {
+    const currentAllocation: CurrentAllocation = {
+      id: 'alloc1',
+      month: '2026-07',
+      totalAmount: '999',
+      distributions: [{ fundId: 'a', fundName: 'A', amount: '999' }],
+    }
+    const activeFunds = [buildFund({ id: 'a' })]
+
+    const state = buildInitialState(profile, currentAllocation, activeFunds)
+
+    expect(state.step).toBe('distribution')
+    expect(state.amounts).toEqual({ a: '999' })
+  })
+
+  it('recomputes distribution across new funds when the allocation references funds from a different framework', () => {
+    const currentAllocation: CurrentAllocation = {
+      id: 'alloc1',
+      month: '2026-07',
+      totalAmount: '999',
+      distributions: [{ fundId: 'old-a', fundName: 'Old A', amount: '999' }],
+    }
+    const activeFunds = [
+      buildFund({ id: 'new-a', targetPercentage: 50 }),
+      buildFund({ id: 'new-b', targetPercentage: 50 }),
+    ]
+
+    const state = buildInitialState(profile, currentAllocation, activeFunds)
+
+    expect(state.step).toBe('distribution')
+    expect(state.amounts).toEqual({ 'new-a': '500', 'new-b': '499' })
   })
 })
 
