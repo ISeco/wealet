@@ -232,6 +232,7 @@ body {
 }
 .transfer-fund-arrow {
   transform: rotate(90deg);
+  justify-self: center;
 }
 @container (min-width: 520px) {
   .transfer-fund-row {
