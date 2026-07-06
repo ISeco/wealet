@@ -86,7 +86,7 @@ export function Step1Preset({ selected, onSelect }: Props) {
           Elige un punto de partida. Podrás ajustar y renombrar tus fondos cuando quieras.
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+      <div className="onboarding-preset-grid" style={{ display: 'grid', gap: 14 }}>
         {CARDS.map((card) => {
           const isSelected = selected === card.id
           return (

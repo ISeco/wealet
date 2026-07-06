@@ -490,3 +490,15 @@ body {
     display: none;
   }
 }
+
+/* Onboarding — pantalla full-screen sin sidebar (como Auth): media query de
+   viewport, no container query, porque no hay un contenedor angosto por un
+   sidebar fijo que difiera del viewport real. */
+.onboarding-preset-grid {
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .onboarding-preset-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
