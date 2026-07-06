@@ -35,7 +35,7 @@ export function AddFundForm({ onAdd, onCancel }: Props) {
         onChange={(e) => setName(e.target.value)}
         placeholder="Nombre del fondo"
         maxLength={120}
-        style={{ flex: 1, height: 38, padding: '0 12px', border: '1px solid var(--border)', borderRadius: 9, background: 'var(--field)', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14 }}
+        style={{ flex: 1, minWidth: 0, height: 38, padding: '0 12px', border: '1px solid var(--border)', borderRadius: 9, background: 'var(--field)', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14 }}
       />
       <div className="onboarding-addfund-select">
         <Select
