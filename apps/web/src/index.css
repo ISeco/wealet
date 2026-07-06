@@ -491,3 +491,48 @@ body {
     display: none;
   }
 }
+
+/* Onboarding — pantalla full-screen sin sidebar (como Auth): media query de
+   viewport, no container query, porque no hay un contenedor angosto por un
+   sidebar fijo que difiera del viewport real. */
+.onboarding-preset-grid {
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .onboarding-preset-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Onboarding — AddFundForm: apila nombre/clasificación/acciones en columna en
+   mobile en vez de comprimir input + select + 2 botones en una sola fila. */
+.onboarding-addfund-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.onboarding-addfund-select {
+  width: 100%;
+}
+.onboarding-addfund-actions {
+  display: flex;
+  gap: 10px;
+}
+.onboarding-addfund-actions > button {
+  flex: 1;
+}
+@media (min-width: 640px) {
+  .onboarding-addfund-form {
+    flex-direction: row;
+    align-items: center;
+  }
+  .onboarding-addfund-select {
+    width: 160px;
+  }
+  .onboarding-addfund-actions {
+    flex: none;
+  }
+  .onboarding-addfund-actions > button {
+    flex: none;
+  }
+}

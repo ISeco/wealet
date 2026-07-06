@@ -49,6 +49,7 @@ export function Step3Income({ rawAmount, onChange }: Props) {
             placeholder="0"
             style={{
               flex: 1,
+              minWidth: 0,
               border: 'none',
               background: 'none',
               outline: 'none',
