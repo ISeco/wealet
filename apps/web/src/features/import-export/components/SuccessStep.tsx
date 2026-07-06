@@ -52,7 +52,7 @@ export function SuccessStep({ result, displayName, onImportAnother, onGoToTransa
           <> Se crearon <strong style={{ color: 'var(--text)' }}>{result.createdFunds.length} fondos nuevos</strong>.</>
         )} Tu patrimonio está al día.
       </div>
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 24 }}>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' }}>
         <Button variant="secondary" onClick={onImportAnother}>
           Importar otro
         </Button>

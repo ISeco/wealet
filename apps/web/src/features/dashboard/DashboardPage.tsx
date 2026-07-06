@@ -104,9 +104,11 @@ export function DashboardPage() {
   if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <SkeletonRow cols={2} heights={[160, 160]} />
-        <SkeletonRow cols={3} heights={[100, 100, 100]} />
-        <SkeletonRow cols={2} heights={[300, 300]} />
+        <SkeletonRow minColWidth={320} heights={[160, 160]} />
+        <div className="stat-row-container">
+          <SkeletonRow className="stat-row" heights={[100, 100, 100]} />
+        </div>
+        <SkeletonRow minColWidth={320} heights={[300, 300]} />
       </div>
     )
   }
@@ -122,16 +124,16 @@ export function DashboardPage() {
         <MonthSelector months={months} value={activeMonth} onChange={setSelectedMonth} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginBottom: 16 }}>
         <PatrimonioCard month={activeMonth} />
         <RunwayCard />
       </div>
 
-      <div style={{ marginBottom: 16 }}>
+      <div className="stat-row-container" style={{ marginBottom: 16 }}>
         <StatRow month={activeMonth} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <NetFlowChart />
           <RecentActivity month={activeMonth} />
@@ -145,9 +147,12 @@ export function DashboardPage() {
   )
 }
 
-function SkeletonRow({ cols, heights }: { cols: number; heights: number[] }) {
+function SkeletonRow({ minColWidth, className, heights }: { minColWidth?: number; className?: string; heights: number[] }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16 }}>
+    <div
+      className={className}
+      style={className ? { gap: 16 } : { display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${minColWidth}px, 1fr))`, gap: 16 }}
+    >
       {heights.map((h, i) => (
         <div key={i} style={{ height: h, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }} />
       ))}

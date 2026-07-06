@@ -29,7 +29,7 @@ export function DataAccountGrid() {
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
       <div style={{ ...card, marginBottom: 0 }}>
         <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 14 }}>Datos</div>
         <Button

@@ -32,6 +32,7 @@ export function AllocationChip({ allocation, onOpen }: Props) {
         fontFamily: 'inherit',
         transition: 'opacity .15s',
         whiteSpace: 'nowrap',
+        flexShrink: 0,
       }}
     >
       {isDone ? (

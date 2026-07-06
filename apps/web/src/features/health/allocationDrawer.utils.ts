@@ -73,10 +73,13 @@ export function buildInitialState(
   const rawIncome = currentAllocation?.totalAmount ?? profile.monthlyIncome ?? ''
 
   let amounts: Record<string, string> = {}
-  if (currentAllocation) {
+  const activeFundIds = new Set(activeFunds.map((f) => f.id))
+  const matchesActiveFunds = !!currentAllocation?.distributions.some((d) => activeFundIds.has(d.fundId))
+
+  if (currentAllocation && matchesActiveFunds) {
     currentAllocation.distributions.forEach((d) => { amounts[d.fundId] = d.amount })
-  } else if (profile.monthlyIncome && activeFunds.length > 0) {
-    amounts = computeProposed(activeFunds, BigInt(profile.monthlyIncome))
+  } else if (rawIncome && activeFunds.length > 0) {
+    amounts = computeProposed(activeFunds, BigInt(rawIncome))
   }
 
   return { step, rawIncome, amounts }

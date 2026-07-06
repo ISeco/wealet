@@ -64,6 +64,326 @@ body {
 .topbar-btn { transition: border-color .15s; }
 .topbar-btn:hover { border-color: var(--border-strong) !important; }
 
+.stat-row-container {
+  container-type: inline-size;
+}
+.stat-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@container (min-width: 700px) {
+  .stat-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Transacciones — tabla: cards apiladas por defecto, grid de escritorio solo cuando el
+   CONTENEDOR (no el viewport) tiene ancho suficiente. El sidebar fijo de 252px reduce el
+   ancho real disponible aunque el viewport sea ancho (ej. 900px de viewport con sidebar
+   expandido deja ~580px de contenido) — igual que StatRow en Dashboard, una media query
+   por viewport no detecta esto; hace falta container query. */
+.tx-table-container {
+  container-type: inline-size;
+}
+.tx-table-header {
+  display: none;
+  grid-template-columns: 84px 1fr 168px 150px 132px;
+  gap: 12px;
+}
+.tx-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "desc date"
+    "amount amount"
+    "fund category";
+  row-gap: 6px;
+  column-gap: 10px;
+  align-items: center;
+}
+.tx-row-date {
+  grid-area: date;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  justify-self: end;
+}
+.tx-row-desc {
+  grid-area: desc;
+  min-width: 0;
+}
+.tx-row-fund {
+  grid-area: fund;
+  min-width: 0;
+}
+.tx-row-category {
+  grid-area: category;
+  min-width: 0;
+}
+.tx-row-amount {
+  grid-area: amount;
+  text-align: right;
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  justify-self: end;
+}
+@container (min-width: 760px) {
+  .tx-table-header {
+    display: grid;
+  }
+  .tx-row {
+    grid-template-columns: 84px 1fr 168px 150px 132px;
+    grid-template-areas: "date desc fund category amount";
+    row-gap: 0;
+    column-gap: 12px;
+  }
+  .tx-row-date {
+    justify-self: stretch;
+  }
+  .tx-row-amount {
+    justify-self: stretch;
+    font-size: 13.5px;
+  }
+}
+
+/* Import/Export — tabla de preview: cards apiladas en mobile, mismo mecanismo
+   que .tx-row (container query, no media query — la página vive dentro del
+   shell y el sidebar fijo angosta el ancho de contenido real). */
+.import-table-container {
+  container-type: inline-size;
+}
+.import-table-header {
+  display: none;
+  grid-template-columns: 90px 1fr 140px 150px 110px;
+  gap: 12px;
+}
+.import-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "desc date"
+    "amount amount"
+    "fund status";
+  row-gap: 6px;
+  column-gap: 10px;
+  align-items: center;
+}
+.import-row-date {
+  grid-area: date;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  justify-self: end;
+}
+.import-row-desc {
+  grid-area: desc;
+  min-width: 0;
+}
+.import-row-amount {
+  grid-area: amount;
+  text-align: right;
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  justify-self: end;
+}
+.import-row-fund {
+  grid-area: fund;
+  min-width: 0;
+}
+.import-row-status {
+  grid-area: status;
+  justify-self: start;
+}
+@container (min-width: 760px) {
+  .import-table-header {
+    display: grid;
+  }
+  .import-row {
+    grid-template-columns: 90px 1fr 140px 150px 110px;
+    grid-template-areas: "date desc amount fund status";
+    row-gap: 0;
+    column-gap: 12px;
+  }
+  .import-row-date {
+    justify-self: stretch;
+  }
+  .import-row-amount {
+    justify-self: stretch;
+    font-size: 13px;
+  }
+}
+
+/* Transferencias — bloque Desde/Hacia: stack vertical con flecha rotada en mobile,
+   container query (no media query) por el mismo motivo que StatRow/tabla de
+   Transacciones: el sidebar fijo reduce el ancho real de contenido en desktop
+   aunque el viewport sea ancho. */
+.transfer-page {
+  container-type: inline-size;
+}
+.transfer-fund-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.transfer-fund-row > * {
+  min-width: 0;
+}
+.transfer-fund-arrow {
+  transform: rotate(90deg);
+  justify-self: center;
+}
+@container (min-width: 520px) {
+  .transfer-fund-row {
+    grid-template-columns: 1fr auto 1fr;
+  }
+  .transfer-fund-arrow {
+    transform: none;
+  }
+}
+
+.transfer-date-note-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@container (min-width: 420px) {
+  .transfer-date-note-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.transfer-recent-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+.transfer-recent-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+.transfer-recent-flow {
+  width: 100%;
+}
+@container (min-width: 520px) {
+  .transfer-recent-row {
+    flex-wrap: nowrap;
+  }
+  .transfer-recent-top {
+    display: contents;
+  }
+  .transfer-recent-top > span:first-child {
+    order: 1;
+  }
+  .transfer-recent-top > span:last-child {
+    order: 3;
+  }
+  .transfer-recent-flow {
+    order: 2;
+    width: auto;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Categorías — header: texto descriptivo + botón "Nueva categoría" apilados en
+   mobile, fila en desktop. Container query (no media query) por el mismo motivo
+   ya documentado arriba para StatRow/tabla de Transacciones/Transferencias. */
+.categories-header {
+  container-type: inline-size;
+  margin-bottom: 16px;
+}
+.categories-header-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.categories-header-row > button {
+  width: 100%;
+  justify-content: center;
+}
+@container (max-width: 599.98px) {
+  /* El botón declara height: 36 inline (JSX) para su fila de escritorio — en
+     mobile, apilado y a ancho completo, eso incumple el touch target de 44px.
+     min-height no pisa el layout de fila en desktop (regla no aplica ahí). */
+  .categories-header-row > button {
+    min-height: 44px;
+  }
+}
+@container (min-width: 600px) {
+  .categories-header-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .categories-header-row > button {
+    width: auto;
+  }
+}
+
+/* Ajustes — container de página para las container queries de esta feature
+   (mismo motivo que StatRow/tabla de Transacciones/Transferencias/Categorías:
+   el sidebar fijo del shell reduce el ancho real de contenido en desktop
+   aunque el viewport sea ancho). */
+.settings-page {
+  container-type: inline-size;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 8px 0 32px;
+}
+
+/* Ajustes — ProfileCard: los campos Nombre/Email pasan de 2 columnas fijas a
+   1 columna en contenedores angostos (evita inputs ilegibles en mobile). */
+.profile-name-email {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@container (min-width: 480px) {
+  .profile-name-email {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Ajustes — settingsRow: label+control apilan en columna en contenedores muy
+   angostos si el gap solo no evita el desborde (ver Task 4 del plan). */
+.settings-row--stack-narrow {
+  flex-direction: column;
+  align-items: flex-start;
+}
+@container (min-width: 380px) {
+  .settings-row--stack-narrow {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* Ajustes — AppearanceCard: el texto descriptivo + el toggle Claro/Oscuro
+   apilan en columna en contenedores angostos en vez de forzar el toggle a
+   scrollear horizontalmente junto al texto (hallazgo visual del usuario). */
+.appearance-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+@container (min-width: 420px) {
+  .appearance-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
 [data-theme='dark'] {
   --bg: #0f2240;
   --card: #1a2f52;
@@ -95,4 +415,124 @@ body {
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%       { opacity: .35; transform: scale(.65); }
+}
+.sidebar {
+  width: 252px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 30;
+  transition: transform .2s ease;
+}
+.sidebar-backdrop {
+  display: none;
+}
+.hamburger-btn {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar--open {
+    transform: translateX(0);
+  }
+  .sidebar-backdrop--visible {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 25;
+  }
+  .hamburger-btn {
+    display: flex;
+  }
+  .topbar-search-label {
+    display: none;
+  }
+  .topbar-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .month-nav-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .app-content {
+    padding: 16px 16px 48px !important;
+  }
+}
+
+.auth-split {
+  min-height: 100vh;
+  display: flex;
+}
+
+.auth-brand-panel {
+  flex: 1.05;
+  background: var(--navy);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 52px 56px;
+  position: relative;
+  overflow: hidden;
+  min-width: 380px;
+}
+
+@media (max-width: 767px) {
+  .auth-brand-panel {
+    display: none;
+  }
+}
+
+/* Onboarding — pantalla full-screen sin sidebar (como Auth): media query de
+   viewport, no container query, porque no hay un contenedor angosto por un
+   sidebar fijo que difiera del viewport real. */
+.onboarding-preset-grid {
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .onboarding-preset-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Onboarding — AddFundForm: apila nombre/clasificación/acciones en columna en
+   mobile en vez de comprimir input + select + 2 botones en una sola fila. */
+.onboarding-addfund-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.onboarding-addfund-select {
+  width: 100%;
+}
+.onboarding-addfund-actions {
+  display: flex;
+  gap: 10px;
+}
+.onboarding-addfund-actions > button {
+  flex: 1;
+}
+@media (min-width: 640px) {
+  .onboarding-addfund-form {
+    flex-direction: row;
+    align-items: center;
+  }
+  .onboarding-addfund-select {
+    width: 160px;
+  }
+  .onboarding-addfund-actions {
+    flex: none;
+  }
+  .onboarding-addfund-actions > button {
+    flex: none;
+  }
 }

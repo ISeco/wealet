@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { MONTH_NAMES } from '../dashboard/utils'
 import { Button } from '../../components/ui/Button'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
+import { Pagination } from '../../components/ui/Pagination'
 import { TrashIcon } from '../../components/ui/icons'
 import { useCategories } from '../categories'
 import { useTransactions } from '../transactions/hooks'
@@ -13,6 +14,8 @@ import { FundHeaderCard } from './components/FundHeaderCard'
 import { FundStatsColumn } from './components/FundStatsColumn'
 import { FundTransactionsList } from './components/FundTransactionsList'
 
+const RECENT_TX_LIMIT = 10
+
 interface FundDetailProps {
   fundId: string
   onBack: () => void
@@ -23,6 +26,8 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   const [deleteError, setDeleteError] = useState(false)
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+  const [recentTxPage, setRecentTxPage] = useState(1)
+  const [prevFundId, setPrevFundId] = useState(fundId)
   const { data: funds = [] } = useFunds()
   const { data: history = [] } = useFundHistory(fundId)
   const { data: categories = [] } = useCategories()
@@ -30,13 +35,18 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
 
   const fund = funds.find((f) => f.id === fundId)
 
+  if (fundId !== prevFundId) {
+    setPrevFundId(fundId)
+    setRecentTxPage(1)
+  }
+
   const now = new Date()
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
   const monthName = MONTH_NAMES[now.getMonth()].toLowerCase()
 
   const { data: monthTxData } = useTransactions({ fundId, from: monthStart, to: monthEnd, limit: 500 })
-  const { data: recentTxData } = useTransactions({ fundId, limit: 20 })
+  const { data: recentTxData } = useTransactions({ fundId, page: recentTxPage, limit: RECENT_TX_LIMIT })
 
   const monthIncome = useMemo(
     () => (monthTxData?.data ?? []).filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0),
@@ -54,6 +64,9 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
   )
 
   if (!fund) return null
+
+  const recentTxTotal = recentTxData?.total ?? 0
+  const recentTxTotalPages = Math.max(1, Math.ceil(recentTxTotal / RECENT_TX_LIMIT))
 
   async function handleDelete() {
     try {
@@ -103,7 +116,7 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginBottom: 16 }}>
         <FundHeaderCard fund={fund} history={history} />
         <FundStatsColumn
           fund={fund}
@@ -118,6 +131,15 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
         categoryMap={categoryMap}
         onTransactionClick={setSelectedTransaction}
       />
+
+      {recentTxTotal > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 4px' }}>
+          <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>
+            Mostrando <b style={{ color: 'var(--text)' }}>{recentTxData?.data.length ?? 0}</b> de {recentTxTotal} movimientos
+          </div>
+          <Pagination page={recentTxPage} totalPages={recentTxTotalPages} onPageChange={setRecentTxPage} />
+        </div>
+      )}
 
       {showEdit && (
         <FundFormDrawer

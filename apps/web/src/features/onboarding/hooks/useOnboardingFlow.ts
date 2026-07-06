@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { createFund } from '../api'
 import { useCompleteOnboarding } from './useCompleteOnboarding'
 import { useExcelImportFlow } from '../../import-export/useExcelImportFlow'
-import { useHealthProfile } from '../../health/hooks'
+import { useAllocation, useHealthProfile } from '../../health/hooks'
 import type { PresetOption } from '../steps/Step1Preset'
 import type { CreateFundPayload } from '../../funds/types'
 import type { HealthFramework } from '../../health/types'
@@ -18,7 +18,13 @@ export function useOnboardingFlow(isReconfigure: boolean) {
   const [showFrameworkWarning, setShowFrameworkWarning] = useState(false)
   const excelFlow = useExcelImportFlow()
   const { data: healthProfile } = useHealthProfile()
+  const { data: currentAllocation } = useAllocation()
   const { complete, isPending, error } = useCompleteOnboarding()
+
+  // Income for the current month is already registered (HealthProfile.monthlyIncome or a
+  // MonthlyAllocation row) — skip re-asking for it when just switching framework mid-month.
+  const existingIncome = currentAllocation?.totalAmount ?? healthProfile?.monthlyIncome ?? undefined
+  const skipIncomeStep = isReconfigure && !!existingIncome
 
   // 'excel' doesn't pick a framework directly, but completing it implicitly
   // sets 'fondos' (see useCompleteOnboarding) — treat it the same way here.
@@ -32,10 +38,11 @@ export function useOnboardingFlow(isReconfigure: boolean) {
     targetFramework !== healthProfile.framework
 
   const isSlotPreset = selected ? SLOT_PRESETS.includes(selected) : false
-  const totalSteps = isSlotPreset ? 4 : 3
+  const showsIncomeStep = isSlotPreset && !skipIncomeStep
+  const totalSteps = showsIncomeStep ? 4 : 3
 
   // Map internal step (1-4) to dot position (1-totalSteps)
-  const dotStep = isSlotPreset ? step : step === 4 ? 3 : step
+  const dotStep = showsIncomeStep ? step : step === 4 ? 3 : step
   const dots = Array.from({ length: totalSteps }, (_, i) => ({
     active: i + 1 === dotStep,
     width: i + 1 === dotStep ? 24 : 8,
@@ -79,8 +86,11 @@ export function useOnboardingFlow(isReconfigure: boolean) {
 
   async function handleConfirmStep2() {
     if (!selected) return
-    if (isSlotPreset) {
+    if (showsIncomeStep) {
       setStep(3)
+    } else if (isSlotPreset) {
+      const ok = await complete(selected, existingIncome, isReconfigure)
+      if (ok) setStep(4)
     } else {
       const ok = await complete(selected, undefined, isReconfigure)
       if (ok) setStep(4)
@@ -113,6 +123,8 @@ export function useOnboardingFlow(isReconfigure: boolean) {
     targetFramework,
     willChangeFramework,
     isSlotPreset,
+    skipIncomeStep,
+    existingIncome,
     totalSteps,
     dots,
     isPending,

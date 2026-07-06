@@ -76,25 +76,27 @@ export function FundsPage() {
       </div>
 
       {/* Classification summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 22 }}>
-        {classGroups.map(({ cls, group, total }) => {
-          const cl = classColor(cls)
-          const formatted = formatMoney(total.toString(), 'CLP')
-          return (
-            <div key={cls} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', padding: '18px 20px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: cl.color }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 9, height: 9, borderRadius: 3, background: cl.color, flexShrink: 0 }} />
-                <span style={{ fontSize: 13, fontWeight: 600 }}>{cl.label}</span>
-                <span style={{ fontSize: 11.5, color: 'var(--muted)', marginLeft: 'auto' }}>{group.length}</span>
+      <div className="stat-row-container" style={{ marginBottom: 22 }}>
+        <div className="stat-row">
+          {classGroups.map(({ cls, group, total }) => {
+            const cl = classColor(cls)
+            const formatted = formatMoney(total.toString(), 'CLP')
+            return (
+              <div key={cls} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', padding: '18px 20px', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: cl.color }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 9, height: 9, borderRadius: 3, background: cl.color, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>{cl.label}</span>
+                  <span style={{ fontSize: 11.5, color: 'var(--muted)', marginLeft: 'auto' }}>{group.length}</span>
+                </div>
+                <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 10, fontVariantNumeric: 'tabular-nums' }}>
+                  {isLoading ? '—' : formatted}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{CLASS_DESC[cls]}</div>
               </div>
-              <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 10, fontVariantNumeric: 'tabular-nums' }}>
-                {isLoading ? '—' : formatted}
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{CLASS_DESC[cls]}</div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
 
       {/* Header row */}

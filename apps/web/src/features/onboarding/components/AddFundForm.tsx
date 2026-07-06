@@ -28,27 +28,31 @@ export function AddFundForm({ onAdd, onCancel }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: '14px 16px', border: '1px solid var(--border)', borderRadius: 12, background: 'var(--tint)', display: 'flex', gap: 10, alignItems: 'center' }}>
+    <form onSubmit={handleSubmit} className="onboarding-addfund-form" style={{ padding: '14px 16px', border: '1px solid var(--border)', borderRadius: 12, background: 'var(--tint)' }}>
       <input
         autoFocus
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Nombre del fondo"
         maxLength={120}
-        style={{ flex: 1, height: 38, padding: '0 12px', border: '1px solid var(--border)', borderRadius: 9, background: 'var(--field)', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14 }}
+        style={{ flex: 1, minWidth: 0, height: 38, padding: '0 12px', border: '1px solid var(--border)', borderRadius: 9, background: 'var(--field)', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14 }}
       />
-      <Select
-        options={CLASSIFICATIONS.map((c) => ({ value: c.value, label: c.label }))}
-        value={classification}
-        onChange={(e) => setClassification(e.target.value as FundClassification)}
-        style={{ width: 160, height: 38 }}
-      />
-      <Button type="submit" size="sm" disabled={!name.trim()}>
-        Agregar
-      </Button>
-      <Button type="button" variant="secondary" size="sm" onClick={onCancel}>
-        Cancelar
-      </Button>
+      <div className="onboarding-addfund-select">
+        <Select
+          options={CLASSIFICATIONS.map((c) => ({ value: c.value, label: c.label }))}
+          value={classification}
+          onChange={(e) => setClassification(e.target.value as FundClassification)}
+          style={{ height: 38 }}
+        />
+      </div>
+      <div className="onboarding-addfund-actions">
+        <Button type="submit" size="sm" disabled={!name.trim()}>
+          Agregar
+        </Button>
+        <Button type="button" variant="secondary" size="sm" onClick={onCancel}>
+          Cancelar
+        </Button>
+      </div>
     </form>
   )
 }
