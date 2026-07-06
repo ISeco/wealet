@@ -4,6 +4,7 @@ import { FundRow } from '../components/FundRow'
 import { AddFundForm } from '../components/AddFundForm'
 import type { CreateFundPayload, FundClassification } from '../../funds/types'
 import { FRAMEWORK_LABELS } from '../../health/utils'
+import { formatMoney } from '../../../lib/money'
 import { Button } from '../../../components/ui/Button'
 import { PlusIcon } from '../../../components/ui/icons'
 
@@ -40,9 +41,11 @@ interface Props {
   onAddFund: (fund: CreateFundPayload) => void
   onRemoveFund: (index: number) => void
   error: string | null
+  /** Monthly income already registered this month, reused (not re-asked) for this framework switch. */
+  reusedIncome?: string
 }
 
-export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, error }: Props) {
+export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, error, reusedIncome }: Props) {
   const [showAddForm, setShowAddForm] = useState(false)
 
   const isPreset = preset !== 'fondos'
@@ -92,6 +95,12 @@ export function Step2Funds({ preset, customFunds, onAddFund, onRemoveFund, error
           />
         )}
       </div>
+
+      {reusedIncome && (
+        <div style={{ textAlign: 'center', marginTop: 16, fontSize: 13.5, color: 'var(--muted)' }}>
+          Se usará el ingreso ya registrado este mes: <strong style={{ color: 'var(--text)' }}>{formatMoney(reusedIncome, 'CLP')}</strong>
+        </div>
+      )}
 
       {error && (
         <div style={{ textAlign: 'center', marginTop: 16, fontSize: 13.5, color: 'var(--neg)', fontWeight: 500 }}>

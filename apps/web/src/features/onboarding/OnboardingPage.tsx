@@ -29,6 +29,8 @@ export function OnboardingPage() {
     healthProfile,
     showFrameworkWarning,
     targetFramework,
+    skipIncomeStep,
+    existingIncome,
     dots,
     isPending,
     error,
@@ -88,6 +90,7 @@ export function OnboardingPage() {
               onAddFund={handleAddFund}
               onRemoveFund={handleRemoveFund}
               error={error ?? addFundError}
+              reusedIncome={skipIncomeStep ? existingIncome : undefined}
             />
           )}
           {step === 2 && selected === 'excel' && (
