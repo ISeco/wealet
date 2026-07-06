@@ -109,7 +109,7 @@ export function OnboardingPage() {
               {error && step === 3 && (
                 <div style={{ fontSize: 13, color: 'var(--neg)', fontWeight: 500 }}>{error}</div>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
               {/* Atrás */}
               {(step === 2 || step === 3) && (
                 <Button variant="secondary" onClick={goBack}>
