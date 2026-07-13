@@ -62,7 +62,11 @@ export class AuthService {
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
     }
 
-    const valid = await this.verifyPassword(dto.password, user.passwordHash);
+    const valid = await this.verifyPasswordWithRehash(
+      user.id,
+      dto.password,
+      user.passwordHash,
+    );
     if (!valid) {
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
     }
@@ -166,7 +170,8 @@ export class AuthService {
       if (!dto.currentPassword) {
         throw new BadRequestException('Current password is required');
       }
-      const valid = await this.verifyPassword(
+      const valid = await this.verifyPasswordWithRehash(
+        userId,
         dto.currentPassword,
         user.passwordHash,
       );
@@ -174,7 +179,8 @@ export class AuthService {
         throw new UnauthorizedException('Current password is incorrect');
       }
 
-      const isSamePassword = await this.verifyPassword(
+      const isSamePassword = await this.verifyPasswordWithRehash(
+        userId,
         dto.newPassword,
         user.passwordHash,
       );
@@ -222,7 +228,8 @@ export class AuthService {
     }
 
     if (user.passwordHash !== null) {
-      const isSamePassword = await this.verifyPassword(
+      const isSamePassword = await this.verifyPasswordWithRehash(
+        user.id,
         newPassword,
         user.passwordHash,
       );
@@ -266,8 +273,32 @@ export class AuthService {
     return argon2.hash(password + this.authConfig.passwordPepper);
   }
 
-  private verifyPassword(password: string, hash: string): Promise<boolean> {
-    return argon2.verify(hash, password + this.authConfig.passwordPepper);
+  private async verifyPasswordWithRehash(
+    userId: string,
+    password: string,
+    hash: string,
+  ): Promise<boolean> {
+    const validCurrent = await argon2.verify(
+      hash,
+      password + this.authConfig.passwordPepper,
+    );
+    if (validCurrent) {
+      return true;
+    }
+
+    const previousPepper = this.authConfig.passwordPepperPrevious;
+    if (!previousPepper) {
+      return false;
+    }
+
+    const validPrevious = await argon2.verify(hash, password + previousPepper);
+    if (!validPrevious) {
+      return false;
+    }
+
+    const rehashed = await this.hashPassword(password);
+    await this.usersService.updatePasswordHash(userId, rehashed);
+    return true;
   }
 
   private hashToken(rawToken: string): string {
