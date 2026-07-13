@@ -124,6 +124,34 @@ function describeCellValue(value: Cell['value']): string {
   return String(value);
 }
 
+// A formula cell's value is `{ formula, result }`, not a bare number, even
+// when the cached result is numeric — SheetJS (the pre-migration library)
+// exposed the cached result directly as a number, so plain `typeof === 'number'`
+// checks silently dropped every formula-driven cell after the exceljs migration.
+function getNumericValue(value: Cell['value']): number | null {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    ('formula' in value || 'sharedFormula' in value) &&
+    typeof value.result === 'number'
+  ) {
+    return value.result;
+  }
+  return null;
+}
+
+// Excel auto-prefixes a note with "Author Name:\n" when created via the
+// classic "Insert Comment" flow — strip it so it doesn't leak into the
+// transaction description.
+const AUTHOR_PREFIX_PATTERN = /^[^\n]{1,80}:\n/;
+
+function stripAuthorPrefix(text: string): string {
+  return text.replace(AUTHOR_PREFIX_PATTERN, '');
+}
+
 // A cell comment (SheetJS: `cell.c`) is exposed by exceljs as `cell.note`,
 // either a plain string or a rich-text Comment object.
 function getCommentText(cell: Cell): string | null {
@@ -132,13 +160,13 @@ function getCommentText(cell: Cell): string | null {
     return null;
   }
   if (typeof note === 'string') {
-    return note.trim() || null;
+    return stripAuthorPrefix(note).trim() || null;
   }
   const text = note.texts
     ?.map((t) => t.text)
     .join('')
     .trim();
-  return text || null;
+  return text ? stripAuthorPrefix(text).trim() || null : null;
 }
 
 const TOTALS_PER_FUND_LABEL_PATTERN = /^total\s*c\/u$/i;
@@ -243,29 +271,31 @@ export async function parseLedgerWorkbook(
 
     for (const { col, name: fundName } of fundColumns) {
       const openingCell = getCell(sheet, OPENING_BALANCE_ROW_INDEX, col);
-      if (typeof openingCell.value === 'number') {
-        if (openingCell.value !== 0) {
+      const openingValue = getNumericValue(openingCell.value);
+      if (openingValue !== null) {
+        if (openingValue !== 0) {
           openingBalances.push({
             sheet: sheetName,
             fundName,
-            amount: String(Math.round(openingCell.value)),
+            amount: String(Math.round(openingValue)),
           });
         }
         const monthKey = `${year}-${String(month).padStart(2, '0')}`;
         if (!openingByFundMonth.has(fundName)) {
           openingByFundMonth.set(fundName, new Map());
         }
-        openingByFundMonth.get(fundName)!.set(monthKey, openingCell.value);
+        openingByFundMonth.get(fundName)!.set(monthKey, openingValue);
       }
 
       if (totalsPerFundRowIndex !== null) {
         const totalCell = getCell(sheet, totalsPerFundRowIndex, col);
-        if (typeof totalCell.value === 'number') {
+        const totalValue = getNumericValue(totalCell.value);
+        if (totalValue !== null) {
           const monthKey = `${year}-${String(month).padStart(2, '0')}`;
           if (!totalsByFundMonth.has(fundName)) {
             totalsByFundMonth.set(fundName, new Map());
           }
-          totalsByFundMonth.get(fundName)!.set(monthKey, totalCell.value);
+          totalsByFundMonth.get(fundName)!.set(monthKey, totalValue);
         }
       }
 
@@ -278,7 +308,8 @@ export async function parseLedgerWorkbook(
         ) {
           continue;
         }
-        if (typeof cell.value !== 'number') {
+        const numericValue = getNumericValue(cell.value);
+        if (numericValue === null) {
           errors.push({
             sheet: sheetName,
             cell: cell.address,
@@ -286,11 +317,11 @@ export async function parseLedgerWorkbook(
           });
           continue;
         }
-        if (cell.value === 0) {
+        if (numericValue === 0) {
           continue;
         }
 
-        const amount = Math.round(cell.value);
+        const amount = Math.round(numericValue);
         const dayOffset = r - FIRST_DATA_ROW_INDEX;
         const day = Math.min(dayOffset + 1, lastDay);
         const description = getCommentText(cell);

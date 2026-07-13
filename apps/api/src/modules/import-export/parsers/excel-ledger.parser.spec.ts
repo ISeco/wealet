@@ -165,6 +165,56 @@ describe('parseLedgerWorkbook', () => {
     expect(result.errors[0].message).toContain('Expected a numeric amount');
   });
 
+  it('strips the "Author Name:\\n" prefix Excel auto-adds to a note', async () => {
+    const workbook = new Workbook();
+    const worksheet = aoaToWorksheet(workbook, 'Marzo 2026', [
+      [],
+      [null, null, null, null, 'Fondo Libre'],
+      [null, null, null, null, 0],
+      [null, null, null, null, -1000],
+      [],
+      [null, null, null, null, 0],
+    ]);
+    worksheet.getCell('E4').note = 'Javier Seco:\nSalida con los cabros';
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+
+    const result = await parseLedgerWorkbook(buffer);
+
+    const expense = result.rows.find((row) => row.cell === 'E4')!;
+    expect(expense.description).toBe('Salida con los cabros');
+  });
+
+  it('reads an opening balance and a transaction amount from a formula cell', async () => {
+    const workbook = new Workbook();
+    const worksheet = aoaToWorksheet(workbook, 'Abril 2026', [
+      [],
+      [null, null, null, null, 'Fondo Libre'],
+      [],
+      [],
+      [],
+      [null, null, null, null, 0],
+    ]);
+    worksheet.getCell('E3').value = {
+      formula: "'Otra hoja'!E3*0.1",
+      result: 92878.1,
+    };
+    worksheet.getCell('E4').value = {
+      formula: "'Otra hoja'!E4",
+      result: -4700,
+    };
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+
+    const result = await parseLedgerWorkbook(buffer);
+
+    expect(result.errors).toEqual([]);
+    expect(result.openingBalances).toEqual([
+      { sheet: 'Abril 2026', fundName: 'Fondo Libre', amount: '92878' },
+    ]);
+    const expense = result.rows.find((row) => row.cell === 'E4')!;
+    expect(expense.type).toBe(TransactionType.EXPENSE);
+    expect(expense.amount).toBe('4700');
+  });
+
   it('excludes a multi-row totals footer bounded by the days in the month', async () => {
     const zeroRows: unknown[][] = Array.from({ length: 30 }, () => [
       null,

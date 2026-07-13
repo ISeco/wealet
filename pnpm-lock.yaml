@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  exceljs: 4edeb88117092bf9b789cbdb4116328a2bb28ede2a5a5de93b2bbd05651d61fc
+
 importers:
 
   .:
@@ -61,7 +64,7 @@ importers:
         version: 17.4.2
       exceljs:
         specifier: ^4.4.0
-        version: 4.4.0
+        version: 4.4.0(patch_hash=4edeb88117092bf9b789cbdb4116328a2bb28ede2a5a5de93b2bbd05651d61fc)
       google-auth-library:
         specifier: ^10.9.0
         version: 10.9.0
@@ -7412,7 +7415,7 @@ snapshots:
 
   events@3.3.0: {}
 
-  exceljs@4.4.0:
+  exceljs@4.4.0(patch_hash=4edeb88117092bf9b789cbdb4116328a2bb28ede2a5a5de93b2bbd05651d61fc):
     dependencies:
       archiver: 5.3.2
       dayjs: 1.11.21
