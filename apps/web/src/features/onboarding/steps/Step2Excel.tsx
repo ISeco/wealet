@@ -22,7 +22,7 @@ export function Step2Excel({ flow, onCommitSuccess }: Props) {
           Sube tu archivo para detectar fondos y transacciones automáticamente.
         </div>
       </div>
-      <div style={{ maxWidth: 700, margin: '0 auto' }}>
+      <div style={{ maxWidth: 780, margin: '0 auto' }}>
         {flow.phase === 'upload' && (
           <UploadStep
             onFileReady={flow.submitFile}
