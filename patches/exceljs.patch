@@ -1,0 +1,54 @@
+diff --git a/lib/xlsx/xform/comment/comment-xform.js b/lib/xlsx/xform/comment/comment-xform.js
+index 16363bfea8d0903ac66c77606c4362ef3fcd72bb..5cee851ba01083ccc4e28dc34cbaae7e5ff2afdd 100644
+--- a/lib/xlsx/xform/comment/comment-xform.js
++++ b/lib/xlsx/xform/comment/comment-xform.js
+@@ -78,6 +78,13 @@ utils.inherits(CommentXform, BaseXform, {
+         this.parser = this.richTextXform;
+         this.parser.parseOpen(node);
+         return true;
++      case 't':
++        // Excel may write a comment's text as a bare <t> node directly under
++        // <text>, without wrapping it in an <r> run (no rich-text formatting
++        // applied). The upstream xform only recognises <r> runs, silently
++        // dropping this text and leaving note.texts empty.
++        this.plainText = '';
++        return true;
+       default:
+         return false;
+     }
+@@ -85,20 +92,29 @@ utils.inherits(CommentXform, BaseXform, {
+   parseText(text) {
+     if (this.parser) {
+       this.parser.parseText(text);
++    } else if (this.plainText !== undefined) {
++      this.plainText += text;
+     }
+   },
+   parseClose(name) {
++    if (this.parser) {
++      this.parser.parseClose(name);
++      if (name === 'r') {
++        this.model.note.texts.push(this.parser.model);
++        this.parser = undefined;
++      }
++      return true;
++    }
+     switch (name) {
+       case 'comment':
+         return false;
+-      case 'r':
+-        this.model.note.texts.push(this.parser.model);
+-        this.parser = undefined;
++      case 't':
++        if (this.plainText !== undefined) {
++          this.model.note.texts.push({ text: this.plainText });
++          this.plainText = undefined;
++        }
+         return true;
+       default:
+-        if (this.parser) {
+-          this.parser.parseClose(name);
+-        }
+         return true;
+     }
+   },

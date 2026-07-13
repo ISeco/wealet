@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Workbook } from 'exceljs';
 import { In, Repository } from 'typeorm';
-import * as XLSX from 'xlsx';
 import { TransactionType } from '../../common/enums/transaction-type.enum';
 import { Category } from '../categories/entities/category.entity';
 import { Fund, FundClassification } from '../funds/entities/fund.entity';
@@ -33,7 +33,7 @@ export class ImportExportService {
     buffer: Buffer,
     year?: number,
   ): Promise<ImportPreviewResponseDto> {
-    const parsed = parseLedgerWorkbook(buffer, { year });
+    const parsed = await parseLedgerWorkbook(buffer, { year });
 
     if (parsed.needsYear) {
       return {
@@ -133,21 +133,29 @@ export class ImportExportService {
         ? transactions.filter((t) => t.occurredOn >= from && t.occurredOn <= to)
         : transactions;
 
-    const sheetRows = filtered.map((transaction) => ({
-      Fecha: transaction.occurredOn,
-      Fondo: transaction.fund.name,
-      Categoria: transaction.category.name,
-      Tipo: transaction.type,
-      Monto:
-        Number(transaction.amount) *
-        (transaction.type === TransactionType.EXPENSE ? -1 : 1),
-      Descripcion: transaction.description ?? '',
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(sheetRows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Transacciones');
-    return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
+    const workbook = new Workbook();
+    const worksheet = workbook.addWorksheet('Transacciones');
+    worksheet.columns = [
+      { header: 'Fecha', key: 'fecha' },
+      { header: 'Fondo', key: 'fondo' },
+      { header: 'Categoria', key: 'categoria' },
+      { header: 'Tipo', key: 'tipo' },
+      { header: 'Monto', key: 'monto' },
+      { header: 'Descripcion', key: 'descripcion' },
+    ];
+    worksheet.addRows(
+      filtered.map((transaction) => ({
+        fecha: transaction.occurredOn,
+        fondo: transaction.fund.name,
+        categoria: transaction.category.name,
+        tipo: transaction.type,
+        monto:
+          Number(transaction.amount) *
+          (transaction.type === TransactionType.EXPENSE ? -1 : 1),
+        descripcion: transaction.description ?? '',
+      })),
+    );
+    return Buffer.from(await workbook.xlsx.writeBuffer());
   }
 
   private async getExistingDedupeHashes(

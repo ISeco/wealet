@@ -1,5 +1,6 @@
 import { createHash } from 'crypto';
-import * as XLSX from 'xlsx';
+import { Workbook } from 'exceljs';
+import type { Cell, Worksheet } from 'exceljs';
 import { TransactionType } from '../../../common/enums/transaction-type.enum';
 
 const MONTH_NAMES_ES: Record<string, number> = {
@@ -52,6 +53,11 @@ export interface ParsedWorkbook {
   needsYear: boolean;
 }
 
+interface Range {
+  s: { r: number; c: number };
+  e: { r: number; c: number };
+}
+
 const MONTH_PATTERN = new RegExp(
   `\\b(${Object.keys(MONTH_NAMES_ES).join('|')})\\b`,
   'i',
@@ -89,11 +95,78 @@ function computeDedupeHash(
     .digest('hex');
 }
 
-function getCell(
-  sheet: XLSX.WorkSheet,
-  address: string,
-): XLSX.CellObject | undefined {
-  return (sheet as Record<string, XLSX.CellObject | undefined>)[address];
+// exceljs cells are 1-indexed and auto-vivify (getCell never returns
+// undefined), unlike the sparse 0-indexed object the xlsx library exposed.
+function getCell(sheet: Worksheet, row0: number, col0: number): Cell {
+  return sheet.getCell(row0 + 1, col0 + 1);
+}
+
+function getSheetRange(sheet: Worksheet): Range | null {
+  if (sheet.rowCount === 0) {
+    return null;
+  }
+  const dim = sheet.dimensions;
+  return {
+    s: { r: dim.top - 1, c: dim.left - 1 },
+    e: { r: dim.bottom - 1, c: dim.right - 1 },
+  };
+}
+
+// `cell.value` can be a rich-text/formula/hyperlink/error object, not just a
+// primitive — default `String()` stringification would print "[object Object]".
+function describeCellValue(value: Cell['value']): string {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
+// A formula cell's value is `{ formula, result }`, not a bare number, even
+// when the cached result is numeric — SheetJS (the pre-migration library)
+// exposed the cached result directly as a number, so plain `typeof === 'number'`
+// checks silently dropped every formula-driven cell after the exceljs migration.
+function getNumericValue(value: Cell['value']): number | null {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    ('formula' in value || 'sharedFormula' in value) &&
+    typeof value.result === 'number'
+  ) {
+    return value.result;
+  }
+  return null;
+}
+
+// Excel auto-prefixes a note with "Author Name:\n" when created via the
+// classic "Insert Comment" flow — strip it so it doesn't leak into the
+// transaction description.
+const AUTHOR_PREFIX_PATTERN = /^[^\n]{1,80}:\n/;
+
+function stripAuthorPrefix(text: string): string {
+  return text.replace(AUTHOR_PREFIX_PATTERN, '');
+}
+
+// A cell comment (SheetJS: `cell.c`) is exposed by exceljs as `cell.note`,
+// either a plain string or a rich-text Comment object.
+function getCommentText(cell: Cell): string | null {
+  const note = cell.note;
+  if (!note) {
+    return null;
+  }
+  if (typeof note === 'string') {
+    return stripAuthorPrefix(note).trim() || null;
+  }
+  const text = note.texts
+    ?.map((t) => t.text)
+    .join('')
+    .trim();
+  return text ? stripAuthorPrefix(text).trim() || null : null;
 }
 
 const TOTALS_PER_FUND_LABEL_PATTERN = /^total\s*c\/u$/i;
@@ -104,17 +177,15 @@ const TOTALS_PER_FUND_LABEL_PATTERN = /^total\s*c\/u$/i;
 // would otherwise let the calendar-day bound read straight into this row
 // and misparse the fund's running total as a new transaction.
 function findTotalsPerFundRowIndex(
-  sheet: XLSX.WorkSheet,
-  range: XLSX.Range,
+  sheet: Worksheet,
+  range: Range,
 ): number | null {
   for (let r = range.s.r; r <= range.e.r; r++) {
     for (let c = range.s.c; c <= range.e.c; c++) {
-      const cell = getCell(sheet, XLSX.utils.encode_cell({ r, c }));
+      const cell = getCell(sheet, r, c);
       if (
-        cell &&
-        cell.t === 's' &&
-        typeof cell.v === 'string' &&
-        TOTALS_PER_FUND_LABEL_PATTERN.test(cell.v.trim())
+        typeof cell.value === 'string' &&
+        TOTALS_PER_FUND_LABEL_PATTERN.test(cell.value.trim())
       ) {
         return r;
       }
@@ -123,13 +194,18 @@ function findTotalsPerFundRowIndex(
   return null;
 }
 
-export function parseLedgerWorkbook(
+export async function parseLedgerWorkbook(
   buffer: Buffer,
   options?: { year?: number },
-): ParsedWorkbook {
-  const workbook = XLSX.read(buffer, { type: 'buffer' });
+): Promise<ParsedWorkbook> {
+  const workbook = new Workbook();
+  // exceljs's bundled types predate @types/node's generic `Buffer<T>` —
+  // the runtime accepts a Node Buffer fine, only the structural type check fails.
+  await workbook.xlsx.load(buffer as never);
 
-  const needsYear = workbook.SheetNames.some((sheetName) => {
+  const sheetNames = workbook.worksheets.map((ws) => ws.name);
+
+  const needsYear = sheetNames.some((sheetName) => {
     const match = parseSheetMonth(sheetName);
     return match !== null && match.year === null;
   });
@@ -153,10 +229,10 @@ export function parseLedgerWorkbook(
   const openingByFundMonth = new Map<string, Map<string, number>>();
   const totalsByFundMonth = new Map<string, Map<string, number>>();
 
-  for (const sheetName of workbook.SheetNames) {
-    const sheet = workbook.Sheets[sheetName];
-    const ref = sheet['!ref'];
-    if (!ref) {
+  for (const sheet of workbook.worksheets) {
+    const sheetName = sheet.name;
+    const range = getSheetRange(sheet);
+    if (!range) {
       continue;
     }
     const monthMatch = parseSheetMonth(sheetName);
@@ -169,7 +245,6 @@ export function parseLedgerWorkbook(
     }
     const month = monthMatch.month;
 
-    const range = XLSX.utils.decode_range(ref);
     const totalsRowIndex = range.e.r;
     const totalsPerFundRowIndex = findTotalsPerFundRowIndex(sheet, range);
     const lastDay = daysInMonth(year, month);
@@ -186,90 +261,85 @@ export function parseLedgerWorkbook(
 
     const fundColumns: Array<{ col: number; name: string }> = [];
     for (let col = range.s.c; col <= range.e.c; col++) {
-      const headerAddress = XLSX.utils.encode_cell({
-        r: HEADER_ROW_INDEX,
-        c: col,
-      });
-      const headerCell = getCell(sheet, headerAddress);
-      if (
-        headerCell &&
-        headerCell.t === 's' &&
-        typeof headerCell.v === 'string' &&
-        headerCell.v.trim()
-      ) {
-        const fundName = headerCell.v.trim();
+      const headerCell = getCell(sheet, HEADER_ROW_INDEX, col);
+      if (typeof headerCell.value === 'string' && headerCell.value.trim()) {
+        const fundName = headerCell.value.trim();
         fundColumns.push({ col, name: fundName });
         fundNames.add(fundName);
       }
     }
 
     for (const { col, name: fundName } of fundColumns) {
-      const openingAddress = XLSX.utils.encode_cell({
-        r: OPENING_BALANCE_ROW_INDEX,
-        c: col,
-      });
-      const openingCell = getCell(sheet, openingAddress);
-      if (openingCell && typeof openingCell.v === 'number') {
-        if (openingCell.v !== 0) {
+      const openingCell = getCell(sheet, OPENING_BALANCE_ROW_INDEX, col);
+      const openingValue = getNumericValue(openingCell.value);
+      if (openingValue !== null) {
+        if (openingValue !== 0) {
           openingBalances.push({
             sheet: sheetName,
             fundName,
-            amount: String(Math.round(openingCell.v)),
+            amount: String(Math.round(openingValue)),
           });
         }
         const monthKey = `${year}-${String(month).padStart(2, '0')}`;
         if (!openingByFundMonth.has(fundName)) {
           openingByFundMonth.set(fundName, new Map());
         }
-        openingByFundMonth.get(fundName)!.set(monthKey, openingCell.v);
+        openingByFundMonth.get(fundName)!.set(monthKey, openingValue);
       }
 
       if (totalsPerFundRowIndex !== null) {
-        const totalCell = getCell(
-          sheet,
-          XLSX.utils.encode_cell({ r: totalsPerFundRowIndex, c: col }),
-        );
-        if (totalCell && typeof totalCell.v === 'number') {
+        const totalCell = getCell(sheet, totalsPerFundRowIndex, col);
+        const totalValue = getNumericValue(totalCell.value);
+        if (totalValue !== null) {
           const monthKey = `${year}-${String(month).padStart(2, '0')}`;
           if (!totalsByFundMonth.has(fundName)) {
             totalsByFundMonth.set(fundName, new Map());
           }
-          totalsByFundMonth.get(fundName)!.set(monthKey, totalCell.v);
+          totalsByFundMonth.get(fundName)!.set(monthKey, totalValue);
         }
       }
 
       for (let r = FIRST_DATA_ROW_INDEX; r <= lastDataRowIndex; r++) {
-        const address = XLSX.utils.encode_cell({ r, c: col });
-        const cell = getCell(sheet, address);
-        if (!cell || cell.v === undefined || cell.v === null || cell.v === '') {
+        const cell = getCell(sheet, r, col);
+        if (
+          cell.value === undefined ||
+          cell.value === null ||
+          cell.value === ''
+        ) {
           continue;
         }
-        if (typeof cell.v !== 'number') {
+        const numericValue = getNumericValue(cell.value);
+        if (numericValue === null) {
           errors.push({
             sheet: sheetName,
-            cell: address,
-            message: `Expected a numeric amount, got "${String(cell.v)}"`,
+            cell: cell.address,
+            message: `Expected a numeric amount, got "${describeCellValue(cell.value)}"`,
           });
           continue;
         }
-        if (cell.v === 0) {
+        if (numericValue === 0) {
           continue;
         }
 
-        const amount = Math.round(cell.v);
+        const amount = Math.round(numericValue);
         const dayOffset = r - FIRST_DATA_ROW_INDEX;
         const day = Math.min(dayOffset + 1, lastDay);
-        const description = cell.c?.[0]?.t?.trim() ?? null;
+        const description = getCommentText(cell);
 
         rows.push({
           sheet: sheetName,
-          cell: address,
+          cell: cell.address,
           fundName,
           amount: String(Math.abs(amount)),
           type: amount > 0 ? TransactionType.INCOME : TransactionType.EXPENSE,
           description,
           occurredOn: toIsoDate(year, month, day),
-          dedupeHash: computeDedupeHash(sheetName, fundName, address, amount),
+          dedupeHash: computeDedupeHash(
+            sheetName,
+            fundName,
+            cell.address,
+            amount,
+          ),
         });
       }
     }

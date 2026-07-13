@@ -1,8 +1,27 @@
-import * as XLSX from 'xlsx';
+import { Workbook, type Worksheet } from 'exceljs';
 import { TransactionType } from '../../../common/enums/transaction-type.enum';
 import { parseLedgerWorkbook } from './excel-ledger.parser';
 
-function buildWorkbookBuffer(): Buffer {
+// Mirrors the row/col shape of the old xlsx-based fixtures: `data[r][c]`
+// is 0-indexed, matching the parser's own row-index constants, and mapped
+// here to exceljs's 1-indexed `getCell`. Null/undefined entries are left
+// unset, matching aoa_to_sheet's sparse-cell behavior.
+function aoaToWorksheet(
+  workbook: Workbook,
+  sheetName: string,
+  data: unknown[][],
+): Worksheet {
+  const worksheet = workbook.addWorksheet(sheetName);
+  data.forEach((row, r) => {
+    row.forEach((value, c) => {
+      if (value === null || value === undefined) return;
+      worksheet.getCell(r + 1, c + 1).value = value as string | number;
+    });
+  });
+  return worksheet;
+}
+
+async function buildWorkbookBuffer(): Promise<Buffer> {
   const data: unknown[][] = [
     [],
     [null, null, null, null, 'Fondo Libre', 'Fondo Rico'],
@@ -12,23 +31,17 @@ function buildWorkbookBuffer(): Buffer {
     [],
     [null, null, null, 'Total c/u', 273341, 0],
   ];
-  const worksheet = XLSX.utils.aoa_to_sheet(data);
-  const cells = worksheet as Record<string, XLSX.CellObject>;
-  const expenseComment: XLSX.CellObject['c'] = [
-    { a: 'test', t: 'Giro Pasajes' },
-  ];
-  const incomeComment: XLSX.CellObject['c'] = [{ a: 'test', t: 'Depósito' }];
-  cells['E4'] = { t: 'n', v: -10000, c: expenseComment };
-  cells['F4'] = { t: 'n', v: 50000, c: incomeComment };
-  cells['E5'] = { t: 'n', v: 0 };
-  worksheet['!ref'] = 'A1:F7';
-
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Enero 2026');
-  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
+  const workbook = new Workbook();
+  const worksheet = aoaToWorksheet(workbook, 'Enero 2026', data);
+  worksheet.getCell('E4').value = -10000;
+  worksheet.getCell('E4').note = 'Giro Pasajes';
+  worksheet.getCell('F4').value = 50000;
+  worksheet.getCell('F4').note = 'Depósito';
+  worksheet.getCell('E5').value = 0;
+  return Buffer.from(await workbook.xlsx.writeBuffer());
 }
 
-function buildMonthOnlySheetBuffer(sheetName: string): Buffer {
+async function buildMonthOnlySheetBuffer(sheetName: string): Promise<Buffer> {
   const data: unknown[][] = [
     [],
     [null, null, null, null, 'Fondo Test'],
@@ -36,16 +49,14 @@ function buildMonthOnlySheetBuffer(sheetName: string): Buffer {
     [null, null, null, null, -500],
     [null, null, null, null, 0],
   ];
-  const worksheet = XLSX.utils.aoa_to_sheet(data);
-  worksheet['!ref'] = 'A1:E5';
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
+  const workbook = new Workbook();
+  aoaToWorksheet(workbook, sheetName, data);
+  return Buffer.from(await workbook.xlsx.writeBuffer());
 }
 
 describe('parseLedgerWorkbook', () => {
-  it('parses fund columns, comments, opening balances, and skips totals', () => {
-    const result = parseLedgerWorkbook(buildWorkbookBuffer());
+  it('parses fund columns, comments, opening balances, and skips totals', async () => {
+    const result = await parseLedgerWorkbook(await buildWorkbookBuffer());
 
     expect(result.errors).toEqual([]);
     expect(result.fundNames).toEqual(['Fondo Libre', 'Fondo Rico']);
@@ -80,66 +91,62 @@ describe('parseLedgerWorkbook', () => {
     expect(result.rows.some((row) => row.cell.endsWith('7'))).toBe(false);
   });
 
-  it('produces a stable dedupeHash for the same cell across re-imports', () => {
-    const first = parseLedgerWorkbook(buildWorkbookBuffer());
-    const second = parseLedgerWorkbook(buildWorkbookBuffer());
+  it('produces a stable dedupeHash for the same cell across re-imports', async () => {
+    const buffer = await buildWorkbookBuffer();
+    const first = await parseLedgerWorkbook(buffer);
+    const second = await parseLedgerWorkbook(buffer);
 
     expect(first.rows[0].dedupeHash).toBe(second.rows[0].dedupeHash);
   });
 
-  it('silently skips a sheet whose name has no recognizable month', () => {
+  it('silently skips a sheet whose name has no recognizable month', async () => {
     const data: unknown[][] = [
       [],
       [null, 'Fondo Libre'],
       [null, 0],
       [null, 10000],
     ];
-    const worksheet = XLSX.utils.aoa_to_sheet(data);
-    worksheet['!ref'] = 'A1:B4';
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Invalid Sheet Name');
-    const buffer = XLSX.write(workbook, {
-      type: 'buffer',
-      bookType: 'xlsx',
-    }) as Buffer;
+    const workbook = new Workbook();
+    aoaToWorksheet(workbook, 'Invalid Sheet Name', data);
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
-    const result = parseLedgerWorkbook(buffer);
+    const result = await parseLedgerWorkbook(buffer);
 
     expect(result.errors).toHaveLength(0);
     expect(result.rows).toHaveLength(0);
     expect(result.needsYear).toBe(false);
   });
 
-  it('flags needsYear when a sheet has a month but no year in its name', () => {
-    const buffer = buildMonthOnlySheetBuffer('Plantilla Enero');
+  it('flags needsYear when a sheet has a month but no year in its name', async () => {
+    const buffer = await buildMonthOnlySheetBuffer('Plantilla Enero');
 
-    const result = parseLedgerWorkbook(buffer);
+    const result = await parseLedgerWorkbook(buffer);
 
     expect(result.needsYear).toBe(true);
     expect(result.rows).toEqual([]);
   });
 
-  it('uses the provided year for sheets whose name has a month but no year', () => {
-    const buffer = buildMonthOnlySheetBuffer('Plantilla Enero');
+  it('uses the provided year for sheets whose name has a month but no year', async () => {
+    const buffer = await buildMonthOnlySheetBuffer('Plantilla Enero');
 
-    const result = parseLedgerWorkbook(buffer, { year: 2026 });
-
-    expect(result.needsYear).toBe(false);
-    const expense = result.rows.find((row) => row.cell === 'E4')!;
-    expect(expense.occurredOn).toBe('2026-01-01');
-  });
-
-  it('recognizes a month name embedded in a longer sheet name', () => {
-    const buffer = buildMonthOnlySheetBuffer('Plantilla Enero 2026');
-
-    const result = parseLedgerWorkbook(buffer);
+    const result = await parseLedgerWorkbook(buffer, { year: 2026 });
 
     expect(result.needsYear).toBe(false);
     const expense = result.rows.find((row) => row.cell === 'E4')!;
     expect(expense.occurredOn).toBe('2026-01-01');
   });
 
-  it('records an error for a non-numeric cell value', () => {
+  it('recognizes a month name embedded in a longer sheet name', async () => {
+    const buffer = await buildMonthOnlySheetBuffer('Plantilla Enero 2026');
+
+    const result = await parseLedgerWorkbook(buffer);
+
+    expect(result.needsYear).toBe(false);
+    const expense = result.rows.find((row) => row.cell === 'E4')!;
+    expect(expense.occurredOn).toBe('2026-01-01');
+  });
+
+  it('records an error for a non-numeric cell value', async () => {
     const data: unknown[][] = [
       [],
       [null, null, null, null, 'Fondo Libre'],
@@ -148,22 +155,67 @@ describe('parseLedgerWorkbook', () => {
       [],
       [null, null, null, null, 0],
     ];
-    const worksheet = XLSX.utils.aoa_to_sheet(data);
-    worksheet['!ref'] = 'A1:E6';
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Febrero 2026');
-    const buffer = XLSX.write(workbook, {
-      type: 'buffer',
-      bookType: 'xlsx',
-    }) as Buffer;
+    const workbook = new Workbook();
+    aoaToWorksheet(workbook, 'Febrero 2026', data);
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
-    const result = parseLedgerWorkbook(buffer);
+    const result = await parseLedgerWorkbook(buffer);
 
     expect(result.errors.length).toBeGreaterThan(0);
     expect(result.errors[0].message).toContain('Expected a numeric amount');
   });
 
-  it('excludes a multi-row totals footer bounded by the days in the month', () => {
+  it('strips the "Author Name:\\n" prefix Excel auto-adds to a note', async () => {
+    const workbook = new Workbook();
+    const worksheet = aoaToWorksheet(workbook, 'Marzo 2026', [
+      [],
+      [null, null, null, null, 'Fondo Libre'],
+      [null, null, null, null, 0],
+      [null, null, null, null, -1000],
+      [],
+      [null, null, null, null, 0],
+    ]);
+    worksheet.getCell('E4').note = 'Javier Seco:\nSalida con los cabros';
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+
+    const result = await parseLedgerWorkbook(buffer);
+
+    const expense = result.rows.find((row) => row.cell === 'E4')!;
+    expect(expense.description).toBe('Salida con los cabros');
+  });
+
+  it('reads an opening balance and a transaction amount from a formula cell', async () => {
+    const workbook = new Workbook();
+    const worksheet = aoaToWorksheet(workbook, 'Abril 2026', [
+      [],
+      [null, null, null, null, 'Fondo Libre'],
+      [],
+      [],
+      [],
+      [null, null, null, null, 0],
+    ]);
+    worksheet.getCell('E3').value = {
+      formula: "'Otra hoja'!E3*0.1",
+      result: 92878.1,
+    };
+    worksheet.getCell('E4').value = {
+      formula: "'Otra hoja'!E4",
+      result: -4700,
+    };
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+
+    const result = await parseLedgerWorkbook(buffer);
+
+    expect(result.errors).toEqual([]);
+    expect(result.openingBalances).toEqual([
+      { sheet: 'Abril 2026', fundName: 'Fondo Libre', amount: '92878' },
+    ]);
+    const expense = result.rows.find((row) => row.cell === 'E4')!;
+    expect(expense.type).toBe(TransactionType.EXPENSE);
+    expect(expense.amount).toBe('4700');
+  });
+
+  it('excludes a multi-row totals footer bounded by the days in the month', async () => {
     const zeroRows: unknown[][] = Array.from({ length: 30 }, () => [
       null,
       null,
@@ -180,22 +232,17 @@ describe('parseLedgerWorkbook', () => {
       [null, null, null, 'Total c/u', 99999],
       [null, null, null, 'Total en la cuenta', 99999],
     ];
-    const worksheet = XLSX.utils.aoa_to_sheet(data);
-    worksheet['!ref'] = 'A1:E36';
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Enero 2026');
-    const buffer = XLSX.write(workbook, {
-      type: 'buffer',
-      bookType: 'xlsx',
-    }) as Buffer;
+    const workbook = new Workbook();
+    aoaToWorksheet(workbook, 'Enero 2026', data);
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
-    const result = parseLedgerWorkbook(buffer);
+    const result = await parseLedgerWorkbook(buffer);
 
     expect(result.rows.some((row) => row.amount === '99999')).toBe(false);
     expect(result.rows).toHaveLength(2); // day-1 expense + opening balance
   });
 
-  it('excludes the "Total c/u" row when it immediately follows the last real movement (no blank buffer row)', () => {
+  it('excludes the "Total c/u" row when it immediately follows the last real movement (no blank buffer row)', async () => {
     // Reproduces the real-world case: a 30-day month (Abril) whose sheet
     // only has 3 rows of actual movements, with "Total c/u" landing right
     // after them — no blank rows in between. The calendar-day bound alone
@@ -211,22 +258,17 @@ describe('parseLedgerWorkbook', () => {
       [null, null, null, 'Total c/u', 99999],
       [null, null, null, 'Total en la cuenta', 99999],
     ];
-    const worksheet = XLSX.utils.aoa_to_sheet(data);
-    worksheet['!ref'] = 'A1:E8';
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Abril 2026');
-    const buffer = XLSX.write(workbook, {
-      type: 'buffer',
-      bookType: 'xlsx',
-    }) as Buffer;
+    const workbook = new Workbook();
+    aoaToWorksheet(workbook, 'Abril 2026', data);
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
-    const result = parseLedgerWorkbook(buffer);
+    const result = await parseLedgerWorkbook(buffer);
 
     expect(result.rows.some((row) => row.amount === '99999')).toBe(false);
     expect(result.rows).toHaveLength(2); // day-2 expense + day-4 income
   });
 
-  it('injects the monthly income delta between a month\'s opening balance and the previous month\'s "Total c/u"', () => {
+  it('injects the monthly income delta between a month\'s opening balance and the previous month\'s "Total c/u"', async () => {
     const enero: unknown[][] = [
       [],
       [null, null, null, null, 'Fondo Test'],
@@ -243,19 +285,12 @@ describe('parseLedgerWorkbook', () => {
       [null, null, null, 'Total c/u', 850],
       [null, null, null, 'Total en la cuenta', 850],
     ];
-    const workbook = XLSX.utils.book_new();
-    const enSheet = XLSX.utils.aoa_to_sheet(enero);
-    enSheet['!ref'] = 'A1:E6';
-    XLSX.utils.book_append_sheet(workbook, enSheet, 'Enero 2026');
-    const febSheet = XLSX.utils.aoa_to_sheet(febrero);
-    febSheet['!ref'] = 'A1:E6';
-    XLSX.utils.book_append_sheet(workbook, febSheet, 'Febrero 2026');
-    const buffer = XLSX.write(workbook, {
-      type: 'buffer',
-      bookType: 'xlsx',
-    }) as Buffer;
+    const workbook = new Workbook();
+    aoaToWorksheet(workbook, 'Enero 2026', enero);
+    aoaToWorksheet(workbook, 'Febrero 2026', febrero);
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
-    const result = parseLedgerWorkbook(buffer);
+    const result = await parseLedgerWorkbook(buffer);
 
     const injection = result.rows.find(
       (row) => row.description === 'Ingreso mensual asignado',
@@ -274,7 +309,7 @@ describe('parseLedgerWorkbook', () => {
     ).toHaveLength(1);
   });
 
-  it('captures a real movement placed beyond the calendar-day count, before the "Total c/u" footer', () => {
+  it('captures a real movement placed beyond the calendar-day count, before the "Total c/u" footer', async () => {
     // Reproduces a real case: the user added an extra row for a second
     // same-day transaction, pushing it past the calendar-day bound
     // (Marzo has 31 days, so row index 34 would be "day 32"). The old
@@ -287,16 +322,11 @@ describe('parseLedgerWorkbook', () => {
     data[3] = [null, null, null, null, -500];
     data[34] = [null, null, null, null, 324719]; // row 35: "day 32", beyond March's 31 days
     data[36] = [null, null, null, 'Total c/u', 99999];
-    const worksheet = XLSX.utils.aoa_to_sheet(data);
-    worksheet['!ref'] = 'A1:E37';
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Marzo 2026');
-    const buffer = XLSX.write(workbook, {
-      type: 'buffer',
-      bookType: 'xlsx',
-    }) as Buffer;
+    const workbook = new Workbook();
+    aoaToWorksheet(workbook, 'Marzo 2026', data);
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
-    const result = parseLedgerWorkbook(buffer);
+    const result = await parseLedgerWorkbook(buffer);
 
     const extraRow = result.rows.find((row) => row.amount === '324719');
     expect(extraRow).toBeDefined();
@@ -305,7 +335,7 @@ describe('parseLedgerWorkbook', () => {
     expect(result.rows.some((row) => row.amount === '99999')).toBe(false);
   });
 
-  it('does not fabricate a "Saldo inicial" when a fund\'s first real month opens at exactly 0', () => {
+  it('does not fabricate a "Saldo inicial" when a fund\'s first real month opens at exactly 0', async () => {
     // A fund created with no starting money (fila 3 = 0 in its first sheet)
     // was being excluded from opening-balance detection (which only kept
     // non-zero values), so the *next* month's opening balance — which is
@@ -327,19 +357,12 @@ describe('parseLedgerWorkbook', () => {
       [null, null, null, 'Total c/u', -50],
       [null, null, null, 'Total en la cuenta', -50],
     ];
-    const workbook = XLSX.utils.book_new();
-    const enSheet = XLSX.utils.aoa_to_sheet(enero);
-    enSheet['!ref'] = 'A1:E6';
-    XLSX.utils.book_append_sheet(workbook, enSheet, 'Enero 2026');
-    const febSheet = XLSX.utils.aoa_to_sheet(febrero);
-    febSheet['!ref'] = 'A1:E6';
-    XLSX.utils.book_append_sheet(workbook, febSheet, 'Febrero 2026');
-    const buffer = XLSX.write(workbook, {
-      type: 'buffer',
-      bookType: 'xlsx',
-    }) as Buffer;
+    const workbook = new Workbook();
+    aoaToWorksheet(workbook, 'Enero 2026', enero);
+    aoaToWorksheet(workbook, 'Febrero 2026', febrero);
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
-    const result = parseLedgerWorkbook(buffer);
+    const result = await parseLedgerWorkbook(buffer);
 
     expect(result.rows.some((row) => row.description === 'Saldo inicial')).toBe(
       false,
@@ -358,7 +381,7 @@ describe('parseLedgerWorkbook', () => {
     expect(total).toBe(-50); // matches Febrero's real "Total c/u"
   });
 
-  it('rounds a "Saldo inicial" opening balance with a floating-point cell value to an integer', () => {
+  it('rounds a "Saldo inicial" opening balance with a floating-point cell value to an integer', async () => {
     // Excel formulas can leave a fund's opening cell as e.g. 92878.1 due to
     // float rounding drift. Unlike the preview-only `openingBalances` list
     // (which rounds via Math.round at capture time), the "Saldo inicial" row
@@ -370,16 +393,11 @@ describe('parseLedgerWorkbook', () => {
       [null, null, null, null, 92878.1],
       [null, null, null, null, -500],
     ];
-    const worksheet = XLSX.utils.aoa_to_sheet(data);
-    worksheet['!ref'] = 'A1:E4';
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Enero 2026');
-    const buffer = XLSX.write(workbook, {
-      type: 'buffer',
-      bookType: 'xlsx',
-    }) as Buffer;
+    const workbook = new Workbook();
+    aoaToWorksheet(workbook, 'Enero 2026', data);
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
-    const result = parseLedgerWorkbook(buffer);
+    const result = await parseLedgerWorkbook(buffer);
 
     const opening = result.rows.find((row) => row.sheet === 'opening_balance')!;
     expect(opening.amount).toBe('92878');

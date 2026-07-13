@@ -3,14 +3,31 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import * as XLSX from 'xlsx';
+import { Workbook } from 'exceljs';
 import { AppModule } from '../src/app.module';
 
 const GLOBAL_PREFIX = 'api/v1';
 const SHEET_NAME = 'Marzo 2026';
 const FUND_NAME = 'Fondo E2E Test';
 
-function buildLedgerBuffer(): Buffer {
+// Mirrors the row/col shape the parser expects: `data[r][c]` is 0-indexed,
+// mapped here to exceljs's 1-indexed `getCell`.
+function aoaToWorksheet(
+  workbook: Workbook,
+  sheetName: string,
+  data: unknown[][],
+) {
+  const worksheet = workbook.addWorksheet(sheetName);
+  data.forEach((row, r) => {
+    row.forEach((value, c) => {
+      if (value === null || value === undefined) return;
+      worksheet.getCell(r + 1, c + 1).value = value as string | number;
+    });
+  });
+  return worksheet;
+}
+
+async function buildLedgerBuffer(): Promise<Buffer> {
   const data: unknown[][] = [
     [],
     [null, null, null, null, FUND_NAME],
@@ -19,18 +36,11 @@ function buildLedgerBuffer(): Buffer {
     [],
     [null, null, null, 'Total c/u', 0],
   ];
-  const worksheet = XLSX.utils.aoa_to_sheet(data);
-  const cells = worksheet as Record<string, XLSX.CellObject>;
-  cells['E4'] = {
-    t: 'n',
-    v: -5000,
-    c: [{ a: 'e2e', t: 'Compra E2E' }],
-  };
-  worksheet['!ref'] = 'A1:E6';
-
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, SHEET_NAME);
-  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
+  const workbook = new Workbook();
+  const worksheet = aoaToWorksheet(workbook, SHEET_NAME, data);
+  worksheet.getCell('E4').value = -5000;
+  worksheet.getCell('E4').note = 'Compra E2E';
+  return Buffer.from(await workbook.xlsx.writeBuffer());
 }
 
 function bufferParser(res: any, callback: (err: null, body: Buffer) => void) {
@@ -90,7 +100,7 @@ describe('Import/Export (e2e)', () => {
   });
 
   it('previews, commits, re-previews as duplicate, and exports', async () => {
-    const fileBuffer = buildLedgerBuffer();
+    const fileBuffer = await buildLedgerBuffer();
 
     const firstPreview = await request(app.getHttpServer())
       .post(`/${GLOBAL_PREFIX}/import/preview`)
@@ -148,18 +158,21 @@ describe('Import/Export (e2e)', () => {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     );
 
-    const exportedWorkbook = XLSX.read(exportRes.body as Buffer, {
-      type: 'buffer',
-    });
-    const exportedSheet =
-      exportedWorkbook.Sheets[exportedWorkbook.SheetNames[0]];
-    const exportedRows: Array<Record<string, unknown>> =
-      XLSX.utils.sheet_to_json(exportedSheet);
+    const exportedWorkbook = new Workbook();
+    await exportedWorkbook.xlsx.load(exportRes.body as never);
+    const exportedSheet = exportedWorkbook.worksheets[0];
+    const headerRow = exportedSheet.getRow(1).values as unknown[];
+    const dataRow = exportedSheet.getRow(2).values as unknown[];
+    const exportedRow = Object.fromEntries(
+      headerRow
+        .map((header, i) => [header, dataRow[i]] as const)
+        .filter(([header]) => header !== undefined),
+    );
 
-    expect(exportedRows).toHaveLength(1);
-    expect(exportedRows[0].Fondo).toBe(FUND_NAME);
-    expect(exportedRows[0].Monto).toBe(-5000);
-    expect(exportedRows[0].Descripcion).toBe('Compra E2E');
+    expect(exportedSheet.actualRowCount).toBe(2); // header + 1 data row
+    expect(exportedRow.Fondo).toBe(FUND_NAME);
+    expect(exportedRow.Monto).toBe(-5000);
+    expect(exportedRow.Descripcion).toBe('Compra E2E');
   });
 
   it('requires a year for sheets without one, then previews using the provided year', async () => {
@@ -170,14 +183,9 @@ describe('Import/Export (e2e)', () => {
       [null, null, null, null, -3000],
       [null, null, null, null, 0],
     ];
-    const worksheet = XLSX.utils.aoa_to_sheet(data);
-    worksheet['!ref'] = 'A1:E5';
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Plantilla Abril');
-    const buffer = XLSX.write(workbook, {
-      type: 'buffer',
-      bookType: 'xlsx',
-    }) as Buffer;
+    const workbook = new Workbook();
+    aoaToWorksheet(workbook, 'Plantilla Abril', data);
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
     const withoutYear = await request(app.getHttpServer())
       .post(`/${GLOBAL_PREFIX}/import/preview`)
@@ -201,7 +209,7 @@ describe('Import/Export (e2e)', () => {
   });
 
   it('rejects a year outside the valid range', async () => {
-    const fileBuffer = buildLedgerBuffer();
+    const fileBuffer = await buildLedgerBuffer();
 
     await request(app.getHttpServer())
       .post(`/${GLOBAL_PREFIX}/import/preview`)

@@ -3,6 +3,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -31,6 +32,8 @@ const INVALID_CREDENTIALS_MESSAGE = 'Invalid credentials';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersService: UsersService,
     @InjectRepository(RefreshToken)
@@ -59,6 +62,7 @@ export class AuthService {
   async login(dto: LoginDto): Promise<IssuedTokens> {
     const user = await this.usersService.findByEmail(dto.email);
     if (!user || user.passwordHash === null) {
+      this.logger.warn(`Failed login attempt for ${dto.email}`);
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
     }
 
@@ -68,6 +72,7 @@ export class AuthService {
       user.passwordHash,
     );
     if (!valid) {
+      this.logger.warn(`Failed login attempt for ${dto.email}`);
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
     }
 
@@ -129,6 +134,9 @@ export class AuthService {
     }
 
     if (record.revokedAt) {
+      this.logger.warn(
+        `Refresh token reuse detected for user ${record.userId} — revoking all sessions`,
+      );
       await this.revokeAllForUser(record.userId);
       throw new UnauthorizedException('Refresh token reuse detected');
     }

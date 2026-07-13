@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Throttle } from '@nestjs/throttler';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { CookieOptions, Request, Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -34,6 +35,7 @@ export class AuthController {
   ) {}
 
   @ApiOperation({ summary: 'Register a new user' })
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('register')
   async register(
     @Body() dto: RegisterDto,
@@ -45,6 +47,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Log in and receive an access token' })
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('login')
   async login(
     @Body() dto: LoginDto,
@@ -101,6 +104,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Request a password reset email' })
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('forgot-password')
   @HttpCode(200)
   async forgotPassword(
@@ -114,6 +118,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Reset password using a valid token' })
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('reset-password')
   @HttpCode(200)
   async resetPassword(
@@ -124,6 +129,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Authenticate with a Google access token' })
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('google')
   @HttpCode(200)
   async googleAuth(
