@@ -40,7 +40,9 @@ export class ImportExportController {
   @ApiConsumes('multipart/form-data')
   @ApiOkResponse({ type: ImportPreviewResponseDto })
   @Post('import/preview')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }),
+  )
   async preview(
     @CurrentUser() userId: string,
     @Body() dto: ImportPreviewDto,

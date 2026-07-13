@@ -22,7 +22,10 @@ import { MailService } from '../../common/mail/mail.service';
         const authConfig = configService.get<AuthConfig>('auth')!;
         return {
           secret: authConfig.jwtSecret,
-          signOptions: { expiresIn: authConfig.jwtExpirationSeconds },
+          signOptions: {
+            expiresIn: authConfig.jwtExpirationSeconds,
+            algorithm: 'HS256',
+          },
         };
       },
     }),

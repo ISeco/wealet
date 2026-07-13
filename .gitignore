@@ -7,6 +7,16 @@
 */*/node_modules
 */*/dist
 */*/build
+*/*/pnpm-lock.yaml
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+id_rsa*
+id_ed25519*
+credentials.json
+service-account*.json
 
 # Superpowers generated files
 .superpowers/
