@@ -28,6 +28,7 @@ describe('AuthService', () => {
   let usersService: jest.Mocked<UsersService>;
   let refreshTokenRepository: jest.Mocked<Repository<RefreshToken>>;
   let mailService: jest.Mocked<MailService>;
+  let configService: jest.Mocked<ConfigService>;
 
   const authConfig = {
     jwtSecret: 'secret',
@@ -103,6 +104,7 @@ describe('AuthService', () => {
     usersService = module.get(UsersService);
     refreshTokenRepository = module.get(getRepositoryToken(RefreshToken));
     mailService = module.get(MailService);
+    configService = module.get(ConfigService);
   });
 
   afterEach(() => {
@@ -175,6 +177,67 @@ describe('AuthService', () => {
       expect((missingUserError as { message: string }).message).toBe(
         (wrongPasswordError as { message: string }).message,
       );
+    });
+  });
+
+  describe('login with pepper rotation', () => {
+    it('logs in and re-hashes with the current pepper when only the previous pepper matches', async () => {
+      const user = buildUser({ passwordHash: 'old-pepper-hash' });
+      usersService.findByEmail.mockResolvedValue(user);
+      (configService.get as jest.Mock).mockReturnValue({
+        ...authConfig,
+        passwordPepperPrevious: 'old-pepper',
+      });
+      (argon2.verify as jest.Mock)
+        .mockResolvedValueOnce(false) // current pepper fails
+        .mockResolvedValueOnce(true); // previous pepper matches
+      (argon2.hash as jest.Mock).mockResolvedValue('rehashed-with-current');
+
+      const result = await authService.login({
+        email: 'test@test.com',
+        password: 'Pw123456!',
+      });
+
+      expect(result.authResponse.accessToken).toBe('signed-jwt');
+      expect(argon2.verify).toHaveBeenNthCalledWith(
+        1,
+        'old-pepper-hash',
+        'Pw123456!pepper',
+      );
+      expect(argon2.verify).toHaveBeenNthCalledWith(
+        2,
+        'old-pepper-hash',
+        'Pw123456!old-pepper',
+      );
+      expect(argon2.hash).toHaveBeenCalledWith('Pw123456!pepper');
+      expect(usersService.updatePasswordHash).toHaveBeenCalledWith(
+        'user-1',
+        'rehashed-with-current',
+      );
+    });
+
+    it('rejects login when the password matches neither the current nor the previous pepper', async () => {
+      usersService.findByEmail.mockResolvedValue(buildUser());
+      (configService.get as jest.Mock).mockReturnValue({
+        ...authConfig,
+        passwordPepperPrevious: 'old-pepper',
+      });
+      (argon2.verify as jest.Mock).mockResolvedValue(false);
+
+      await expect(
+        authService.login({ email: 'test@test.com', password: 'wrong' }),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(usersService.updatePasswordHash).not.toHaveBeenCalled();
+    });
+
+    it('does not attempt a fallback when PASSWORD_PEPPER_PREVIOUS is not configured', async () => {
+      usersService.findByEmail.mockResolvedValue(buildUser());
+      (argon2.verify as jest.Mock).mockResolvedValue(false);
+
+      await expect(
+        authService.login({ email: 'test@test.com', password: 'wrong' }),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(argon2.verify).toHaveBeenCalledTimes(1);
     });
   });
 
