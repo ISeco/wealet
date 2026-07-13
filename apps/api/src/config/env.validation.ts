@@ -15,6 +15,7 @@ export const envValidationSchema = Joi.object({
   JWT_EXPIRATION_SECONDS: Joi.number().default(900),
   REFRESH_TOKEN_EXPIRATION_DAYS: Joi.number().default(7),
   PASSWORD_PEPPER: Joi.string().required(),
+  PASSWORD_PEPPER_PREVIOUS: Joi.string().optional(),
   CORS_ORIGIN: Joi.string().default('http://localhost:5173'),
   BREVO_API_KEY: Joi.string().required(),
   BREVO_FROM_EMAIL: Joi.string().email().required(),

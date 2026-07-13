@@ -5,6 +5,7 @@ export interface AuthConfig {
   jwtExpirationSeconds: number;
   refreshTokenExpirationDays: number;
   passwordPepper: string;
+  passwordPepperPrevious?: string;
   corsOrigin: string;
   googleClientId: string;
 }
@@ -17,6 +18,7 @@ export default registerAs(
     refreshTokenExpirationDays:
       Number(process.env.REFRESH_TOKEN_EXPIRATION_DAYS) || 7,
     passwordPepper: process.env.PASSWORD_PEPPER!,
+    passwordPepperPrevious: process.env.PASSWORD_PEPPER_PREVIOUS,
     corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
     googleClientId: process.env.GOOGLE_CLIENT_ID!,
   }),
