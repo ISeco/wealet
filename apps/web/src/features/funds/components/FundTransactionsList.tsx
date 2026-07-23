@@ -1,16 +1,22 @@
+import type { ReactNode } from 'react'
 import type { Category } from '../../categories'
 import type { Transaction } from '../../transactions'
 
 interface FundTransactionsListProps {
   transactions: Transaction[]
   categoryMap: Record<string, Category>
+  monthLabel: string
+  headerRight?: ReactNode
   onTransactionClick?: (transaction: Transaction) => void
 }
 
-export function FundTransactionsList({ transactions, categoryMap, onTransactionClick }: FundTransactionsListProps) {
+export function FundTransactionsList({ transactions, categoryMap, monthLabel, headerRight, onTransactionClick }: FundTransactionsListProps) {
   return (
     <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
-      <div style={{ padding: '16px 24px 12px', fontSize: 14, fontWeight: 600 }}>Movimientos del fondo</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px 12px' }}>
+        <div style={{ fontSize: 14, fontWeight: 600 }}>Movimientos de {monthLabel}</div>
+        {headerRight}
+      </div>
       {transactions.length === 0 ? (
         <div style={{ padding: '24px', textAlign: 'center', fontSize: 13.5, color: 'var(--muted)' }}>
           Sin movimientos registrados
