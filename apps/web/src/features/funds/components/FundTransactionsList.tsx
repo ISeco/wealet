@@ -5,16 +5,15 @@ import type { Transaction } from '../../transactions'
 interface FundTransactionsListProps {
   transactions: Transaction[]
   categoryMap: Record<string, Category>
-  monthLabel: string
   headerRight?: ReactNode
   onTransactionClick?: (transaction: Transaction) => void
 }
 
-export function FundTransactionsList({ transactions, categoryMap, monthLabel, headerRight, onTransactionClick }: FundTransactionsListProps) {
+export function FundTransactionsList({ transactions, categoryMap, headerRight, onTransactionClick }: FundTransactionsListProps) {
   return (
     <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px 12px' }}>
-        <div style={{ fontSize: 14, fontWeight: 600 }}>Movimientos de {monthLabel}</div>
+        <div style={{ fontSize: 14, fontWeight: 600 }}>Movimientos</div>
         {headerRight}
       </div>
       {transactions.length === 0 ? (

@@ -137,7 +137,6 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
       <FundTransactionsList
         transactions={recentTxData?.data ?? []}
         categoryMap={categoryMap}
-        monthLabel={formatMonthLabel(activeMonth).toLowerCase()}
         headerRight={<MonthSelector months={months} value={activeMonth} onChange={handleMonthChange} />}
         onTransactionClick={setSelectedTransaction}
       />
