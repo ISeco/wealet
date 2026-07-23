@@ -22,6 +22,7 @@ const mockTransactionRepo = {
   findOne: jest.fn(),
   delete: jest.fn(),
   createQueryBuilder: jest.fn(() => mockQueryBuilder),
+  query: jest.fn(),
 };
 
 const mockCategoryRepo = {
@@ -171,6 +172,62 @@ describe('TransactionsService', () => {
       const result = await service.findOneOrThrow('user-123', 'tx-1');
 
       expect(result).toBe(tx);
+    });
+  });
+
+  describe('getFundMonths', () => {
+    it('queries scoped by both userId and fundId', async () => {
+      mockTransactionRepo.query.mockResolvedValue([]);
+
+      await service.getFundMonths('user-123', 'fund-1');
+
+      expect(mockTransactionRepo.query).toHaveBeenCalledWith(
+        expect.stringContaining('fund_id = $2'),
+        ['user-123', 'fund-1'],
+      );
+    });
+
+    it('returns months from the query, most recent first', async () => {
+      mockTransactionRepo.query.mockResolvedValue([
+        { month: '2025-03' },
+        { month: '2025-01' },
+      ]);
+      const currentMonth = new Date().toISOString().slice(0, 7);
+
+      const result = await service.getFundMonths('user-123', 'fund-1');
+
+      expect(result).toEqual([currentMonth, '2025-03', '2025-01']);
+    });
+
+    it('prepends the current month when the query does not include it', async () => {
+      mockTransactionRepo.query.mockResolvedValue([{ month: '2020-03' }]);
+      const currentMonth = new Date().toISOString().slice(0, 7);
+
+      const result = await service.getFundMonths('user-123', 'fund-1');
+
+      expect(result[0]).toBe(currentMonth);
+      expect(result).toContain('2020-03');
+    });
+
+    it('does not duplicate the current month when the query already includes it', async () => {
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      mockTransactionRepo.query.mockResolvedValue([
+        { month: currentMonth },
+        { month: '2025-01' },
+      ]);
+
+      const result = await service.getFundMonths('user-123', 'fund-1');
+
+      expect(result).toEqual([currentMonth, '2025-01']);
+    });
+
+    it('returns only the current month when the fund has no transactions', async () => {
+      mockTransactionRepo.query.mockResolvedValue([]);
+      const currentMonth = new Date().toISOString().slice(0, 7);
+
+      const result = await service.getFundMonths('user-123', 'fund-1');
+
+      expect(result).toEqual([currentMonth]);
     });
   });
 });
