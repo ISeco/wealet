@@ -21,6 +21,12 @@ export function formatMonthLabel(yyyyMM: string): string {
   return `${MONTH_NAMES[Number(month) - 1]} ${year}`
 }
 
+/** Abbreviated form of formatMonthLabel for tight layouts, e.g. "2026-02" → "Feb 2026". */
+export function formatMonthLabelShort(yyyyMM: string): string {
+  const [year, month] = yyyyMM.split('-')
+  return `${MONTH_ABBR[Number(month) - 1]} ${year}`
+}
+
 export function formatMonthShort(yyyyMMDD: string): string {
   const month = Number(yyyyMMDD.slice(5, 7))
   return MONTH_ABBR[month - 1]

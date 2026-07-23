@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from '../../../components/ui/icons'
-import { formatMonthLabel } from '../utils'
+import { formatMonthLabel, formatMonthLabelShort } from '../utils'
 
 interface Props {
   months: string[]
@@ -64,7 +64,8 @@ export function MonthSelector({ months, value, onChange }: Props) {
         style={{ ...btnBase, width: 'auto', gap: 8, padding: '0 14px', color: 'var(--text)', fontSize: 13.5, fontWeight: 500 }}
       >
         <CalendarIcon />
-        {formatMonthLabel(value)}
+        <span className="month-selector-label-full">{formatMonthLabel(value)}</span>
+        <span className="month-selector-label-short">{formatMonthLabelShort(value)}</span>
         <ChevronDownIcon size={14} />
       </button>
 

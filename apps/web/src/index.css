@@ -430,6 +430,9 @@ body {
 .hamburger-btn {
   display: none;
 }
+.month-selector-label-short {
+  display: none;
+}
 
 @media (max-width: 767px) {
   .sidebar {
@@ -462,6 +465,12 @@ body {
   .month-nav-btn {
     min-width: 44px;
     min-height: 44px;
+  }
+  .month-selector-label-full {
+    display: none;
+  }
+  .month-selector-label-short {
+    display: inline;
   }
   .app-content {
     padding: 16px 16px 48px !important;
