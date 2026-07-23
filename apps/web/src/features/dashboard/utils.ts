@@ -38,3 +38,12 @@ export function sortCategoriesByAmountDesc(categories: CategorySpend[]): Categor
     BigInt(b.amount) > BigInt(a.amount) ? 1 : BigInt(b.amount) < BigInt(a.amount) ? -1 : 0
   )
 }
+
+/** Returns the first and last day of a "YYYY-MM" month as "YYYY-MM-DD" strings. */
+export function monthDateRange(yyyyMM: string): { from: string; to: string } {
+  const [year, month] = yyyyMM.split('-').map(Number)
+  return {
+    from: `${yyyyMM}-01`,
+    to: new Date(year, month, 0).toISOString().slice(0, 10),
+  }
+}
