@@ -84,6 +84,21 @@ export class TransactionsService {
     return { data, total, page, limit };
   }
 
+  async getFundMonths(userId: string, fundId: string): Promise<string[]> {
+    const rows: Array<{ month: string }> =
+      await this.transactionsRepository.query(
+        `SELECT DISTINCT to_char(date_trunc('month', occurred_on), 'YYYY-MM') AS month
+       FROM transactions
+       WHERE user_id = $1 AND fund_id = $2
+       ORDER BY month DESC`,
+        [userId, fundId],
+      );
+    const months = rows.map((r) => r.month);
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    if (!months.includes(currentMonth)) months.unshift(currentMonth);
+    return months;
+  }
+
   async findOneOrThrow(userId: string, id: string): Promise<Transaction> {
     const transaction = await this.transactionsRepository.findOne({
       where: { id, userId },

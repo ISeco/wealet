@@ -16,6 +16,10 @@ export function getFundHistory(id: string, months = 12): Promise<FundHistoryPoin
   return apiFetch<FundHistoryPoint[]>(`/funds/${id}/history?months=${months}`)
 }
 
+export function getFundMonths(fundId: string): Promise<string[]> {
+  return apiFetch<string[]>(`/transactions/months?fundId=${fundId}`)
+}
+
 export function createFund(payload: CreateFundPayload): Promise<Fund> {
   return apiFetch<Fund>('/funds', { method: 'POST', body: payload })
 }

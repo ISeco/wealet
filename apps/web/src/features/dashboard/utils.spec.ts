@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatMonthLabel, formatMonthShort, monthName, prevMonthName, sortCategoriesByAmountDesc } from './utils'
+import { formatMonthLabel, formatMonthLabelShort, formatMonthShort, monthDateRange, monthName, prevMonthName, sortCategoriesByAmountDesc } from './utils'
 
 describe('monthName', () => {
   it('returns the full month name for a YYYY-MM string', () => {
@@ -13,6 +13,13 @@ describe('formatMonthLabel', () => {
   it('returns full month name and year', () => {
     expect(formatMonthLabel('2026-01')).toBe('Enero 2026')
     expect(formatMonthLabel('2026-12')).toBe('Diciembre 2026')
+  })
+})
+
+describe('formatMonthLabelShort', () => {
+  it('returns abbreviated month name and year', () => {
+    expect(formatMonthLabelShort('2026-02')).toBe('Feb 2026')
+    expect(formatMonthLabelShort('2026-12')).toBe('Dic 2026')
   })
 })
 
@@ -47,5 +54,23 @@ describe('sortCategoriesByAmountDesc', () => {
   it('handles amounts beyond Number precision correctly via BigInt comparison', () => {
     const result = sortCategoriesByAmountDesc([cat('small', '9007199254740993'), cat('big', '9007199254740994')])
     expect(result.map((c) => c.categoryId)).toEqual(['big', 'small'])
+  })
+})
+
+describe('monthDateRange', () => {
+  it('returns the first and last day of a 31-day month', () => {
+    expect(monthDateRange('2026-07')).toEqual({ from: '2026-07-01', to: '2026-07-31' })
+  })
+
+  it('returns the first and last day of a 30-day month', () => {
+    expect(monthDateRange('2026-04')).toEqual({ from: '2026-04-01', to: '2026-04-30' })
+  })
+
+  it('handles February in a non-leap year', () => {
+    expect(monthDateRange('2026-02')).toEqual({ from: '2026-02-01', to: '2026-02-28' })
+  })
+
+  it('handles December without rolling into the next year', () => {
+    expect(monthDateRange('2026-12')).toEqual({ from: '2026-12-01', to: '2026-12-31' })
   })
 })

@@ -21,6 +21,12 @@ export function formatMonthLabel(yyyyMM: string): string {
   return `${MONTH_NAMES[Number(month) - 1]} ${year}`
 }
 
+/** Abbreviated form of formatMonthLabel for tight layouts, e.g. "2026-02" → "Feb 2026". */
+export function formatMonthLabelShort(yyyyMM: string): string {
+  const [year, month] = yyyyMM.split('-')
+  return `${MONTH_ABBR[Number(month) - 1]} ${year}`
+}
+
 export function formatMonthShort(yyyyMMDD: string): string {
   const month = Number(yyyyMMDD.slice(5, 7))
   return MONTH_ABBR[month - 1]
@@ -37,4 +43,13 @@ export function sortCategoriesByAmountDesc(categories: CategorySpend[]): Categor
   return [...categories].sort((a, b) =>
     BigInt(b.amount) > BigInt(a.amount) ? 1 : BigInt(b.amount) < BigInt(a.amount) ? -1 : 0
   )
+}
+
+/** Returns the first and last day of a "YYYY-MM" month as "YYYY-MM-DD" strings. */
+export function monthDateRange(yyyyMM: string): { from: string; to: string } {
+  const [year, month] = yyyyMM.split('-').map(Number)
+  return {
+    from: `${yyyyMM}-01`,
+    to: new Date(year, month, 0).toISOString().slice(0, 10),
+  }
 }
