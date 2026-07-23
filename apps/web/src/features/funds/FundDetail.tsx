@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { MONTH_NAMES } from '../dashboard/utils'
+import { formatMonthLabel, monthDateRange } from '../dashboard/utils'
+import { MonthSelector } from '../dashboard/components/MonthSelector'
 import { Button } from '../../components/ui/Button'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { Pagination } from '../../components/ui/Pagination'
@@ -8,7 +9,7 @@ import { useCategories } from '../categories'
 import { useTransactions } from '../transactions/hooks'
 import { TransactionFormModal } from '../transactions/TransactionFormModal'
 import type { Transaction } from '../transactions'
-import { useDeleteFund, useFundHistory, useFunds } from './hooks'
+import { useDeleteFund, useFundHistory, useFundMonths, useFunds } from './hooks'
 import { FundFormDrawer } from './components/FundFormDrawer'
 import { FundHeaderCard } from './components/FundHeaderCard'
 import { FundStatsColumn } from './components/FundStatsColumn'
@@ -27,9 +28,11 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
   const [deleteError, setDeleteError] = useState(false)
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const [recentTxPage, setRecentTxPage] = useState(1)
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
   const [prevFundId, setPrevFundId] = useState(fundId)
   const { data: funds = [] } = useFunds()
   const { data: history = [] } = useFundHistory(fundId)
+  const { data: months = [] } = useFundMonths(fundId)
   const { data: categories = [] } = useCategories()
   const deleteMutation = useDeleteFund()
 
@@ -38,15 +41,15 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
   if (fundId !== prevFundId) {
     setPrevFundId(fundId)
     setRecentTxPage(1)
+    setSelectedMonth(null)
   }
 
-  const now = new Date()
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
-  const monthName = MONTH_NAMES[now.getMonth()].toLowerCase()
+  const currentMonth = new Date().toISOString().slice(0, 7)
+  const activeMonth = selectedMonth ?? months[0] ?? currentMonth
+  const { from: monthStart, to: monthEnd } = monthDateRange(activeMonth)
 
   const { data: monthTxData } = useTransactions({ fundId, from: monthStart, to: monthEnd, limit: 500 })
-  const { data: recentTxData } = useTransactions({ fundId, page: recentTxPage, limit: RECENT_TX_LIMIT })
+  const { data: recentTxData } = useTransactions({ fundId, from: monthStart, to: monthEnd, page: recentTxPage, limit: RECENT_TX_LIMIT })
 
   const monthIncome = useMemo(
     () => (monthTxData?.data ?? []).filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0),
@@ -67,6 +70,11 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
 
   const recentTxTotal = recentTxData?.total ?? 0
   const recentTxTotalPages = Math.max(1, Math.ceil(recentTxTotal / RECENT_TX_LIMIT))
+
+  function handleMonthChange(month: string) {
+    setSelectedMonth(month)
+    setRecentTxPage(1)
+  }
 
   async function handleDelete() {
     try {
@@ -120,7 +128,7 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
         <FundHeaderCard fund={fund} history={history} />
         <FundStatsColumn
           fund={fund}
-          monthName={monthName}
+          monthLabel={formatMonthLabel(activeMonth).toLowerCase()}
           monthIncome={monthIncome}
           monthExpense={monthExpense}
         />
@@ -129,6 +137,7 @@ export function FundDetail({ fundId, onBack }: FundDetailProps) {
       <FundTransactionsList
         transactions={recentTxData?.data ?? []}
         categoryMap={categoryMap}
+        headerRight={<MonthSelector months={months} value={activeMonth} onChange={handleMonthChange} />}
         onTransactionClick={setSelectedTransaction}
       />
 

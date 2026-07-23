@@ -19,6 +19,7 @@ import {
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { FundMonthsQueryDto } from './dto/fund-months-query.dto';
 import { TransactionQueryDto } from './dto/transaction-query.dto';
 import {
   PaginatedTransactionsResponseDto,
@@ -58,6 +59,17 @@ export class TransactionsController {
   ): Promise<TransactionResponseDto> {
     const transaction = await this.transactionsService.create(userId, dto);
     return toTransactionResponseDto(transaction);
+  }
+
+  @ApiOperation({
+    summary: 'Months with transaction data for a specific fund (full history)',
+  })
+  @Get('months')
+  async getFundMonths(
+    @CurrentUser() userId: string,
+    @Query() query: FundMonthsQueryDto,
+  ): Promise<string[]> {
+    return this.transactionsService.getFundMonths(userId, query.fundId);
   }
 
   @ApiOperation({ summary: 'Get a transaction by id' })

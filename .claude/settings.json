@@ -11,7 +11,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:\\Users\\ignac\\.local\\bin\\graphify.EXE hook-guard search"
+            "command": "C:\\Users\\ignac\\.local\\bin\\graphify.EXE",
+            "args": ["hook-guard", "search"]
           }
         ]
       },
@@ -20,7 +21,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:\\Users\\ignac\\.local\\bin\\graphify.EXE hook-guard read"
+            "command": "C:\\Users\\ignac\\.local\\bin\\graphify.EXE",
+            "args": ["hook-guard", "read"]
           }
         ]
       }
