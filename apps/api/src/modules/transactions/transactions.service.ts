@@ -42,51 +42,7 @@ export class TransactionsService {
     await this.fundsService.findOneOrThrow(userId, dto.fundId);
     await this.assertCategoryAccessible(userId, dto.categoryId);
 
-    const hasForeign =
-      dto.originalAmount !== undefined ||
-      dto.originalCurrency !== undefined ||
-      dto.exchangeRate !== undefined;
-
-    let amount = dto.amount;
-    let currency = dto.currency ?? DEFAULT_CURRENCY;
-    let originalAmount: string | null = null;
-    let originalCurrency: string | null = null;
-    let exchangeRate: string | null = null;
-
-    if (hasForeign) {
-      if (
-        dto.originalAmount === undefined ||
-        dto.originalCurrency === undefined ||
-        dto.exchangeRate === undefined
-      ) {
-        throw new BadRequestException(
-          'originalAmount, originalCurrency y exchangeRate deben enviarse juntos',
-        );
-      }
-
-      const user = await this.usersService.findById(userId);
-      const baseCurrency = user?.baseCurrency ?? DEFAULT_CURRENCY;
-
-      if (dto.originalCurrency === baseCurrency) {
-        throw new BadRequestException(
-          'originalCurrency debe ser distinta de la moneda base',
-        );
-      }
-      if (Number(dto.exchangeRate) <= 0) {
-        throw new BadRequestException('exchangeRate debe ser mayor que 0');
-      }
-
-      currency = baseCurrency;
-      amount = convertToBase(
-        dto.originalAmount,
-        dto.originalCurrency,
-        baseCurrency,
-        dto.exchangeRate,
-      );
-      originalAmount = dto.originalAmount;
-      originalCurrency = dto.originalCurrency;
-      exchangeRate = dto.exchangeRate;
-    }
+    const money = await this.resolveMoneyFields(userId, dto);
 
     const transaction = this.transactionsRepository.create({
       fundId: dto.fundId,
@@ -95,11 +51,11 @@ export class TransactionsService {
       description: dto.description ?? null,
       occurredOn: dto.occurredOn,
       userId,
-      amount,
-      currency,
-      originalAmount,
-      originalCurrency,
-      exchangeRate,
+      amount: money!.amount,
+      currency: money!.currency,
+      originalAmount: money!.originalAmount,
+      originalCurrency: money!.originalCurrency,
+      exchangeRate: money!.exchangeRate,
     });
     return this.transactionsRepository.save(transaction);
   }
@@ -184,13 +140,98 @@ export class TransactionsService {
       await this.assertCategoryAccessible(userId, dto.categoryId);
     }
 
-    assignDefined(transaction, dto);
+    assignDefined(transaction, {
+      fundId: dto.fundId,
+      categoryId: dto.categoryId,
+      type: dto.type,
+      description: dto.description,
+      occurredOn: dto.occurredOn,
+    });
+
+    const money = await this.resolveMoneyFields(userId, dto);
+    if (money) {
+      transaction.amount = money.amount;
+      transaction.currency = money.currency;
+      transaction.originalAmount = money.originalAmount;
+      transaction.originalCurrency = money.originalCurrency;
+      transaction.exchangeRate = money.exchangeRate;
+    }
+
     return this.transactionsRepository.save(transaction);
   }
 
   async remove(userId: string, id: string): Promise<void> {
     await this.findOneOrThrow(userId, id);
     await this.transactionsRepository.delete({ id, userId });
+  }
+
+  private async resolveMoneyFields(
+    userId: string,
+    dto: {
+      amount?: string;
+      currency?: string;
+      originalAmount?: string;
+      originalCurrency?: string;
+      exchangeRate?: string;
+    },
+  ): Promise<{
+    amount: string;
+    currency: string;
+    originalAmount: string | null;
+    originalCurrency: string | null;
+    exchangeRate: string | null;
+  } | null> {
+    const hasForeign =
+      dto.originalAmount !== undefined ||
+      dto.originalCurrency !== undefined ||
+      dto.exchangeRate !== undefined;
+
+    if (hasForeign) {
+      if (
+        dto.originalAmount === undefined ||
+        dto.originalCurrency === undefined ||
+        dto.exchangeRate === undefined
+      ) {
+        throw new BadRequestException(
+          'originalAmount, originalCurrency y exchangeRate deben enviarse juntos',
+        );
+      }
+      const user = await this.usersService.findById(userId);
+      const baseCurrency = user?.baseCurrency ?? DEFAULT_CURRENCY;
+      if (dto.originalCurrency === baseCurrency) {
+        throw new BadRequestException(
+          'originalCurrency debe ser distinta de la moneda base',
+        );
+      }
+      if (Number(dto.exchangeRate) <= 0) {
+        throw new BadRequestException('exchangeRate debe ser mayor que 0');
+      }
+      return {
+        amount: convertToBase(
+          dto.originalAmount,
+          dto.originalCurrency,
+          baseCurrency,
+          dto.exchangeRate,
+        ),
+        currency: baseCurrency,
+        originalAmount: dto.originalAmount,
+        originalCurrency: dto.originalCurrency,
+        exchangeRate: dto.exchangeRate,
+      };
+    }
+
+    if (dto.amount !== undefined) {
+      // base-currency entry: clear any prior foreign metadata
+      return {
+        amount: dto.amount,
+        currency: dto.currency ?? DEFAULT_CURRENCY,
+        originalAmount: null,
+        originalCurrency: null,
+        exchangeRate: null,
+      };
+    }
+
+    return null; // money not being modified (e.g. PATCH editing only the description)
   }
 
   private async assertCategoryAccessible(

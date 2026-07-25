@@ -238,6 +238,105 @@ describe('TransactionsService', () => {
     });
   });
 
+  describe('update', () => {
+    it('convierte una transacción a moneda extranjera al editar', async () => {
+      const existing = {
+        id: 'tx-1',
+        userId: 'user-123',
+        amount: '5000',
+        currency: 'CLP',
+        originalAmount: null,
+        originalCurrency: null,
+        exchangeRate: null,
+      } as unknown as Transaction;
+      mockTransactionRepo.findOne.mockResolvedValue(existing);
+      mockFundsService.findOneOrThrow.mockResolvedValue({ id: 'f1' });
+      mockCategoryRepo.findOne.mockResolvedValue({
+        id: 'c1',
+        userId: 'user-123',
+      });
+      mockUsersService.findById.mockResolvedValue({ baseCurrency: 'CLP' });
+      mockTransactionRepo.save.mockImplementation((v: unknown) =>
+        Promise.resolve(v),
+      );
+
+      await service.update('user-123', 'tx-1', {
+        fundId: 'f1',
+        categoryId: 'c1',
+        originalAmount: '999',
+        originalCurrency: 'USD',
+        exchangeRate: '948.95',
+      });
+
+      expect(mockTransactionRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          amount: '9480',
+          currency: 'CLP',
+          originalCurrency: 'USD',
+        }),
+      );
+    });
+
+    it('limpia los metadatos de moneda extranjera al volver a CLP', async () => {
+      const existing = {
+        id: 'tx-1',
+        userId: 'user-123',
+        amount: '9480',
+        currency: 'CLP',
+        originalAmount: '999',
+        originalCurrency: 'USD',
+        exchangeRate: '948.95',
+      } as unknown as Transaction;
+      mockTransactionRepo.findOne.mockResolvedValue(existing);
+      mockTransactionRepo.save.mockImplementation((v: unknown) =>
+        Promise.resolve(v),
+      );
+
+      await service.update('user-123', 'tx-1', {
+        amount: '5000',
+      });
+
+      expect(mockTransactionRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          amount: '5000',
+          originalAmount: null,
+          originalCurrency: null,
+          exchangeRate: null,
+        }),
+      );
+    });
+
+    it('deja el dinero intacto cuando solo se edita la descripción', async () => {
+      const existing = {
+        id: 'tx-1',
+        userId: 'user-123',
+        amount: '9480',
+        currency: 'CLP',
+        originalAmount: '999',
+        originalCurrency: 'USD',
+        exchangeRate: '948.95',
+      } as unknown as Transaction;
+      mockTransactionRepo.findOne.mockResolvedValue(existing);
+      mockTransactionRepo.save.mockImplementation((v: unknown) =>
+        Promise.resolve(v),
+      );
+
+      await service.update('user-123', 'tx-1', {
+        description: 'x',
+      });
+
+      expect(mockTransactionRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          amount: '9480',
+          originalAmount: '999',
+          originalCurrency: 'USD',
+          exchangeRate: '948.95',
+        }),
+      );
+      expect(mockUsersService.findById).not.toHaveBeenCalled();
+    });
+  });
+
   describe('findOneOrThrow', () => {
     it('throws NotFoundException when transaction does not exist for this user', async () => {
       mockTransactionRepo.findOne.mockResolvedValue(null);
