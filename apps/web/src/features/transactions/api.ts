@@ -4,6 +4,7 @@ import { getAccessToken } from '../../lib/api/tokenStore'
 import type {
   ActivityQuery,
   CreateTransactionPayload,
+  ExchangeRateResult,
   PaginatedActivity,
   PaginatedTransactions,
   Transaction,
@@ -40,6 +41,10 @@ export function deleteTransaction(id: string): Promise<void> {
 
 export function listActivity(query: ActivityQuery): Promise<PaginatedActivity> {
   return apiFetch<PaginatedActivity>(`/activity${toQueryString(query)}`)
+}
+
+export function fetchExchangeRate(from: string): Promise<ExchangeRateResult | null> {
+  return apiFetch<ExchangeRateResult | null>(`/exchange-rate?from=${from}`)
 }
 
 export async function exportTransactions(from?: string, to?: string): Promise<void> {

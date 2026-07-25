@@ -9,6 +9,9 @@ export interface Transaction {
   amount: string
   amountFormatted: string
   currency: string
+  originalAmount: string | null
+  originalCurrency: string | null
+  exchangeRate: string | null
   description: string | null
   occurredOn: string
   source: TransactionSource
@@ -40,6 +43,9 @@ export interface CreateTransactionPayload {
   type: TransactionType
   amount: string
   currency?: string
+  originalAmount?: string
+  originalCurrency?: string
+  exchangeRate?: string
   description?: string
   occurredOn: string
 }
@@ -70,6 +76,9 @@ export interface ActivityItem {
   fundId?: string
   categoryId?: string
   source?: TransactionSource
+  originalAmount?: string | null
+  originalCurrency?: string | null
+  exchangeRate?: string | null
   updatedAt?: string
   // transfer-specific
   fromFundId?: string
@@ -94,4 +103,11 @@ export interface ActivityQuery {
   q?: string
   page?: number
   limit?: number
+}
+
+export interface ExchangeRateResult {
+  currency: string
+  rate: string
+  date: string
+  source: string
 }

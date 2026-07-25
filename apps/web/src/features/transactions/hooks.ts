@@ -53,3 +53,9 @@ export function useDeleteTransaction() {
   })
 }
 
+export function useExchangeRate() {
+  return useMutation({
+    mutationFn: (from: string) => api.fetchExchangeRate(from),
+  })
+}
+
