@@ -42,7 +42,7 @@ Extract a section into its own component when **all three** are true:
 
 ### Standardization pass on a feature
 
-Rule: **once a feature works end-to-end, do a pass to find where it silently diverged from the rest of the app** — before adding more on top of it. This is how the onboarding + import cleanup (see `estado-actual.md`) and the health feature audit (2026-07) came about: functional code that grew its own local answer to a problem the codebase already solved elsewhere. It's cheap to fix right after a feature stabilizes; expensive once three more features have copied the divergent version.
+Rule: **once a feature works end-to-end, do a pass to find where it silently diverged from the rest of the app** — before adding more on top of it. This is how the onboarding + import cleanup (see `estado-actual/onboarding-import-export.md`) and the health feature audit (2026-07, see `estado-actual/salud.md`) came about: functional code that grew its own local answer to a problem the codebase already solved elsewhere. It's cheap to fix right after a feature stabilizes; expensive once three more features have copied the divergent version.
 
 When to run it: after a feature's first end-to-end implementation, or before extending an existing feature with meaningful new UI/logic — not on every small fix.
 

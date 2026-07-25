@@ -1,0 +1,9 @@
+# Pendientes documentados
+
+- **Salud — recomendaciones vía IA**: reemplazar la sección estática oculta (`RecommendationCards`, `RECS`) por recomendaciones generadas por LLM a partir del comportamiento financiero real del usuario. Evaluado con Gemini y pospuesto por la política de datos/entrenamiento del free tier — revisar si Wealet pasa a ser un SaaS.
+- **Error tracking**: `HttpExceptionFilter` solo loguea a consola. Conectar a Sentry (u otro) si la API se despliega sin monitoreo activo — hoy alcanza porque corre en dev con la terminal a la vista (uso personal + demo de portfolio).
+- **Peticiones API redundantes**: `FundDetail.tsx` dispara 2 `GET /transactions` por cambio de mes (uno `limit=500` para los totales, otro paginado para la tabla) — no crítico para uso personal. Queda pendiente auditar el resto de la app buscando el mismo patrón (fetch completo + fetch paginado del mismo recurso) antes de decidir si vale la pena optimizar.
+- **Accesibilidad del drawer mobile del shell**: sin cierre por Escape, focus trap, ni `aria-expanded`/`aria-controls` en el botón hamburguesa.
+- **`PASSWORD_PEPPER_PREVIOUS`**: retirar de Render una vez confirmado que todos los usuarios activos volvieron a loguear al menos una vez (el login los re-hashea automáticamente al pepper actual).
+- **Categorías**: sin auditoría de estandarización completa propia (solo la migración de tabs/toggle a `SegmentedTabs` durante la pasada de Transacciones).
+- **Reordenar fondos**: drag-and-drop manual del orden de fondos, diferido — orden actual es `createdAt ASC`.
