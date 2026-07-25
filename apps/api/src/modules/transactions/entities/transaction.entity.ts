@@ -60,6 +60,26 @@ export class Transaction {
   @Column({ type: 'char', length: 3, default: 'CLP' })
   currency: string;
 
+  @Column({ name: 'original_amount', type: 'bigint', nullable: true })
+  originalAmount: string | null;
+
+  @Column({
+    name: 'original_currency',
+    type: 'char',
+    length: 3,
+    nullable: true,
+  })
+  originalCurrency: string | null;
+
+  @Column({
+    name: 'exchange_rate',
+    type: 'numeric',
+    precision: 18,
+    scale: 6,
+    nullable: true,
+  })
+  exchangeRate: string | null;
+
   @Column({ type: 'text', nullable: true })
   description: string | null;
 

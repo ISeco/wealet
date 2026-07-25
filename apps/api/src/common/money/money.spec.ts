@@ -1,4 +1,4 @@
-import { formatMoney, parseMoney } from './money';
+import { convertToBase, formatMoney, parseMoney } from './money';
 
 describe('formatMoney', () => {
   it('formats CLP with no decimals', () => {
@@ -50,5 +50,28 @@ describe('parseMoney', () => {
 
   it('throws on unsupported currency', () => {
     expect(() => parseMoney('100', 'XXX')).toThrow('Unsupported currency: XXX');
+  });
+});
+
+describe('convertToBase', () => {
+  it('convierte USD a CLP con la tasa (caso tarjeta)', () => {
+    // USD 9,99 (999 minor) a 948.95 CLP/USD → 9480 CLP
+    expect(convertToBase('999', 'USD', 'CLP', '948.95')).toBe('9480');
+  });
+
+  it('redondea al entero de la unidad base más cercana', () => {
+    // USD 1,00 a 950.5 → 950.5 → 951 CLP
+    expect(convertToBase('100', 'USD', 'CLP', '950.5')).toBe('951');
+  });
+
+  it('respeta el exponente de una base con decimales (EUR→USD)', () => {
+    // EUR 10,00 (1000) a 1.08 USD/EUR → 10,80 USD → 1080 minor
+    expect(convertToBase('1000', 'EUR', 'USD', '1.08')).toBe('1080');
+  });
+
+  it('lanza para una moneda no soportada', () => {
+    expect(() => convertToBase('100', 'ARS', 'CLP', '1')).toThrow(
+      'Unsupported currency: ARS',
+    );
   });
 });

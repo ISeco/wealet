@@ -36,6 +36,23 @@ export class UpdateTransactionDto {
   currency?: string;
 
   @IsOptional()
+  @Matches(/^[0-9]+$/, {
+    message:
+      'originalAmount must be a non-negative integer string (minor units)',
+  })
+  originalAmount?: string;
+
+  @IsOptional()
+  @IsIn(SUPPORTED_CURRENCIES)
+  originalCurrency?: string;
+
+  @IsOptional()
+  @Matches(/^[0-9]+(\.[0-9]+)?$/, {
+    message: 'exchangeRate must be a positive decimal string',
+  })
+  exchangeRate?: string;
+
+  @IsOptional()
   @IsString()
   @MaxLength(500)
   description?: string;
