@@ -1,10 +1,11 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TransactionsService } from './transactions.service';
 import { Transaction } from './entities/transaction.entity';
 import { Category } from '../categories/entities/category.entity';
 import { FundsService } from '../funds/funds.service';
+import { UsersService } from '../users/users.service';
 import { TransactionType } from '../../common/enums/transaction-type.enum';
 
 const mockQueryBuilder = {
@@ -33,6 +34,10 @@ const mockFundsService = {
   findOneOrThrow: jest.fn(),
 };
 
+const mockUsersService = {
+  findById: jest.fn(),
+};
+
 describe('TransactionsService', () => {
   let service: TransactionsService;
 
@@ -47,6 +52,7 @@ describe('TransactionsService', () => {
         },
         { provide: getRepositoryToken(Category), useValue: mockCategoryRepo },
         { provide: FundsService, useValue: mockFundsService },
+        { provide: UsersService, useValue: mockUsersService },
       ],
     }).compile();
 
@@ -153,6 +159,82 @@ describe('TransactionsService', () => {
       expect(mockTransactionRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({ userId: 'user-123' }),
       );
+    });
+
+    it('convierte una transacción en USD a CLP y guarda los campos original', async () => {
+      mockFundsService.findOneOrThrow.mockResolvedValue({ id: 'f1' });
+      mockCategoryRepo.findOne.mockResolvedValue({
+        id: 'c1',
+        userId: 'user-123',
+      });
+      mockUsersService.findById.mockResolvedValue({ baseCurrency: 'CLP' });
+      mockTransactionRepo.create.mockImplementation((v: unknown) => v);
+      mockTransactionRepo.save.mockImplementation((v: unknown) =>
+        Promise.resolve(v),
+      );
+
+      await service.create('user-123', {
+        fundId: 'f1',
+        categoryId: 'c1',
+        type: TransactionType.EXPENSE,
+        amount: '0',
+        occurredOn: '2026-07-25',
+        originalAmount: '999',
+        originalCurrency: 'USD',
+        exchangeRate: '948.95',
+      });
+
+      expect(mockTransactionRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          amount: '9480',
+          currency: 'CLP',
+          originalAmount: '999',
+          originalCurrency: 'USD',
+          exchangeRate: '948.95',
+        }),
+      );
+    });
+
+    it('rechaza campos de moneda extranjera incompletos', async () => {
+      mockFundsService.findOneOrThrow.mockResolvedValue({ id: 'f1' });
+      mockCategoryRepo.findOne.mockResolvedValue({
+        id: 'c1',
+        userId: 'user-123',
+      });
+
+      await expect(
+        service.create('user-123', {
+          fundId: 'f1',
+          categoryId: 'c1',
+          type: TransactionType.EXPENSE,
+          amount: '0',
+          occurredOn: '2026-07-25',
+          originalAmount: '999',
+          // faltan originalCurrency y exchangeRate
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rechaza cuando la moneda original es igual a la base', async () => {
+      mockFundsService.findOneOrThrow.mockResolvedValue({ id: 'f1' });
+      mockCategoryRepo.findOne.mockResolvedValue({
+        id: 'c1',
+        userId: 'user-123',
+      });
+      mockUsersService.findById.mockResolvedValue({ baseCurrency: 'CLP' });
+
+      await expect(
+        service.create('user-123', {
+          fundId: 'f1',
+          categoryId: 'c1',
+          type: TransactionType.EXPENSE,
+          amount: '0',
+          occurredOn: '2026-07-25',
+          originalAmount: '1000',
+          originalCurrency: 'CLP',
+          exchangeRate: '1',
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 

@@ -1,9 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { assignDefined } from '../../common/utils/assign-defined';
+import { convertToBase } from '../../common/money/money';
 import { Category } from '../categories/entities/category.entity';
 import { FundsService } from '../funds/funds.service';
+import { UsersService } from '../users/users.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { TransactionQueryDto } from './dto/transaction-query.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
@@ -26,6 +32,7 @@ export class TransactionsService {
     @InjectRepository(Category)
     private readonly categoriesRepository: Repository<Category>,
     private readonly fundsService: FundsService,
+    private readonly usersService: UsersService,
   ) {}
 
   async create(
@@ -35,10 +42,64 @@ export class TransactionsService {
     await this.fundsService.findOneOrThrow(userId, dto.fundId);
     await this.assertCategoryAccessible(userId, dto.categoryId);
 
+    const hasForeign =
+      dto.originalAmount !== undefined ||
+      dto.originalCurrency !== undefined ||
+      dto.exchangeRate !== undefined;
+
+    let amount = dto.amount;
+    let currency = dto.currency ?? DEFAULT_CURRENCY;
+    let originalAmount: string | null = null;
+    let originalCurrency: string | null = null;
+    let exchangeRate: string | null = null;
+
+    if (hasForeign) {
+      if (
+        dto.originalAmount === undefined ||
+        dto.originalCurrency === undefined ||
+        dto.exchangeRate === undefined
+      ) {
+        throw new BadRequestException(
+          'originalAmount, originalCurrency y exchangeRate deben enviarse juntos',
+        );
+      }
+
+      const user = await this.usersService.findById(userId);
+      const baseCurrency = user?.baseCurrency ?? DEFAULT_CURRENCY;
+
+      if (dto.originalCurrency === baseCurrency) {
+        throw new BadRequestException(
+          'originalCurrency debe ser distinta de la moneda base',
+        );
+      }
+      if (Number(dto.exchangeRate) <= 0) {
+        throw new BadRequestException('exchangeRate debe ser mayor que 0');
+      }
+
+      currency = baseCurrency;
+      amount = convertToBase(
+        dto.originalAmount,
+        dto.originalCurrency,
+        baseCurrency,
+        dto.exchangeRate,
+      );
+      originalAmount = dto.originalAmount;
+      originalCurrency = dto.originalCurrency;
+      exchangeRate = dto.exchangeRate;
+    }
+
     const transaction = this.transactionsRepository.create({
-      ...dto,
+      fundId: dto.fundId,
+      categoryId: dto.categoryId,
+      type: dto.type,
+      description: dto.description ?? null,
+      occurredOn: dto.occurredOn,
       userId,
-      currency: dto.currency ?? DEFAULT_CURRENCY,
+      amount,
+      currency,
+      originalAmount,
+      originalCurrency,
+      exchangeRate,
     });
     return this.transactionsRepository.save(transaction);
   }
