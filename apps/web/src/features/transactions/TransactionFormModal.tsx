@@ -8,7 +8,13 @@ import { Button } from '../../components/ui/Button'
 import { TrashIcon } from '../../components/ui/icons'
 import { activeFunds, useFunds } from '../funds'
 import { useCategories } from '../categories'
-import { formatThousands, parseMoney, convertToBaseMinor, formatForeignNote } from '../../lib/money'
+import {
+  formatThousands,
+  parseMoney,
+  convertToBaseMinor,
+  formatForeignNote,
+  formatMinorForInput,
+} from '../../lib/money'
 import { useFormFieldErrors } from '../../lib/useFormFieldErrors'
 import { ApiError } from '../../lib/api/client'
 import { useCreateTransaction, useDeleteTransaction, useExchangeRate, useUpdateTransaction } from './hooks'
@@ -35,11 +41,19 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   const [type, setType] = useState<TransactionType>(transaction?.type ?? 'expense')
   const [fundId, setFundId] = useState(transaction?.fundId ?? '')
   const [categoryId, setCategoryId] = useState(transaction?.categoryId ?? '')
-  const [amount, setAmount] = useState(transaction ? minorUnitsToInput(transaction.amount) : '')
+  const [amount, setAmount] = useState(
+    transaction
+      ? transaction.originalCurrency
+        ? formatMinorForInput(transaction.originalAmount ?? '0', transaction.originalCurrency)
+        : minorUnitsToInput(transaction.amount)
+      : '',
+  )
   const [entryCurrency, setEntryCurrency] = useState<string>(
     transaction?.originalCurrency ?? CURRENCY,
   )
-  const [rate, setRate] = useState<string>(transaction?.exchangeRate ?? '')
+  const [rate, setRate] = useState<string>(
+    transaction?.exchangeRate ? String(Number(transaction.exchangeRate)) : '',
+  )
   const exchangeRateMutation = useExchangeRate()
   const [description, setDescription] = useState(transaction?.description ?? '')
   const [occurredOn, setOccurredOn] = useState(
@@ -74,9 +88,11 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   }
 
   async function handlePrefillRate() {
-    const result = await exchangeRateMutation.mutateAsync(entryCurrency)
-    if (result) {
-      setRate(result.rate)
+    try {
+      const result = await exchangeRateMutation.mutateAsync(entryCurrency)
+      if (result) setRate(result.rate)
+    } catch {
+      // best-effort: si la API falla, el usuario ingresa el tipo de cambio a mano
     }
   }
 
@@ -233,9 +249,13 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
             <span style={{ fontSize: 24, fontWeight: 500, color: 'var(--muted)' }}>$</span>
             <input
               ref={register('amount')}
-              value={formatThousands(amount)}
+              value={entryCurrency === CURRENCY ? formatThousands(amount) : amount}
               onChange={(event) => {
-                setAmount(event.target.value.replace(/\D/g, ''))
+                const raw =
+                  entryCurrency === CURRENCY
+                    ? event.target.value.replace(/\D/g, '')
+                    : event.target.value.replace(/[^\d,]/g, '')
+                setAmount(raw)
                 clearFieldError('amount')
               }}
               inputMode="numeric"
@@ -263,6 +283,8 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
             value={entryCurrency}
             onChange={(event) => {
               setEntryCurrency(event.target.value)
+              setAmount('')
+              clearFieldError('amount')
               if (event.target.value === CURRENCY) setRate('')
             }}
             options={[

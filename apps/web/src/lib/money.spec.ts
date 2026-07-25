@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { formatMoney, formatThousands, parseMoney, convertToBaseMinor, formatForeignNote } from './money'
+import {
+  formatMoney,
+  formatThousands,
+  parseMoney,
+  convertToBaseMinor,
+  formatForeignNote,
+  formatMinorForInput,
+} from './money'
 
 describe('parseMoney', () => {
   it('parses a plain CLP integer', () => {
@@ -67,6 +74,18 @@ describe('convertToBaseMinor', () => {
 
   it('redondea al entero más cercano de la base', () => {
     expect(convertToBaseMinor('100', 'USD', 'CLP', '950.5')).toBe('951')
+  })
+})
+
+describe('formatMinorForInput', () => {
+  it('returns the integer string for exponent-0 currencies', () => {
+    expect(formatMinorForInput('9480', 'CLP')).toBe('9480')
+  })
+  it('formats USD minor units with an es-CL comma decimal', () => {
+    expect(formatMinorForInput('999', 'USD')).toBe('9,99')
+  })
+  it('pads leading zeros for sub-unit amounts', () => {
+    expect(formatMinorForInput('5', 'USD')).toBe('0,05')
   })
 })
 

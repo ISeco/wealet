@@ -63,6 +63,17 @@ export function convertToBaseMinor(
   return BigInt(baseMinor).toString()
 }
 
+/** Formats minor units into an editable input string for the given currency (es-CL decimals). */
+export function formatMinorForInput(minor: string, currency: string): string {
+  const exponent = getCurrencyExponent(currency)
+  if (exponent === 0) return BigInt(minor).toString()
+  const negative = minor.startsWith('-')
+  const digits = (negative ? minor.slice(1) : minor).padStart(exponent + 1, '0')
+  const intPart = digits.slice(0, digits.length - exponent)
+  const fracPart = digits.slice(digits.length - exponent)
+  return `${negative ? '-' : ''}${intPart},${fracPart}`
+}
+
 /** Nota de procedencia para una transacción ingresada en moneda extranjera. */
 export function formatForeignNote(
   originalAmount: string,
