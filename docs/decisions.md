@@ -116,6 +116,13 @@ Para ingresar transacciones en moneda extranjera (ver spec de moneda extranjera)
 
 **El valor manual siempre manda.** El tipo de cambio de la API es solo un prellenado de referencia (dólar observado, con rezago); el usuario lo ajusta al valor real que le cobró el banco. Por eso la API es *best-effort*: si falla, el flujo no se rompe.
 
+**Cliente HTTP — `fetch` nativo, no `HttpService`/`@nestjs/axios`.** El `ExchangeRateService` usa el `fetch` global (Node 18+, `undici`) con `AbortController` para el timeout, en vez del `HttpModule`/`HttpService` idiomático de NestJS (un wrapper sobre Axios que devuelve `Observable<AxiosResponse>`). Razones:
+- **Sin dependencias nuevas.** `HttpService` exige `@nestjs/axios` + `axios`. Para una sola llamada GET no compensa.
+- **Alcance mínimo.** Lo que `HttpService` te da hecho — parse de JSON, error automático en 4xx/5xx, timeout por config, interceptors, reintentos, `baseURL` — hoy no se necesita. El costo aquí son tres líneas (`response.ok`, `.json()`, `AbortController`), no un patrón.
+- **`fetch` es estándar.** Desde Node 18 es nativo; la propia doc de NestJS trata `HttpService` como opcional. `AbortController` aborta la operación completa (conexión + lectura del body), que es el comportamiento deseado para el timeout de ~3s.
+
+**Cuándo migrar a `HttpService`:** si aparecen reintentos, interceptors (logging/headers de auth centralizados), varias APIs externas, o una `baseURL` compartida — ahí Axios paga su costo. Mientras sea un GET best-effort que degrada a `null`, `fetch` es la opción correcta.
+
 **Trade-off:** un endpoint y un servicio propios en vez de pegarle directo desde el front. Es exactamente el patrón esperado en un contexto de banca/retail y el costo es mínimo; degradar a `null` mantiene la feature usable aunque el proveedor caiga.
 
 ---
