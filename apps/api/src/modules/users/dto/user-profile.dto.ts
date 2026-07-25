@@ -5,6 +5,7 @@ export class UserProfileDto {
   email: string;
   displayName: string | null;
   theme: UserTheme;
+  baseCurrency: string;
   onboardingCompleted: boolean;
   onboardingCompletedAt: Date | null;
   hasPassword: boolean;

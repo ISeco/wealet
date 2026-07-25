@@ -46,6 +46,7 @@ describe('AuthService', () => {
     googleId: null,
     displayName: null,
     theme: 'system',
+    baseCurrency: 'CLP',
     onboardingCompleted: false,
     onboardingCompletedAt: null,
     passwordResetToken: null,
