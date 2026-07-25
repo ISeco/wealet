@@ -9,6 +9,9 @@ export class TransactionResponseDto {
   amount: string;
   amountFormatted: string;
   currency: string;
+  originalAmount: string | null;
+  originalCurrency: string | null;
+  exchangeRate: string | null;
   description: string | null;
   occurredOn: string;
   source: TransactionSource;
