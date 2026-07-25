@@ -33,6 +33,9 @@ export class User {
   })
   theme: UserTheme;
 
+  @Column({ name: 'base_currency', type: 'char', length: 3, default: 'CLP' })
+  baseCurrency: string;
+
   @Column({ name: 'onboarding_completed', type: 'boolean', default: false })
   onboardingCompleted: boolean;
 

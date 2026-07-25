@@ -10,6 +10,7 @@ import { envValidationSchema } from './config/env.validation';
 import { ActivityModule } from './modules/activity/activity.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { ExchangeRateModule } from './modules/exchange-rate/exchange-rate.module';
 import { FundsModule } from './modules/funds/funds.module';
 import { HealthModule } from './modules/health/health.module';
 import { ImportExportModule } from './modules/import-export/import-export.module';
@@ -43,6 +44,7 @@ import { UsersModule } from './modules/users/users.module';
     HealthModule,
     ImportExportModule,
     MonthlyAllocationModule,
+    ExchangeRateModule,
   ],
   controllers: [AppController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

@@ -6,6 +6,7 @@ import type { Transaction } from './types'
 import type { Transfer } from '../transfers/types'
 import { ChevronDownIcon, TransfersIcon } from '../../components/ui/icons'
 import { computeFloatingPosition } from '../../components/ui/floatingPosition'
+import { formatForeignNote } from '../../lib/money'
 
 export type TableRow =
   | { kind: 'transaction'; data: Transaction }
@@ -164,8 +165,15 @@ export function TransactionsTable({ rows, funds, allFunds, categories, onRowClic
                   </svg>
                 )}
               </span>
-              <span style={{ fontSize: 13.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {t.description || category?.name || '—'}
+              <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <span style={{ fontSize: 13.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {t.description || category?.name || '—'}
+                </span>
+                {t.originalAmount && t.originalCurrency && t.exchangeRate && (
+                  <span style={{ fontSize: 11, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+                    {formatForeignNote(t.originalAmount, t.originalCurrency, t.exchangeRate)}
+                  </span>
+                )}
               </span>
             </div>
 

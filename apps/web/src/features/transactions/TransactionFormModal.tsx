@@ -8,13 +8,20 @@ import { Button } from '../../components/ui/Button'
 import { TrashIcon } from '../../components/ui/icons'
 import { activeFunds, useFunds } from '../funds'
 import { useCategories } from '../categories'
-import { formatThousands, parseMoney } from '../../lib/money'
+import {
+  formatThousands,
+  parseMoney,
+  convertToBaseMinor,
+  formatForeignNote,
+  formatMinorForInput,
+} from '../../lib/money'
 import { useFormFieldErrors } from '../../lib/useFormFieldErrors'
 import { ApiError } from '../../lib/api/client'
-import { useCreateTransaction, useDeleteTransaction, useUpdateTransaction } from './hooks'
+import { useCreateTransaction, useDeleteTransaction, useExchangeRate, useUpdateTransaction } from './hooks'
 import type { Transaction, TransactionType } from './types'
 
 const CURRENCY = 'CLP'
+const FOREIGN_CURRENCIES = ['USD', 'EUR'] as const
 const REQUIRED_FIELDS = ['fundId', 'categoryId', 'amount', 'occurredOn'] as const
 
 interface TransactionFormModalProps {
@@ -34,7 +41,20 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   const [type, setType] = useState<TransactionType>(transaction?.type ?? 'expense')
   const [fundId, setFundId] = useState(transaction?.fundId ?? '')
   const [categoryId, setCategoryId] = useState(transaction?.categoryId ?? '')
-  const [amount, setAmount] = useState(transaction ? minorUnitsToInput(transaction.amount) : '')
+  const [amount, setAmount] = useState(
+    transaction
+      ? transaction.originalCurrency
+        ? formatMinorForInput(transaction.originalAmount ?? '0', transaction.originalCurrency)
+        : minorUnitsToInput(transaction.amount)
+      : '',
+  )
+  const [entryCurrency, setEntryCurrency] = useState<string>(
+    transaction?.originalCurrency ?? CURRENCY,
+  )
+  const [rate, setRate] = useState<string>(
+    transaction?.exchangeRate ? String(Number(transaction.exchangeRate)) : '',
+  )
+  const exchangeRateMutation = useExchangeRate()
   const [description, setDescription] = useState(transaction?.description ?? '')
   const [occurredOn, setOccurredOn] = useState(
     transaction?.occurredOn ? transaction.occurredOn.slice(0, 10) : new Date().toISOString().slice(0, 10),
@@ -51,6 +71,31 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   const filteredCategories = (categories ?? []).filter((category) => category.type === type)
   const selectedFund = (funds ?? []).find((fund) => fund.id === fundId)
 
+  const isForeign = entryCurrency !== CURRENCY
+
+  let foreignMinor = ''
+  let previewBaseMinor = ''
+  try {
+    if (isForeign && amount) {
+      foreignMinor = parseMoney(amount, entryCurrency)
+      if (rate && Number(rate) > 0) {
+        previewBaseMinor = convertToBaseMinor(foreignMinor, entryCurrency, CURRENCY, rate)
+      }
+    }
+  } catch {
+    foreignMinor = ''
+    previewBaseMinor = ''
+  }
+
+  async function handlePrefillRate() {
+    try {
+      const result = await exchangeRateMutation.mutateAsync(entryCurrency)
+      if (result) setRate(result.rate)
+    } catch {
+      // best-effort: si la API falla, el usuario ingresa el tipo de cambio a mano
+    }
+  }
+
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
@@ -66,23 +111,53 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
       return
     }
 
-    let minorUnits: string
+    let payload: {
+      fundId: string
+      categoryId: string
+      type: TransactionType
+      amount: string
+      currency: string
+      description?: string
+      occurredOn: string
+      originalAmount?: string
+      originalCurrency?: string
+      exchangeRate?: string
+    }
+
     try {
-      minorUnits = parseMoney(amount, CURRENCY)
+      const entryMinor = parseMoney(amount, entryCurrency)
+      if (isForeign) {
+        if (!rate || Number(rate) <= 0) {
+          setError('Ingresa un tipo de cambio válido.')
+          return
+        }
+        payload = {
+          fundId,
+          categoryId,
+          type,
+          amount: convertToBaseMinor(entryMinor, entryCurrency, CURRENCY, rate),
+          currency: CURRENCY,
+          description: description || undefined,
+          occurredOn,
+          originalAmount: entryMinor,
+          originalCurrency: entryCurrency,
+          exchangeRate: rate,
+        }
+      } else {
+        payload = {
+          fundId,
+          categoryId,
+          type,
+          amount: entryMinor,
+          currency: CURRENCY,
+          description: description || undefined,
+          occurredOn,
+        }
+      }
     } catch {
       setError('Monto inválido.')
       validate({ amount: true })
       return
-    }
-
-    const payload = {
-      fundId,
-      categoryId,
-      type,
-      amount: minorUnits,
-      currency: CURRENCY,
-      description: description || undefined,
-      occurredOn,
     }
 
     try {
@@ -174,9 +249,13 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
             <span style={{ fontSize: 24, fontWeight: 500, color: 'var(--muted)' }}>$</span>
             <input
               ref={register('amount')}
-              value={formatThousands(amount)}
+              value={entryCurrency === CURRENCY ? formatThousands(amount) : amount}
               onChange={(event) => {
-                setAmount(event.target.value.replace(/\D/g, ''))
+                const raw =
+                  entryCurrency === CURRENCY
+                    ? event.target.value.replace(/\D/g, '')
+                    : event.target.value.replace(/[^\d,]/g, '')
+                setAmount(raw)
                 clearFieldError('amount')
               }}
               inputMode="numeric"
@@ -197,6 +276,57 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
             />
           </div>
         </div>
+
+        <div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Moneda</div>
+          <Select
+            value={entryCurrency}
+            onChange={(event) => {
+              setEntryCurrency(event.target.value)
+              setAmount('')
+              clearFieldError('amount')
+              if (event.target.value === CURRENCY) setRate('')
+            }}
+            options={[
+              { value: CURRENCY, label: 'CLP (peso chileno)' },
+              ...FOREIGN_CURRENCIES.map((code) => ({ value: code, label: code })),
+            ]}
+            style={{ height: 44, borderRadius: 10 }}
+          />
+        </div>
+
+        {isForeign && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--muted)' }}>Tipo de cambio (CLP por 1 {entryCurrency})</div>
+              <button
+                type="button"
+                onClick={handlePrefillRate}
+                disabled={exchangeRateMutation.isPending}
+                style={{ fontSize: 12, color: 'var(--info)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                {exchangeRateMutation.isPending ? 'Cargando…' : 'Traer valor de hoy'}
+              </button>
+            </div>
+            <input
+              value={rate}
+              onChange={(event) => setRate(event.target.value.replace(/[^0-9.]/g, ''))}
+              inputMode="decimal"
+              placeholder="948.95"
+              style={fieldStyle}
+            />
+            {exchangeRateMutation.data && (
+              <div style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 6 }}>
+                referencial · {exchangeRateMutation.data.date} · {exchangeRateMutation.data.source}
+              </div>
+            )}
+            {previewBaseMinor && (
+              <div style={{ fontSize: 12.5, color: 'var(--text)', marginTop: 8 }}>
+                Equivale a <b>{formatForeignNote(foreignMinor, entryCurrency, rate)}</b> → <b>${formatThousands(previewBaseMinor)}</b>
+              </div>
+            )}
+          </div>
+        )}
 
         <Select
           ref={register('fundId')}

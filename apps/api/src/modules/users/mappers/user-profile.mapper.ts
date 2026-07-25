@@ -7,6 +7,7 @@ export function toUserProfileDto(user: User): UserProfileDto {
     email: user.email,
     displayName: user.displayName,
     theme: user.theme,
+    baseCurrency: user.baseCurrency,
     onboardingCompleted: user.onboardingCompleted,
     onboardingCompletedAt: user.onboardingCompletedAt,
     hasPassword: user.passwordHash !== null,

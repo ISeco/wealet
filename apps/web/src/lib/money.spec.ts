@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { formatMoney, formatThousands, parseMoney } from './money'
+import {
+  formatMoney,
+  formatThousands,
+  parseMoney,
+  convertToBaseMinor,
+  formatForeignNote,
+  formatMinorForInput,
+} from './money'
 
 describe('parseMoney', () => {
   it('parses a plain CLP integer', () => {
@@ -57,5 +64,37 @@ describe('formatMoney', () => {
   it('formats CLP amount without decimals', () => {
     const result = formatMoney('1000', 'CLP')
     expect(result).toMatch(/1\.000|1,000/)
+  })
+})
+
+describe('convertToBaseMinor', () => {
+  it('convierte USD a CLP con la tasa (caso tarjeta)', () => {
+    expect(convertToBaseMinor('999', 'USD', 'CLP', '948.95')).toBe('9480')
+  })
+
+  it('redondea al entero más cercano de la base', () => {
+    expect(convertToBaseMinor('100', 'USD', 'CLP', '950.5')).toBe('951')
+  })
+})
+
+describe('formatMinorForInput', () => {
+  it('returns the integer string for exponent-0 currencies', () => {
+    expect(formatMinorForInput('9480', 'CLP')).toBe('9480')
+  })
+  it('formats USD minor units with an es-CL comma decimal', () => {
+    expect(formatMinorForInput('999', 'USD')).toBe('9,99')
+  })
+  it('pads leading zeros for sub-unit amounts', () => {
+    expect(formatMinorForInput('5', 'USD')).toBe('0,05')
+  })
+})
+
+describe('formatForeignNote', () => {
+  it('arma la nota con monto original y tasa', () => {
+    // "US$9,99 · TC 948,95" — separadores es-CL
+    const note = formatForeignNote('999', 'USD', '948.95')
+    expect(note).toContain('9,99')
+    expect(note).toContain('948,95')
+    expect(note).toContain('TC')
   })
 })

@@ -1,0 +1,10 @@
+# Salud financiera
+
+- Los targets de cada framework viven como `frameworkSlot` + `targetPercentage` en cada `Fund` (sembrados automáticamente al cambiar de framework) — `HealthProfile` ya no tiene el campo `config` jsonb; no hay patrón Strategy, la lógica es inline en `health.service.ts`.
+- `GET /health/assessment` mide adherencia por **flujo del período** para todos los frameworks (incluido `fondos`, que antes usaba "saldo como % del total") vía `getFlowAssessment`. El denominador (`totalIncome`) no incluye transferencias entre fondos, para ser coherente con el flujo por fondo.
+- `AdherenceChart`: fondos con flujo negativo muestran barra y monto en ámbar (sin el bug de `width` negativo inválido en CSS); marcador de "Meta" se oculta cuando `targetPercentage === 0`.
+- `ScoreCard` no calcula un score cuando no hay datos reales (`assessment.funds.length === 0` o `totalBase === '0'`) — muestra `—/100` en vez de un 100 engañoso.
+- **Recomendaciones (pendiente IA)**: la sección "Recomendaciones" está oculta. El código estático (`getRecommendations`, `RecommendationCards`, `RECS`) existe pero no se renderiza — la intención es reemplazarlo con recomendaciones generadas por LLM a partir del comportamiento financiero real del usuario. Ver `pendientes.md`.
+- **Asignación mensual** (`/monthly-allocation/current`): distribuye el ingreso del mes como N transacciones de ingreso (una por fondo activo). Redistribuir el mismo mes reemplaza las transacciones anteriores sin duplicar. `AllocationDrawer` recalcula los montos propuestos si ninguna distribución previa coincide con los fondos activos actuales (framework cambiado desde la última asignación).
+- Responsive: `FrameworkTabs` tiene scroll horizontal cuando los labels no caben (mismo mecanismo agregado a `SegmentedTabs`, compartido por 7 usos en la app); el grid `ScoreCard`+`AdherenceChart` usa `auto-fit`/`minmax(320px,1fr)`.
+- Helpers compartidos en `health/utils.ts`: `frameworkSlotPrefix`, `isSlotFramework`, `ALL_FRAMEWORKS`, `FRAMEWORK_LABELS`, `fundMatchesFramework`. `AllocationDrawer` usa `components/ui/Modal.tsx`; `formatMoney` en vez de un `formatCLP` local.

@@ -43,13 +43,13 @@ Don't hand-roll or duplicate something next to code you just finished migrating/
 
 ## After every implementation
 
-After completing any feature, endpoint, or significant refactor, add a bullet to `docs/estado-actual.md` describing what was added, what changed behavior, and what remains pending. Keep it concise — it's a snapshot for the next session, not a changelog.
+After completing any feature, endpoint, or significant refactor, update the corresponding file under `docs/estado-actual/` (one file per feature, see `docs/estado-actual/index.md`) so it describes the *current* state — not a chronological log entry. Keep it concise. Real open work goes to `docs/estado-actual/pendientes.md`; a `dev → main` merge goes to `docs/estado-actual/releases.md`.
 
 ## Reference Docs
 
 - Data model → `docs/data-model.md`
 - Module map, API endpoints & screen→endpoint map → `docs/modules.md`
-- Estado actual, features implementadas y pendientes → `docs/estado-actual.md`
+- Estado actual, features implementadas y pendientes → `docs/estado-actual/index.md`
 - Patterns, testing, CI/CD → `docs/conventions.md`
 - Architecture decisions & best practices (the *why*) → `docs/decisions.md`
 - Per-screen design reference → `docs/design/screens/` (one isolated `.html` per screen — see its `README.md`)

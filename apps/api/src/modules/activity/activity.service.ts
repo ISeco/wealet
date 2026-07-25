@@ -19,6 +19,9 @@ export interface ActivityItem {
   categoryId?: string;
   source?: 'manual' | 'import';
   updatedAt?: Date;
+  originalAmount?: string | null;
+  originalCurrency?: string | null;
+  exchangeRate?: string | null;
   // transfer-specific
   fromFundId?: string;
   toFundId?: string;
@@ -48,6 +51,9 @@ interface RawActivityRow {
   source: string | null;
   created_at: Date;
   updated_at: Date | null;
+  original_amount: string | null;
+  original_currency: string | null;
+  exchange_rate: string | null;
 }
 
 const UNION_CTE = `
@@ -66,7 +72,10 @@ const UNION_CTE = `
       NULL::uuid              AS to_fund_id,
       source::text,
       created_at,
-      updated_at
+      updated_at,
+      original_amount::text,
+      original_currency,
+      exchange_rate::text
     FROM transactions
     WHERE user_id = $1
       AND ($2::date IS NULL OR occurred_on >= $2::date)
@@ -92,7 +101,10 @@ const UNION_CTE = `
       to_fund_id,
       NULL::text              AS source,
       created_at,
-      NULL::timestamptz       AS updated_at
+      NULL::timestamptz       AS updated_at,
+      NULL::text              AS original_amount,
+      NULL::text              AS original_currency,
+      NULL::text              AS exchange_rate
     FROM transfers
     WHERE user_id = $1
       AND ($2::date IS NULL OR occurred_on >= $2::date)
@@ -177,6 +189,9 @@ export class ActivityService {
       categoryId: row.category_id!,
       source: row.source as 'manual' | 'import',
       updatedAt: row.updated_at ?? undefined,
+      originalAmount: row.original_amount,
+      originalCurrency: row.original_currency,
+      exchangeRate: row.exchange_rate,
     };
   }
 }
