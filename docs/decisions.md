@@ -103,6 +103,23 @@ La vista Transacciones muestra transacciones y transferencias mezcladas en un ti
 
 ---
 
+## ADR-09 — API de tipo de cambio consumida solo vía proxy del backend
+
+Para ingresar transacciones en moneda extranjera (ver spec de moneda extranjera), el prellenado del tipo de cambio se obtiene de una API externa (mindicador.cl, dólar observado). **Esa API se consulta únicamente desde el backend, nunca desde el navegador.** El frontend llama a nuestro propio endpoint `GET /exchange-rate?from=USD`; el `ExchangeRateService` es quien habla con el proveedor.
+
+**Por qué el proxy y no un fetch directo desde el front:**
+- **Sin CORS.** Servidor↔servidor no depende de que el proveedor habilite nuestro origen.
+- **Punto único de control.** Cache (~6h), timeout (~3s) y degradación a `null` viven en un solo lugar; con fetch desde el cliente cada navegador re-consultaría sin cache compartido.
+- **Aislamiento del proveedor (anti-corruption layer).** El front depende de nuestro contrato `{ rate, date, source }`, no del formato de mindicador. Cambiar de fuente (u optar por el SOAP del Banco Central) no toca el frontend.
+- **Secretos fuera del bundle.** Hoy mindicador es sin API key, pero fuentes financieras suelen exigir token/credenciales. Ese secreto jamás puede viajar en el bundle del navegador — vive en variables de entorno del backend.
+- **Resiliencia y auditoría del lado servidor.** Logging, rate-limiting y fallback con gracia (el `null` diseñado) pertenecen al backend.
+
+**El valor manual siempre manda.** El tipo de cambio de la API es solo un prellenado de referencia (dólar observado, con rezago); el usuario lo ajusta al valor real que le cobró el banco. Por eso la API es *best-effort*: si falla, el flujo no se rompe.
+
+**Trade-off:** un endpoint y un servicio propios en vez de pegarle directo desde el front. Es exactamente el patrón esperado en un contexto de banca/retail y el costo es mínimo; degradar a `null` mantiene la feature usable aunque el proveedor caiga.
+
+---
+
 ## §7 — Engineering Best Practices
 
 ### Architecture
