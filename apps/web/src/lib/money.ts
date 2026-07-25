@@ -48,3 +48,30 @@ export function parseMoney(input: string, currency: string): string {
   const minorUnits = `${integerPart}${fractionalPart.padEnd(exponent, '0')}`
   return BigInt(minorUnits).toString()
 }
+
+/** Convierte un monto en moneda extranjera (unidades mínimas) a la base (unidades mínimas). */
+export function convertToBaseMinor(
+  originalMinor: string,
+  originalCurrency: string,
+  baseCurrency: string,
+  rate: string,
+): string {
+  const originalExponent = getCurrencyExponent(originalCurrency)
+  const baseExponent = getCurrencyExponent(baseCurrency)
+  const originalMajor = Number(BigInt(originalMinor)) / 10 ** originalExponent
+  const baseMinor = Math.round(originalMajor * Number(rate) * 10 ** baseExponent)
+  return BigInt(baseMinor).toString()
+}
+
+/** Nota de procedencia para una transacción ingresada en moneda extranjera. */
+export function formatForeignNote(
+  originalAmount: string,
+  originalCurrency: string,
+  rate: string,
+): string {
+  const amount = formatMoney(originalAmount, originalCurrency)
+  const formattedRate = new Intl.NumberFormat('es-CL', {
+    maximumFractionDigits: 2,
+  }).format(Number(rate))
+  return `${amount} · TC ${formattedRate}`
+}
