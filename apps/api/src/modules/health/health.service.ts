@@ -88,11 +88,6 @@ export class HealthService {
         [userId, from, to],
       );
 
-    const effectiveIncome =
-      Number(totalIncome) === 0 && profile.monthlyIncome
-        ? profile.monthlyIncome
-        : totalIncome;
-
     const rows: FundFlowRow[] = await this.dataSource.query(
       `SELECT f.id AS fund_id, f.name AS fund_name,
               f.classification, f.framework_slot, f.target_percentage,
@@ -112,7 +107,7 @@ export class HealthService {
       [userId, from, to],
     );
 
-    const income = Number(effectiveIncome);
+    const income = Number(totalIncome);
     const funds: FundAssessmentDto[] = rows.map((row) => {
       const actualAmount = row.amount;
       const actualPercentage =
@@ -130,7 +125,7 @@ export class HealthService {
       };
     });
 
-    return { framework, totalBase: effectiveIncome, funds };
+    return { framework, totalBase: totalIncome, funds };
   }
 
   private fundSlotFilter(framework: HealthFramework): string {
