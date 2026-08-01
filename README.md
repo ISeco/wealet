@@ -105,6 +105,19 @@ recuperación de contraseña o login con Google.
 - [`docs/decisions.md`](docs/decisions.md) — decisiones de arquitectura (el *por qué*)
 - [`docs/design/screens/`](docs/design/screens/) — referencia de diseño por pantalla
 
+## Trabajar con un agente de IA (Claude Code u otro)
+
+El repo usa [graphify](https://github.com/anthropics/graphify) para generar un grafo de
+conocimiento del código (`graphify-out/`) que los agentes de IA consultan en vez de leer
+el código fuente a ciegas. No está versionado (es 100% regenerable) — al clonar el repo,
+generarlo una vez con:
+
+```bash
+graphify update .
+```
+
+Volver a correrlo tras cambios grandes de código para mantenerlo al día.
+
 ## Licencia
 
 [MIT](LICENSE)
