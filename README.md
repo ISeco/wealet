@@ -107,7 +107,7 @@ recuperación de contraseña o login con Google.
 
 ## Trabajar con un agente de IA (Claude Code u otro)
 
-El repo usa [graphify](https://github.com/anthropics/graphify) para generar un grafo de
+El repo usa [graphify](https://graphify.com/) para generar un grafo de
 conocimiento del código (`graphify-out/`) que los agentes de IA consultan en vez de leer
 el código fuente a ciegas. No está versionado (es 100% regenerable) — al clonar el repo,
 generarlo una vez con:
