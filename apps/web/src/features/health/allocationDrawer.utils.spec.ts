@@ -85,6 +85,15 @@ describe('buildInitialState', () => {
     expect(state.amounts).toEqual({ a: '999' })
   })
 
+  it('goes to income step for a new month even when profile.monthlyIncome carries a stale value', () => {
+    const activeFunds = [buildFund({ id: 'a' })]
+
+    const state = buildInitialState(profile, null, activeFunds)
+
+    expect(state.step).toBe('income')
+    expect(state.rawIncome).toBe('999')
+  })
+
   it('recomputes distribution across new funds when the allocation references funds from a different framework', () => {
     const currentAllocation: CurrentAllocation = {
       id: 'alloc1',
