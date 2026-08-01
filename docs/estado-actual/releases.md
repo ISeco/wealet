@@ -14,6 +14,7 @@ Historial de merges `dev → main`. El detalle de cada cambio vive en el feature
 | v1.6.0 | 2026-07-06 | [#26](https://github.com/ISeco/wealet/pull/26) | `d5bafa0` | Pase completo de responsive design (todas las pantallas), fix de `AllocationDrawer` con framework obsoleto, paginación en movimientos del fondo, fix de re-preguntar ingreso mensual en onboarding |
 | v1.7.0 | 2026-07-13 | [#29](https://github.com/ISeco/wealet/pull/29) | `3418a88` | Auditoría de seguridad Cyber Neo y remediación (helmet, rate limiting, `xlsx`→`exceljs`, JWT algorithm pin, etc.), migración de `PASSWORD_PEPPER` sin bloquear usuarios existentes |
 | v1.8.0 | 2026-07-22 | [#32](https://github.com/ISeco/wealet/pull/32) | `660f9c7` | Navegación por mes en el detalle del fondo, fixes de UI en `MonthSelector` |
+| v1.9.0 | 2026-07-25 | [#34](https://github.com/ISeco/wealet/pull/34) | `452eae5` | Transacciones en moneda extranjera (USD/EUR → CLP): `base_currency` por usuario, conversión server-side (`convertToBase`), proxy `GET /exchange-rate` a mindicador.cl (best-effort), `original_*` en `/activity` y nota de procedencia en la tabla, ADR-09 (proxy con `fetch` nativo) |
 
 **Hotfix directo a `main`**: PR #28 (`hotfix/password-pepper-rotation`) — cherry-pick de la rotación de `PASSWORD_PEPPER` sin esperar al release normal de `dev`, por una ventana breve de login roto tras rotar la credencial en Render antes de que el código de fallback llegara a producción.
 

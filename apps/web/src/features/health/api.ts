@@ -20,13 +20,6 @@ export function updateHealthProfile(framework: HealthFramework): Promise<HealthP
   })
 }
 
-export function updateMonthlyIncome(monthlyIncome: string): Promise<HealthProfile> {
-  return apiFetch<HealthProfile>('/health/profile', {
-    method: 'PUT',
-    body: { monthlyIncome },
-  })
-}
-
 export function getAllocationCurrent(): Promise<CurrentAllocation> {
   return apiFetch<CurrentAllocation>('/monthly-allocation/current')
 }

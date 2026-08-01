@@ -68,7 +68,7 @@ export function buildInitialState(
   currentAllocation: CurrentAllocation,
   activeFunds: Fund[],
 ): DrawerState {
-  const hasIncome = !!(currentAllocation?.totalAmount ?? profile.monthlyIncome)
+  const hasIncome = !!currentAllocation?.totalAmount
   const step: DrawerStep = hasIncome ? 'distribution' : 'income'
   const rawIncome = currentAllocation?.totalAmount ?? profile.monthlyIncome ?? ''
 

@@ -143,7 +143,7 @@ describe('HealthService', () => {
       expect(result.funds[0].actualPercentage).toBe(50);
     });
 
-    it('uses monthlyIncome as fallback when period has no income', async () => {
+    it('ignores profile.monthlyIncome and keeps totalBase at 0 when the period has no income transactions', async () => {
       mockHealthProfileRepo.findOne.mockResolvedValue(
         buildProfile({ monthlyIncome: '2000000' }),
       );
@@ -166,8 +166,8 @@ describe('HealthService', () => {
         '2025-01-31',
       );
 
-      expect(result.totalBase).toBe('2000000');
-      expect(result.funds[0].actualPercentage).toBe(50);
+      expect(result.totalBase).toBe('0');
+      expect(result.funds[0].actualPercentage).toBe(0);
     });
   });
 
