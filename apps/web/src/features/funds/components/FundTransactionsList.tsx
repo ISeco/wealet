@@ -11,11 +11,12 @@ interface FundTransactionsListProps {
 
 export function FundTransactionsList({ transactions, categoryMap, headerRight, onTransactionClick }: FundTransactionsListProps) {
   return (
-    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
+    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: 'var(--shadow)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px 12px' }}>
         <div style={{ fontSize: 14, fontWeight: 600 }}>Movimientos</div>
         {headerRight}
       </div>
+      <div style={{ overflow: 'hidden', borderRadius: '0 0 14px 14px' }}>
       {transactions.length === 0 ? (
         <div style={{ padding: '24px', textAlign: 'center', fontSize: 13.5, color: 'var(--muted)' }}>
           Sin movimientos registrados
@@ -63,6 +64,7 @@ export function FundTransactionsList({ transactions, categoryMap, headerRight, o
           )
         })
       )}
+      </div>
     </div>
   )
 }
