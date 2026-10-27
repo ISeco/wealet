@@ -31,7 +31,7 @@ export class UpdateFundDto {
 
   @IsOptional()
   @IsInt()
-  @Min(1)
+  @Min(0)
   @Max(100)
   targetPercentage?: number;
 }

@@ -16,6 +16,7 @@ Historial de merges `dev → main`. El detalle de cada cambio vive en el feature
 | v1.8.0 | 2026-07-22 | [#32](https://github.com/ISeco/wealet/pull/32) | `660f9c7` | Navegación por mes en el detalle del fondo, fixes de UI en `MonthSelector` |
 | v1.9.0 | 2026-07-25 | [#34](https://github.com/ISeco/wealet/pull/34) | `452eae5` | Transacciones en moneda extranjera (USD/EUR → CLP): `base_currency` por usuario, conversión server-side (`convertToBase`), proxy `GET /exchange-rate` a mindicador.cl (best-effort), `original_*` en `/activity` y nota de procedencia en la tabla, ADR-09 (proxy con `fetch` nativo) |
 | v1.9.1 | 2026-08-01 | [#37](https://github.com/ISeco/wealet/pull/37) | `c250218` | Fix del drawer de asignación mensual (ya no salta el paso de ingreso con el monto del mes anterior), eliminación del editor de ingreso duplicado en `ScoreCard` (el score depende solo de la distribución real), `graphify-out/` deja de estar versionado |
+| v1.9.2 | 2026-08-05 | [#38](https://github.com/ISeco/wealet/pull/38) | `362cef4` | Fix del dropdown de mes recortado en `FundDetail` cuando la tabla de movimientos está vacía (`overflow: hidden` de la tarjeta clipeaba el `MonthSelector` del header) |
 
 **Hotfix directo a `main`**: PR #28 (`hotfix/password-pepper-rotation`) — cherry-pick de la rotación de `PASSWORD_PEPPER` sin esperar al release normal de `dev`, por una ventana breve de login roto tras rotar la credencial en Render antes de que el código de fallback llegara a producción.
 
