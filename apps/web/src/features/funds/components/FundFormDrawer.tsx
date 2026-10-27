@@ -35,8 +35,8 @@ export function FundFormDrawer({ fund, onClose }: FundFormDrawerProps) {
       return
     }
     const pct = targetPercentage.trim() === '' ? undefined : Number(targetPercentage)
-    if (pct !== undefined && (isNaN(pct) || pct < 1 || pct > 100 || !Number.isInteger(pct))) {
-      setError('La meta debe ser un número entero entre 1 y 100.')
+    if (pct !== undefined && (isNaN(pct) || pct < 0 || pct > 100 || !Number.isInteger(pct))) {
+      setError('La meta debe ser un número entero entre 0 y 100.')
       return
     }
     setError(null)
@@ -129,7 +129,7 @@ export function FundFormDrawer({ fund, onClose }: FundFormDrawerProps) {
           <div style={{ display: 'flex', alignItems: 'center', height: 44, border: '1px solid var(--border-strong)', borderRadius: 10, background: 'var(--field)', padding: '0 14px', gap: 8 }}>
             <input
               type="number"
-              min={1}
+              min={0}
               max={100}
               placeholder="Ej. 30"
               value={targetPercentage}
